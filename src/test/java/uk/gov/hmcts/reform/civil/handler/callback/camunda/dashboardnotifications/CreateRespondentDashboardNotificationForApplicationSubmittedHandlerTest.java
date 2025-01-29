@@ -71,7 +71,6 @@ public class CreateRespondentDashboardNotificationForApplicationSubmittedHandler
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
@@ -101,7 +100,6 @@ public class CreateRespondentDashboardNotificationForApplicationSubmittedHandler
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
@@ -131,7 +129,6 @@ public class CreateRespondentDashboardNotificationForApplicationSubmittedHandler
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
@@ -161,7 +158,6 @@ public class CreateRespondentDashboardNotificationForApplicationSubmittedHandler
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
@@ -188,7 +184,6 @@ public class CreateRespondentDashboardNotificationForApplicationSubmittedHandler
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YesOrNo.NO).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build())
                 .build();
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(

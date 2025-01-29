@@ -94,7 +94,6 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
@@ -121,7 +120,6 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
                     GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION).deadlineForMoreInfoSubmission(
                     LocalDateTime.now().plusDays(5)).build()).build();
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
@@ -148,7 +146,6 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
@@ -188,7 +185,6 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
@@ -220,7 +216,6 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
@@ -252,7 +247,6 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
@@ -283,7 +277,6 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
@@ -325,7 +318,6 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
@@ -355,7 +347,6 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
                 .gaHearingNoticeDetail(GAHearingNoticeDetail.builder().build())
                 .build();
 
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
@@ -380,7 +371,6 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
