@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -58,8 +59,8 @@ class RolesAndAccessAssignmentServiceTest {
     private final String systemUserAuth = "system_user_id";
     private final String judgeUserToCopyInto = "example_user";
     private final String adminUserToCopyInto = "example_user2";
-
     private RoleAssignmentServiceResponse allocatedCaseRoles;
+    private RoleAssignmentServiceResponse prexistingGAallocatedCaseRoles;
 
     @BeforeEach
     void setUp() {
@@ -130,6 +131,12 @@ class RolesAndAccessAssignmentServiceTest {
                             .build())
             .build();
 
+        List<RoleAssignmentResponse> roleList = new ArrayList<>();
+        roleList.add(allocatedJudgeRoleAssignment);
+        roleList.add(leadJudgeRoleAssignment);
+        roleList.add(adminRoleAssignment);
+        allocatedCaseRoles = RoleAssignmentServiceResponse.builder().roleAssignmentResponse(roleList).build();
+
         // pre-existing copies should not be re-copied
         RoleAssignmentResponse preExistingCopiedAdminRoleAssignment = RoleAssignmentResponse.builder()
             .actorId(adminUserToCopyInto)
@@ -151,12 +158,9 @@ class RolesAndAccessAssignmentServiceTest {
                             .build())
             .build();
 
-        List<RoleAssignmentResponse> roleList = new ArrayList<>();
-        roleList.add(allocatedJudgeRoleAssignment);
-        roleList.add(leadJudgeRoleAssignment);
-        roleList.add(adminRoleAssignment);
-        roleList.add(preExistingCopiedAdminRoleAssignment);
-        allocatedCaseRoles = RoleAssignmentServiceResponse.builder().roleAssignmentResponse(roleList).build();
+        List<RoleAssignmentResponse> existingGaRoleList = new ArrayList<>();
+        existingGaRoleList.add(preExistingCopiedAdminRoleAssignment);
+        prexistingGAallocatedCaseRoles = RoleAssignmentServiceResponse.builder().roleAssignmentResponse(existingGaRoleList).build();
     }
 
     @Test
@@ -188,6 +192,8 @@ class RolesAndAccessAssignmentServiceTest {
     void shouldCopyCaseRolesFromMainCaseIntoGaCase() {
         when(roleAssignmentService.queryRoleAssignmentsByCaseIdAndRole(eq(mainCaseId), eq(ROLE_TYPE), eq(ROLE_NAMES), eq(bearerToken)))
             .thenReturn(allocatedCaseRoles);
+        when(roleAssignmentService.queryRoleAssignmentsByCaseIdAndRole(eq(gaCaseId), eq(ROLE_TYPE), eq(ROLE_NAMES), eq(bearerToken)))
+            .thenReturn(new RoleAssignmentServiceResponse(Collections.emptyList()));
 
         rolesAndAccessAssignmentService.copyAllocatedRolesFromRolesAndAccess(mainCaseId, gaCaseId);
 
@@ -243,6 +249,59 @@ class RolesAndAccessAssignmentServiceTest {
                     .build()
 
             )
+            ).build();
+
+        verify(roleAssignmentService, times(1))
+            .assignUserRoles(eq(systemUserAuth), eq(bearerToken), eq(expectedCopiedRole));
+    }
+
+    @Test
+    void shouldNotCopyCaseRolesFromMainCaseIntoGaCase_if_alreadyExist() {
+        when(roleAssignmentService.queryRoleAssignmentsByCaseIdAndRole(eq(mainCaseId), eq(ROLE_TYPE), eq(ROLE_NAMES), eq(bearerToken)))
+            .thenReturn(allocatedCaseRoles);
+        // GA role assignments already contain allocated-admin-caseworker
+        when(roleAssignmentService.queryRoleAssignmentsByCaseIdAndRole(eq(gaCaseId), eq(ROLE_TYPE), eq(ROLE_NAMES), eq(bearerToken)))
+            .thenReturn(prexistingGAallocatedCaseRoles);
+
+        rolesAndAccessAssignmentService.copyAllocatedRolesFromRolesAndAccess(mainCaseId, gaCaseId);
+
+        RoleAssignmentRequest expectedCopiedRole = RoleAssignmentRequest.builder()
+            .roleRequest(RoleRequest.builder()
+                             .assignerId(systemUserAuth)
+                             .replaceExisting(false)
+                             .build())
+            .requestedRoles(List.of(
+                                RoleAssignment.builder()
+                                    .actorId(judgeUserToCopyInto)
+                                    .actorIdType("IDAM")
+                                    .beginTime(ZonedDateTime.of(2025, 1, 1, 12, 0, 0, 0, ZoneId.of("Europe/London")))
+                                    .endTime(ZonedDateTime.of(2025, 1, 7, 12, 0, 0, 0, ZoneId.of("Europe/London")))
+                                    .roleType(RoleType.CASE)
+                                    .classification("RESTRICTED")
+                                    .grantType(GrantType.SPECIFIC)
+                                    .roleCategory(RoleCategory.JUDICIAL)
+                                    .roleName("allocated-judge")
+                                    .attributes(Map.of("jurisdiction", "CIVIL",
+                                                       "caseType", "GENERALAPPLICATION",
+                                                       "caseId", gaCaseId))
+                                    .readOnly(false)
+                                    .build(),
+                                RoleAssignment.builder()
+                                    .actorId(judgeUserToCopyInto)
+                                    .actorIdType("IDAM")
+                                    .beginTime(ZonedDateTime.of(2025, 1, 1, 12, 0, 0, 0, ZoneId.of("Europe/London")))
+                                    .endTime(ZonedDateTime.of(2025, 1, 7, 12, 0, 0, 0, ZoneId.of("Europe/London")))
+                                    .roleType(RoleType.CASE)
+                                    .classification("RESTRICTED")
+                                    .grantType(GrantType.SPECIFIC)
+                                    .roleCategory(RoleCategory.JUDICIAL)
+                                    .roleName("lead-judge")
+                                    .attributes(Map.of("jurisdiction", "CIVIL",
+                                                       "caseType", "GENERALAPPLICATION",
+                                                       "caseId", gaCaseId))
+                                    .readOnly(false)
+                                    .build()
+                            )
             ).build();
 
         verify(roleAssignmentService, times(1))

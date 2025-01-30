@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.civil.ras.model.RoleType;
 import uk.gov.hmcts.reform.civil.service.UserService;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,11 @@ public class RolesAndAccessAssignmentService {
     private void assignRoles(String gaCaseId, RoleAssignmentServiceResponse rolesToAssign, String bearerToken) {
         String systemUserId = userService.getUserInfo(bearerToken).getUid();
 
+        // get current GA role assignments
+        RoleAssignmentServiceResponse existingGaRoleAssignments = roleAssignmentService.queryRoleAssignmentsByCaseIdAndRole(
+            gaCaseId, ROLE_TYPE, ROLE_NAMES, bearerToken
+        );
+
         roleAssignmentService.assignUserRoles(
             systemUserId,
             bearerToken,
@@ -65,11 +71,12 @@ public class RolesAndAccessAssignmentService {
                                  .assignerId(systemUserId)
                                  .replaceExisting(false)
                                  .build())
-                .requestedRoles(buildRoleAssignments(gaCaseId, rolesToAssign)).build());
+                .requestedRoles(buildRoleAssignments(gaCaseId, rolesToAssign, existingGaRoleAssignments)).build());
         log.info("Assigned roles successfully");
     }
 
-    private static List<RoleAssignment> buildRoleAssignments(String gaCaseId, RoleAssignmentServiceResponse roleToAssign) {
+    private static List<RoleAssignment> buildRoleAssignments(String gaCaseId, RoleAssignmentServiceResponse roleToAssign,
+                                                             RoleAssignmentServiceResponse existingGaRoleAssignments) {
         List<RoleAssignment> roleAssignments = new ArrayList<>();
         Map<String, List<RoleAssignmentResponse>> roleAssignmentsByActorId = roleToAssign.getRoleAssignmentResponse().stream()
             .collect(Collectors.groupingBy(RoleAssignmentResponse::getActorId));
@@ -77,8 +84,10 @@ public class RolesAndAccessAssignmentService {
         roleAssignmentsByActorId.forEach((actorId, roleResponses) -> {
             roleResponses.forEach(roleResponse -> {
 
-                // Check if an assignment already copied
-                boolean assignmentCopyExists = roleAssignments.stream()
+                // Check if an assignment has already been copied
+                boolean assignmentCopyExists = Optional.ofNullable(existingGaRoleAssignments.getRoleAssignmentResponse())
+                    .orElse(Collections.emptyList())
+                    .stream()
                     .anyMatch(ra -> ra.getActorId().equals(roleResponse.getActorId())
                         && ra.getRoleName().equals(roleResponse.getRoleName()));
 
