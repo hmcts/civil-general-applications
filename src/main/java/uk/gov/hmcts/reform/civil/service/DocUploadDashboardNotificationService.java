@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
-import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
@@ -25,13 +24,12 @@ import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifi
 public class DocUploadDashboardNotificationService {
 
     private final DashboardApiClient dashboardApiClient;
-    private final FeatureToggleService featureToggleService;
     private final GaForLipService gaForLipService;
     private final DashboardNotificationsParamsMapper mapper;
 
     public void createDashboardNotification(CaseData caseData, String role, String authToken, boolean itsUploadAddlDocEvent) {
 
-        if (isWithNoticeOrConsent(caseData) && featureToggleService.isDashboardServiceEnabled()) {
+        if (isWithNoticeOrConsent(caseData)) {
             log.info("Case {} is with notice or consent and the dashboard service is enabled", caseData.getCcdCaseReference());
             List<String> scenarios = getDashboardScenario(role, caseData, itsUploadAddlDocEvent);
             ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
@@ -50,8 +48,7 @@ public class DocUploadDashboardNotificationService {
     public void createResponseDashboardNotification(CaseData caseData, String role, String authToken) {
 
         if ((role.equalsIgnoreCase("APPLICANT")
-            || (isWithNoticeOrConsent(caseData) && role.equalsIgnoreCase("RESPONDENT")))
-            && featureToggleService.isDashboardServiceEnabled()) {
+            || (isWithNoticeOrConsent(caseData) && role.equalsIgnoreCase("RESPONDENT")))) {
             String scenario = getResponseDashboardScenario(role, caseData);
             ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
                 caseData)).build();
