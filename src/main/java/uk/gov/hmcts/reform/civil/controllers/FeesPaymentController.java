@@ -23,7 +23,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequiredArgsConstructor
 public class FeesPaymentController {
 
-    public static final String FEES_PAYMENT_REQUEST_URL = "/fees/case/{caseReference}/{language}payment";
+    public static final String FEES_PAYMENT_REQUEST_URL = "/fees/case/{caseReference}/{language}/payment";
     public static final String FEES_PAYMENT_STATUS_URL = "/fees/case/{caseReference}/payment/{paymentReference}/status";
     private final FeesPaymentService feesPaymentService;
 
