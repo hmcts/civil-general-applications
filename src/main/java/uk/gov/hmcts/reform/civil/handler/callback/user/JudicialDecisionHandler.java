@@ -908,6 +908,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
         if (featureToggleService.isGaForLipsEnabled()) {
             dataBuilder.bilingualHint(null);
         }
+        log.info("Case Data for Make a Decision : {}", dataBuilder.build().toMap(objectMapper));
         return AboutToStartOrSubmitCallbackResponse.builder()
                 .data(dataBuilder.build().toMap(objectMapper))
                 .build();
