@@ -157,9 +157,10 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
         return data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
             && !Objects.isNull(data.getGeneralAppHelpWithFees())
             && data.getGeneralAppHelpWithFees().getHelpWithFee() == YesOrNo.YES
-            && !Objects.isNull(data.getFeePaymentOutcomeDetails())
+            && (Objects.nonNull(data.getGeneralAppPBADetails().getPaymentDetails())
+            || (!Objects.isNull(data.getFeePaymentOutcomeDetails())
             && (data.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == YesOrNo.YES
-                || (!Objects.isNull(data.getFeePaymentOutcomeDetails().getHwfOutstandingFeePaymentDoneForGa())
-            && data.getFeePaymentOutcomeDetails().getHwfOutstandingFeePaymentDoneForGa().contains("Yes")));
+            || (!Objects.isNull(data.getFeePaymentOutcomeDetails().getHwfOutstandingFeePaymentDoneForGa())
+            && data.getFeePaymentOutcomeDetails().getHwfOutstandingFeePaymentDoneForGa().contains("Yes")))));
     }
 }
