@@ -62,7 +62,7 @@ class FeesPaymentServiceTest {
     private static final CardPaymentServiceRequestDTO CARD_PAYMENT_SERVICE_REQUEST
         = CardPaymentServiceRequestDTO.builder()
         .returnUrl("${cui-front-end.url}/general-application/payment-confirmation/1701090368574910/gaid/2801090368574910")
-        .language("En")
+        .language("en")
         .amount(new BigDecimal("232.00")).currency("GBP").build();
 
     @Autowired
@@ -107,6 +107,7 @@ class FeesPaymentServiceTest {
 
         CardPaymentStatusResponse govPaymentRequest = feesPaymentService.createGovPaymentRequest(
             "2801090368574910",
+            "en",
             BEARER_TOKEN
         );
         assertThat(govPaymentRequest).isEqualTo(CardPaymentStatusResponse.from(response));
@@ -129,6 +130,7 @@ class FeesPaymentServiceTest {
 
         CardPaymentStatusResponse govPaymentRequest = feesPaymentService.createGovPaymentRequest(
             "2801090368574910",
+            "en",
             BEARER_TOKEN
         );
         assertThat(govPaymentRequest).isEqualTo(CardPaymentStatusResponse.from(response));
@@ -148,6 +150,7 @@ class FeesPaymentServiceTest {
         assertThatThrownBy(
             () -> feesPaymentService.createGovPaymentRequest(
                 "2801090368574910",
+                "en",
                 BEARER_TOKEN
             )
         ).isInstanceOf(NullPointerException.class)
@@ -170,6 +173,7 @@ class FeesPaymentServiceTest {
         assertThatThrownBy(
             () -> feesPaymentService.createGovPaymentRequest(
                 "2801090368574910",
+                "en",
                 BEARER_TOKEN
             )
         ).isInstanceOf(NullPointerException.class)
@@ -190,6 +194,7 @@ class FeesPaymentServiceTest {
             PaymentsApiException.class,
             () -> feesPaymentService.createGovPaymentRequest(
                 "2801090368574910",
+                "en",
                 BEARER_TOKEN
             )
         );
@@ -213,6 +218,7 @@ class FeesPaymentServiceTest {
             PaymentsApiException.class,
             () -> feesPaymentService.createGovPaymentRequest(
                 "2801090368574910",
+                "en",
                 BEARER_TOKEN
             )
         );
@@ -239,6 +245,7 @@ class FeesPaymentServiceTest {
         CardPaymentStatusResponse govPaymentRequest =
             feesPaymentService.createGovPaymentRequest(
                 "2801090368574910",
+                "en",
                 BEARER_TOKEN
             );
 
@@ -246,6 +253,7 @@ class FeesPaymentServiceTest {
 
         verify(paymentsClient, times(3)).createGovPayCardPaymentRequest(
             "2023-1701090705688",
+
             BEARER_TOKEN,
             CARD_PAYMENT_SERVICE_REQUEST
         );
