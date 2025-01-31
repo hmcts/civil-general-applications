@@ -84,7 +84,6 @@ public class ApplicationIssuedFeeRequiredHandlerTest extends BaseCallbackHandler
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
@@ -120,7 +119,6 @@ public class ApplicationIssuedFeeRequiredHandlerTest extends BaseCallbackHandler
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
             when(generalAppFeesService.isFreeApplication(any())).thenReturn(true);
 
@@ -151,33 +149,7 @@ public class ApplicationIssuedFeeRequiredHandlerTest extends BaseCallbackHandler
                                                    .build())
                                           .build())
                 .build();
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(false);
-
-            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(CREATE_DASHBOARD_NOTIFICATION_FOR_GA_APPLICANT.name())
-                    .build()
-            ).build();
-
-            handler.handle(params);
-            verifyNoInteractions(dashboardApiClient);
-        }
-
-        @Test
-        void shouldNotRecordApplicationIssueFeeRequiredScenarioWhenDashboardFlagIsDisable() {
-            CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
-            caseData = caseData.toBuilder()
-                .parentCaseReference(caseData.getCcdCaseReference().toString())
-                .isGaApplicantLip(YesOrNo.YES)
-                .parentClaimantIsApplicant(YesOrNo.YES)
-                .generalAppPBADetails(GAPbaDetails.builder()
-                                          .fee(Fee.builder()
-                                                   .calculatedAmountInPence(new BigDecimal(100000))
-                                                   .build())
-                                          .build())
-                .build();
-
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(false);
 
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
                 CallbackRequest.builder().eventId(CREATE_DASHBOARD_NOTIFICATION_FOR_GA_APPLICANT.name())

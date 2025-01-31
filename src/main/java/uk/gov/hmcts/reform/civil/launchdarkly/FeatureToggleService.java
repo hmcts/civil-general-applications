@@ -52,10 +52,6 @@ public class FeatureToggleService {
         return internalClient.boolVariation("case-file-view", createLDUser().build(), false);
     }
 
-    public boolean isDashboardServiceEnabled() {
-        return internalClient.boolVariation("dashboard-service", createLDUser().build(), false);
-    }
-
     public boolean isCoSCEnabled() {
         return internalClient.boolVariation("isCoSCEnabled", createLDUser().build(), false);
     }
