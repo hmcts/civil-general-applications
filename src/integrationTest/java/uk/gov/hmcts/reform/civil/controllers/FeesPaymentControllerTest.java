@@ -38,7 +38,7 @@ public class FeesPaymentControllerTest extends BaseIntegrationTest {
     private static final CardPaymentServiceRequestDTO CARD_PAYMENT_SERVICE_REQUEST
         = CardPaymentServiceRequestDTO.builder()
         .returnUrl("http://localhost:3001/general-application/payment-confirmation/1701090368574910/gaid/2801090368574910")
-        .language("En")
+        .language("en")
         .amount(new BigDecimal("232.00")).currency("GBP").build();
 
     @MockBean
@@ -76,7 +76,7 @@ public class FeesPaymentControllerTest extends BaseIntegrationTest {
             CARD_PAYMENT_SERVICE_REQUEST
         )).thenReturn(response);
 
-        doPost(BEARER_TOKEN, "", FEES_PAYMENT_REQUEST_URL, "2801090368574910")
+        doPost(BEARER_TOKEN, "", FEES_PAYMENT_REQUEST_URL, "2801090368574910", "en")
             .andExpect(content().json(toJson(CardPaymentStatusResponse.from(response))))
             .andExpect(status().isOk());
     }
