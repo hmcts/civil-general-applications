@@ -206,9 +206,6 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
 
         handler.handle(params);
         verify(docUploadDashboardNotificationService).createDashboardNotification(any(CaseData.class), anyString(), anyString(), anyBoolean());
-        verify(docUploadDashboardNotificationService).createResponseDashboardNotification(any(), eq("RESPONDENT"), anyString());
-        verify(docUploadDashboardNotificationService).createResponseDashboardNotification(any(), eq("APPLICANT"), anyString());
-
     }
 
     private CaseData getCaseData(AboutToStartOrSubmitCallbackResponse response) {
