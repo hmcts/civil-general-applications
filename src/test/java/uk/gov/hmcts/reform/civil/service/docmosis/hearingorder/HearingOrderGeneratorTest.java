@@ -372,5 +372,143 @@ class HearingOrderGeneratorTest {
                 () -> assertEquals(templateData.getHearingOrder(), caseData.getJudicialGOHearingDirections())
             );
         }
+
+        @Test
+        void whenJudgeSpecifiesOtherHearingDuration1_ShouldGetHearingOrderData() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
+            CaseData caseData = CaseDataBuilder.builder()
+                .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
+                .isMultiParty(YES)
+                .build();
+            caseData = caseData.toBuilder()
+                .judicialListForHearing(caseData.getJudicialListForHearing().toBuilder()
+                                            .judicialTimeEstimate(GAHearingDuration.OTHER)
+                                            .judicialTimeEstimateDays("2")
+                                            .judicialTimeEstimateHours("2")
+                                            .judicialTimeEstimateMinutes("30").build())
+                .build();
+
+            var templateData = hearingOrderGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+
+            assertEquals("2 days, 2 hours and 30 minutes", templateData.getEstimatedHearingLength());
+        }
+
+        @Test
+        void whenJudgeSpecifiesOtherHearingDuration2_ShouldGetHearingOrderData() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
+            CaseData caseData = CaseDataBuilder.builder()
+                .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
+                .isMultiParty(YES)
+                .build();
+            caseData = caseData.toBuilder()
+                .judicialListForHearing(caseData.getJudicialListForHearing().toBuilder()
+                                            .judicialTimeEstimate(GAHearingDuration.OTHER)
+                                            .judicialTimeEstimateDays("1")
+                                            .judicialTimeEstimateMinutes("30").build())
+                .build();
+
+            var templateData = hearingOrderGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+
+            assertEquals("1 day and 30 minutes", templateData.getEstimatedHearingLength());
+        }
+
+        @Test
+        void whenJudgeSpecifiesOtherHearingDuration3_ShouldGetHearingOrderData() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
+            CaseData caseData = CaseDataBuilder.builder()
+                .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
+                .isMultiParty(YES)
+                .build();
+            caseData = caseData.toBuilder()
+                .judicialListForHearing(caseData.getJudicialListForHearing().toBuilder()
+                                            .judicialTimeEstimate(GAHearingDuration.OTHER)
+                                            .judicialTimeEstimateDays("2")
+                                            .judicialTimeEstimateHours("6").build())
+                .build();
+
+            var templateData = hearingOrderGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+
+            assertEquals("2 days and 6 hours", templateData.getEstimatedHearingLength());
+        }
+
+        @Test
+        void whenJudgeSpecifiesOtherHearingDuration4_ShouldGetHearingOrderData() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
+            CaseData caseData = CaseDataBuilder.builder()
+                .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
+                .isMultiParty(YES)
+                .build();
+            caseData = caseData.toBuilder()
+                .judicialListForHearing(caseData.getJudicialListForHearing().toBuilder()
+                                            .judicialTimeEstimate(GAHearingDuration.OTHER)
+                                            .judicialTimeEstimateHours("2")
+                                            .judicialTimeEstimateMinutes("30").build())
+                .build();
+
+            var templateData = hearingOrderGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+
+            assertEquals("2 hours and 30 minutes", templateData.getEstimatedHearingLength());
+        }
+
+        @Test
+        void whenJudgeSpecifiesOtherHearingDuration5_ShouldGetHearingOrderData() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
+            CaseData caseData = CaseDataBuilder.builder()
+                .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
+                .isMultiParty(YES)
+                .build();
+            caseData = caseData.toBuilder()
+                .judicialListForHearing(caseData.getJudicialListForHearing().toBuilder()
+                                            .judicialTimeEstimate(GAHearingDuration.OTHER)
+                                            .judicialTimeEstimateHours("6").build())
+                .build();
+
+            var templateData = hearingOrderGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+
+            assertEquals("6 hours", templateData.getEstimatedHearingLength());
+        }
+
+        @Test
+        void whenJudgeSpecifiesOtherHearingDuration6_ShouldGetHearingOrderData() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
+            CaseData caseData = CaseDataBuilder.builder()
+                .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
+                .isMultiParty(YES)
+                .build();
+            caseData = caseData.toBuilder()
+                .judicialListForHearing(caseData.getJudicialListForHearing().toBuilder()
+                                            .judicialTimeEstimate(GAHearingDuration.OTHER)
+                                            .judicialTimeEstimateDays("3").build())
+                .build();
+
+            var templateData = hearingOrderGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+
+            assertEquals("3 days", templateData.getEstimatedHearingLength());
+        }
+
+        @Test
+        void whenJudgeSpecifiesOtherHearingDuration7_ShouldGetHearingOrderData() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
+            CaseData caseData = CaseDataBuilder.builder()
+                .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
+                .isMultiParty(YES)
+                .build();
+            caseData = caseData.toBuilder()
+                .judicialListForHearing(caseData.getJudicialListForHearing().toBuilder()
+                                            .judicialTimeEstimate(GAHearingDuration.OTHER)
+                                            .judicialTimeEstimateMinutes("45").build())
+                .build();
+
+            var templateData = hearingOrderGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+
+            assertEquals("45 minutes", templateData.getEstimatedHearingLength());
+        }
     }
 }

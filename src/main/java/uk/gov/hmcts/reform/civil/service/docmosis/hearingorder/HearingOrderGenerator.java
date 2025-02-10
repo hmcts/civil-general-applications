@@ -6,12 +6,14 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
+import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
@@ -23,6 +25,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import static org.springframework.util.StringUtils.hasLength;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARING_ORDER;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_HEARING_ORDER_LIP;
@@ -89,8 +93,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 .hearingOrder(caseData.getJudicialGOHearingDirections())
                 .hearingPrefType(caseData.getJudicialListForHearing()
                                      .getHearingPreferencesPreferredType().getDisplayedValue())
-                .estimatedHearingLength(caseData.getJudicialListForHearing()
-                                            .getJudicialTimeEstimate().getDisplayedValue())
+                .estimatedHearingLength(getEstimatedHearingLength(caseData))
                 .submittedOn(LocalDate.now())
                 .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getExternalShortName())
                 .judgeHearingLocation(caseData.getJudicialListForHearing()
@@ -116,6 +119,46 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
         }
 
         return judgeDecisionPdfDocumentBuilder.build();
+    }
+
+    private static String getEstimatedHearingLength(CaseData caseData) {
+        GAJudgesHearingListGAspec listForHearing = caseData.getJudicialListForHearing();
+        GAHearingDuration duration = listForHearing.getJudicialTimeEstimate();
+        if (duration != GAHearingDuration.OTHER) {
+            return duration.getDisplayedValue();
+        }
+        StringBuilder hearingLengthText = new StringBuilder();
+        int days = hasLength(listForHearing.getJudicialTimeEstimateDays())
+            ? Integer.valueOf(listForHearing.getJudicialTimeEstimateDays()) : 0;
+        int hours = hasLength(listForHearing.getJudicialTimeEstimateHours())
+            ? Integer.valueOf(listForHearing.getJudicialTimeEstimateHours()) : 0;
+        int minutes = hasLength(listForHearing.getJudicialTimeEstimateMinutes())
+            ? Integer.valueOf(listForHearing.getJudicialTimeEstimateMinutes()) : 0;
+        if (days > 0) {
+            hearingLengthText.append(String.format("%d day%s", days, getPlural(days)));
+            if (hours > 0) {
+                if (minutes > 0) {
+                    hearingLengthText.append(String.format(", %d hour%s and %d minute%s", hours, getPlural(hours),
+                                                           minutes, getPlural(minutes)));
+                } else {
+                    hearingLengthText.append(String.format(" and %d hour%s", hours, getPlural(hours)));
+                }
+            } else if (minutes > 0) {
+                hearingLengthText.append(String.format(" and %d minute%s", minutes, getPlural(minutes)));
+            }
+        } else if (hours > 0) {
+            hearingLengthText.append(String.format("%d hour%s", hours, getPlural(hours)));
+            if (minutes > 0) {
+                hearingLengthText.append(String.format(" and %d minute%s", minutes, getPlural(minutes)));
+            }
+        } else {
+            hearingLengthText.append(String.format("%d minute%s", minutes, getPlural(minutes)));
+        }
+        return hearingLengthText.toString();
+    }
+
+    private static String getPlural(int value) {
+        return value > 1 ? "s" : "";
     }
 
     private String populateJudicialByCourtsInitiative(CaseData caseData) {
