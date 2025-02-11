@@ -20,6 +20,9 @@ public class GAJudgesHearingListGAspec {
     private GAJudicialHearingType hearingPreferencesPreferredType;
     private DynamicList hearingPreferredLocation;
     private GAHearingDuration judicialTimeEstimate;
+    private String judicialTimeEstimateDays;
+    private String judicialTimeEstimateHours;
+    private String judicialTimeEstimateMinutes;
     private List<SupportRequirements> judicialSupportRequirement;
     private String judgeSignLanguage;
     private String judgeLanguageInterpreter;
@@ -37,6 +40,9 @@ public class GAJudgesHearingListGAspec {
                                   GAJudicialHearingType hearingPreferencesPreferredType,
                               @JsonProperty("hearingPreferredLocation") DynamicList hearingPreferredLocation,
                               @JsonProperty("judicialTimeEstimate") GAHearingDuration judicialTimeEstimate,
+                              @JsonProperty("judicialTimeEstimateDays") String judicialTimeEstimateDays,
+                              @JsonProperty("judicialTimeEstimateHours") String judicialTimeEstimateHours,
+                              @JsonProperty("judicialTimeEstimateMinutes") String judicialTimeEstimateMinutes,
                               @JsonProperty("judicialSupportRequirement")
                                   List<SupportRequirements> judicialSupportRequirement,
                               @JsonProperty("judgeSignLanguage") String judgeSignLanguage,
@@ -54,6 +60,9 @@ public class GAJudgesHearingListGAspec {
         this.hearingPreferredLocation = hearingPreferredLocation;
         this.judicialSupportRequirement = judicialSupportRequirement;
         this.judicialTimeEstimate = judicialTimeEstimate;
+        this.judicialTimeEstimateDays = judicialTimeEstimateDays;
+        this.judicialTimeEstimateHours = judicialTimeEstimateHours;
+        this.judicialTimeEstimateMinutes = judicialTimeEstimateMinutes;
         this.addlnInfoCourtStaff = addlnInfoCourtStaff;
         this.judgeHearingTimeEstimateText1 = judgeHearingTimeEstimateText1;
         this.judgeHearingCourtLocationText1 = judgeHearingCourtLocationText1;

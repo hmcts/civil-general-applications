@@ -45,6 +45,7 @@ import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
+import uk.gov.hmcts.reform.civil.service.JudicialTimeEstimateHelper;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
@@ -113,6 +114,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private final GeneralAppLocationRefDataService locationRefDataService;
     private final JudicialDecisionHelper helper;
     private final AssignCaseToResopondentSolHelper assignCaseToResopondentSolHelper;
+    private final JudicialTimeEstimateHelper timeEstimateHelper;
     private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
     private static final String VALIDATE_MAKE_AN_ORDER = "validate-make-an-order";
     private static final int ONE_V_ONE = 0;
@@ -1174,7 +1176,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private String getJudgeHearingTimeEstPrePopulatedText(CaseData caseData) {
         return format(
-                JUDICIAL_TIME_ESTIMATE, caseData.getJudicialListForHearing().getJudicialTimeEstimate().getDisplayedValue());
+                JUDICIAL_TIME_ESTIMATE, timeEstimateHelper.getEstimatedHearingLength(caseData));
     }
 
     private String getJudicalSequentialDatePupulatedText(CaseData caseData) {
