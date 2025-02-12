@@ -87,7 +87,7 @@ public class HwFFeeTypeService {
             updatedData.gaHwfDetails(
                     caseData.getGaHwfDetails().toBuilder()
                             .remissionAmount(gaRemissionAmount)
-                            .outstandingFeeInPounds(MonetaryConversions.penniesToPounds(outstandingFeeAmount))
+                            .outstandingFee(outstandingFeeAmount)
                             .build()
             );
         } else if (caseData.isHWFTypeAdditional() && BigDecimal.ZERO.compareTo(feeAmount) != 0) {
@@ -95,7 +95,7 @@ public class HwFFeeTypeService {
             updatedData.additionalHwfDetails(
                     caseData.getAdditionalHwfDetails().toBuilder()
                             .remissionAmount(hearingRemissionAmount)
-                            .outstandingFeeInPounds(MonetaryConversions.penniesToPounds(outstandingFeeAmount))
+                            .outstandingFee(outstandingFeeAmount)
                             .build()
             );
         }

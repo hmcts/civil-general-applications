@@ -323,6 +323,7 @@ xui-webapp:
 camunda-bpm:
   enabled: true
   java:
+    image: hmctsprivatetemp.azurecr.io/camunda/bpm:latest
     disableKeyVaults: true
     releaseNameOverride: ${SERVICE_NAME}-camunda
     ingressHost: camunda-${SERVICE_FQDN}

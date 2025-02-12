@@ -38,6 +38,7 @@ import java.util.List;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -314,7 +315,7 @@ class UploadAdditionalDocumentsCallbackHandlerTest extends BaseCallbackHandlerTe
             assertThat(responseCaseData.getBusinessProcess().getStatus()).isEqualTo(BusinessProcessStatus.READY);
             assertThat(responseCaseData.getIsDocumentVisible()).isEqualTo(YesOrNo.YES);
             assertThat(responseCaseData.getGaAddlDocRespondentSol().size()).isEqualTo(1);
-            verify(docUploadDashboardNotificationService).createDashboardNotification(any(CaseData.class), anyString(), anyString());
+            verify(docUploadDashboardNotificationService).createDashboardNotification(any(CaseData.class), anyString(), anyString(), anyBoolean());
         }
 
         @Test

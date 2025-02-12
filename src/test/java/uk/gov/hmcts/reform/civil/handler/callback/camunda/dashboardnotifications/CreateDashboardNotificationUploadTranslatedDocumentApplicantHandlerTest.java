@@ -9,7 +9,6 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CREATE_APPLICANT_DASH
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_TRANSLATED_DOCUMENT_UPLOADED_APPLICANT;
 
 import java.util.HashMap;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,10 +52,6 @@ public class CreateDashboardNotificationUploadTranslatedDocumentApplicantHandler
 
     @Nested
     class AboutToSubmitCallback {
-        @BeforeEach
-        void setup() {
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
-        }
 
         @Test
         void shouldRecordTranslatedDocUploadedScenario_whenInvoked() {

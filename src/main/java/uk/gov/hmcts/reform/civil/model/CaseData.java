@@ -365,6 +365,7 @@ public class CaseData implements MappableObject {
     private YesOrNo respondentBilingualLanguagePreference;
     //WA claim track description
     private final String gaWaTrackLabel;
+    private final String emailPartyReference;
 
     @Builder.Default
     private final List<Value<Document>> caseDocuments = new ArrayList<>();

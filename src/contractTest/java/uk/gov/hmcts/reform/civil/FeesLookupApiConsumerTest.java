@@ -96,7 +96,7 @@ public class FeesLookupApiConsumerTest extends BaseContractTest {
     public void verifyFeeForAppToVaryOrSuspend() {
         Fee fee = generalAppFeesService.getFeeForGA(
             CaseData.builder().generalAppType(
-                    GAApplicationType.builder().types(List.of(GeneralApplicationTypes.VARY_ORDER))
+                    GAApplicationType.builder().types(List.of(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT))
                         .build())
                 .build());
 

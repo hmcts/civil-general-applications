@@ -45,6 +45,7 @@ public class JudicialNotificationService implements NotificationData {
     private final NotificationService notificationService;
     private final Map<String, String> customProps = new HashMap<>();
     private static final String REFERENCE_TEMPLATE = "general-apps-judicial-notification-make-decision-%s";
+    private static final String EMPTY_SOLICITOR_REFERENCES_1V1 = "Claimant Reference: Not provided - Defendant Reference: Not provided";
 
     private final DeadlinesCalculator deadlinesCalculator;
     private static final int NUMBER_OF_DEADLINE_DAYS = 5;
@@ -112,6 +113,18 @@ public class JudicialNotificationService implements NotificationData {
             GA_APPLICATION_TYPE,
             Objects.requireNonNull(requiredGAType(caseData))
         );
+        if (!gaForLipService.isLipApp(caseData)) {
+            customProps.put(
+                GENAPP_REFERENCE,
+                String.valueOf(Objects.requireNonNull(caseData.getCcdCaseReference()))
+            );
+        }
+        if (!gaForLipService.isLipApp(caseData)) {
+            customProps.put(
+                PARTY_REFERENCE,
+                Objects.requireNonNull(getSolicitorReferences(caseData.getEmailPartyReference()))
+            );
+        }
 
         if (gaForLipService.isGaForLip(caseData)) {
             String caseTitle = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
@@ -129,7 +142,9 @@ public class JudicialNotificationService implements NotificationData {
 
         if (gaForLipService.isLipResp(caseData)
             && isRespondentNotificationMakeDecisionEvent(caseData)) {
-            String isLipRespondentName = caseData.getDefendant1PartyName();
+            String isLipRespondentName =
+                caseData.getParentClaimantIsApplicant() == NO ? caseData.getClaimant1PartyName() :
+                    caseData.getDefendant1PartyName();
             customProps.put(
                 GA_LIP_RESP_NAME,
                 Objects.requireNonNull(isLipRespondentName)
@@ -554,6 +569,14 @@ public class JudicialNotificationService implements NotificationData {
         return isGeneralAppConsentOrder(caseData)
             && SEND_APP_TO_OTHER_PARTY.equals(caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption())
             && caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null;
+    }
+
+    private String getSolicitorReferences(String emailPartyReference) {
+        if (emailPartyReference != null) {
+            return emailPartyReference;
+        } else {
+            return EMPTY_SOLICITOR_REFERENCES_1V1;
+        }
     }
 
     private  void addCustomPropsForRespondDeadline(LocalDate requestForInformationDeadline) {
