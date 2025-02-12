@@ -272,8 +272,10 @@ public class JudicialDecisionHandler extends CallbackHandler {
         UserInfo userDetails = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
         caseDataBuilder.judgeTitle(IdamUserUtils.getIdamUserFullName(userDetails));
 
-        if (caseData.getApplicationIsCloaked() == null) {
+        if (caseData.getApplicationIsCloaked() == null && !gaForLipService.isGaForLip(caseData)) {
             caseDataBuilder.applicationIsCloaked(helper.isApplicationCreatedWithoutNoticeByApplicant(caseData));
+        } else if (caseData.getApplicationIsCloaked() == null && gaForLipService.isGaForLip(caseData)) {
+            caseDataBuilder.applicationIsCloaked(helper.isLipApplicationCreatedWithoutNoticeByApplicant(caseData));
         }
 
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
@@ -663,8 +665,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
         ArrayList<String> errors = new ArrayList<>();
 
         if ((caseData.getApplicationIsUncloakedOnce() == null
+                && helper.isLipApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
+                && caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
+                && gaForLipService.isGaForLip(caseData))
+                || (caseData.getApplicationIsUncloakedOnce() == null
                 && helper.isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
-                && caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS))
+                && caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
+                && !gaForLipService.isGaForLip(caseData))
                 || (caseData.getApplicationIsUncloakedOnce() != null
                 && caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
                 && caseData.getApplicationIsUncloakedOnce().equals(NO))) {
