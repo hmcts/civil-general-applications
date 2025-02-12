@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDe
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.service.JudicialTimeEstimateHelper;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
@@ -36,6 +37,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
     private final DocmosisService docmosisService;
+    private final JudicialTimeEstimateHelper timeEstimateHelper;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
@@ -89,8 +91,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 .hearingOrder(caseData.getJudicialGOHearingDirections())
                 .hearingPrefType(caseData.getJudicialListForHearing()
                                      .getHearingPreferencesPreferredType().getDisplayedValue())
-                .estimatedHearingLength(caseData.getJudicialListForHearing()
-                                            .getJudicialTimeEstimate().getDisplayedValue())
+                .estimatedHearingLength(timeEstimateHelper.getEstimatedHearingLength(caseData))
                 .submittedOn(LocalDate.now())
                 .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getExternalShortName())
                 .judgeHearingLocation(caseData.getJudicialListForHearing()
