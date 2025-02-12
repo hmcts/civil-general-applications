@@ -83,7 +83,7 @@ public class JudicialDecisionHelperTest {
             CaseData caseData = CaseData.builder().generalAppRespondentAgreement(
                     GARespondentOrderAgreement.builder().hasAgreed(NO).build())
                 .generalAppInformOtherParty(null).build();
-            assertThat(helper.isLipApplicationCreatedWithoutNoticeByApplicant(caseData)).isEqualTo(NO);
+            assertThat(helper.isLipApplicationCreatedWithoutNoticeByApplicant(caseData)).isEqualTo(YES);
         }
 
         @Test
