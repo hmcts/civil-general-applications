@@ -68,7 +68,6 @@ public class DocUploadDashboardNotificationServiceTest {
                                                                               .build()).build()));
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CaseData caseData = CaseDataBuilder.builder()
@@ -114,7 +113,6 @@ public class DocUploadDashboardNotificationServiceTest {
                                                                               .build()).build()));
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CaseData caseData = CaseDataBuilder.builder()
@@ -173,7 +171,6 @@ public class DocUploadDashboardNotificationServiceTest {
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CaseData caseData = CaseDataBuilder.builder()
@@ -211,48 +208,6 @@ public class DocUploadDashboardNotificationServiceTest {
         }
 
         @Test
-        void shouldNotCreateDashboardNotificationWhenDashboardServiceFlagIsDisabled() {
-
-            List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
-            uploadDocumentByApplicant.add(element(UploadDocumentByType.builder()
-                                                      .documentType("Witness")
-                                                      .additionalDocument(Document.builder()
-                                                                              .documentFileName("witness_document.pdf")
-                                                                              .documentUrl("http://dm-store:8080")
-                                                                              .documentBinaryUrl(
-                                                                                  "http://dm-store:8080/documents")
-                                                                              .build()).build()));
-            CaseData caseData = CaseDataBuilder.builder()
-                .atStateClaimDraft()
-                .ccdCaseReference(1678356749555475L)
-                .build().toBuilder()
-                .respondent2SameLegalRepresentative(NO)
-                .applicationIsUncloakedOnce(YES)
-                .parentClaimantIsApplicant(YES)
-                .uploadDocument(uploadDocumentByApplicant)
-                .claimant1PartyName("Mr. John Rambo")
-                .defendant1PartyName("Mr. Sole Trader")
-                .generalAppConsentOrder(YES)
-                .isGaApplicantLip(YES)
-                .isGaRespondentOneLip(YES)
-                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id(STRING_CONSTANT).forename(
-                        "GAApplnSolicitor")
-                                              .email(DUMMY_EMAIL).organisationIdentifier("1").build())
-
-                .build();
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(false);
-
-            docUploadDashboardNotificationService.createDashboardNotification(
-                caseData,
-                "Respondent One",
-                "BEARER_TOKEN",
-                false
-            );
-
-            verifyNoInteractions(dashboardApiClient);
-        }
-
-        @Test
         void shouldCreateDashboardNotificationWhenConsentOrder() {
 
             List<Element<UploadDocumentByType>> uploadDocumentByApplicant = new ArrayList<>();
@@ -272,7 +227,6 @@ public class DocUploadDashboardNotificationServiceTest {
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CaseData caseData = CaseDataBuilder.builder()
@@ -329,7 +283,6 @@ public class DocUploadDashboardNotificationServiceTest {
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CaseData caseData = CaseDataBuilder.builder()
@@ -385,7 +338,6 @@ public class DocUploadDashboardNotificationServiceTest {
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
             when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
             when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
 
             CaseData caseData = CaseDataBuilder.builder()
@@ -544,7 +496,6 @@ public class DocUploadDashboardNotificationServiceTest {
                                               .email(DUMMY_EMAIL).organisationIdentifier("1").build())
 
                 .build();
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(false);
 
             docUploadDashboardNotificationService.createDashboardNotification(
                 caseData,

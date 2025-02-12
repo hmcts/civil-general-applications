@@ -119,7 +119,7 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
                                                         String caseReference) {
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         CaseData caseData = callbackParams.getCaseData();
-        if (featureToggleService.isDashboardServiceEnabled() && gaForLipService.isGaForLip(caseData)) {
+        if (gaForLipService.isGaForLip(caseData)) {
             ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
                 caseData)).build();
             if (scenarios != null) {
