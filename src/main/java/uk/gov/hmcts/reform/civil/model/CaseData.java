@@ -118,6 +118,7 @@ public class CaseData implements MappableObject {
     private final GAInformOtherParty generalAppInformOtherParty;
     private final GAUrgencyRequirement generalAppUrgencyRequirement;
     private final GAStatementOfTruth generalAppStatementOfTruth;
+    private final GAStatementOfTruth generalAppResponseStatementOfTruth;
     private final GAHearingDetails generalAppHearingDetails;
     private final GASolicitorDetailsGAspec generalAppApplnSolicitor;
     private final List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;

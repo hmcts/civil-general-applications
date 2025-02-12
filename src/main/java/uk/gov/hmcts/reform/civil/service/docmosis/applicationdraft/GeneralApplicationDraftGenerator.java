@@ -119,6 +119,9 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .isOtherSupportExists(checkAdditionalSupport(caseData, OTHER_SUPPORT))
                 .name(caseData.getGeneralAppStatementOfTruth() != null ? caseData
                     .getGeneralAppStatementOfTruth().getName() : null)
+                .role(caseData.getGeneralAppStatementOfTruth() != null && caseData
+                    .getGeneralAppStatementOfTruth().getRole() != null ? caseData
+                    .getGeneralAppStatementOfTruth().getRole() : null)
                 .date(LocalDate.now());
 
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() >= ONE_V_ONE) {
@@ -155,7 +158,12 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .isResp1LanguageInterpreterExists(checkResp1AdditionalSupport(caseData, LANGUAGE_INTERPRETER))
                 .isResp1OtherSupportExists(checkResp1AdditionalSupport(caseData, OTHER_SUPPORT))
                 .resp1Other(gaResp1HearingDetails.getSupportRequirementOther())
-                .isLipCase(gaForLipService.isGaForLip(caseData) ? YesOrNo.YES : YesOrNo.NO);
+                .isLipCase(gaForLipService.isGaForLip(caseData) ? YesOrNo.YES : YesOrNo.NO)
+                .responseSotName(caseData.getGeneralAppResponseStatementOfTruth() != null ? caseData
+                    .getGeneralAppResponseStatementOfTruth().getName() : null)
+                .responseSotRole(caseData.getGeneralAppResponseStatementOfTruth() != null && caseData
+                    .getGeneralAppResponseStatementOfTruth().getRole() != null ? caseData
+                    .getGeneralAppResponseStatementOfTruth().getRole() : null);
         }
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() > ONE_V_ONE) {
             GAHearingDetails gaResp2HearingDetails = caseData.getRespondentsResponses().get(1)
