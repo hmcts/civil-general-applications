@@ -113,13 +113,13 @@ public class JudicialNotificationService implements NotificationData {
             GA_APPLICATION_TYPE,
             Objects.requireNonNull(requiredGAType(caseData))
         );
-        if (!gaForLipService.isLipApp(caseData)) {
+        if (!gaForLipService.isLipApp(caseData) || !gaForLipService.isLipResp(caseData)) {
             customProps.put(
                 GENAPP_REFERENCE,
                 String.valueOf(Objects.requireNonNull(caseData.getCcdCaseReference()))
             );
         }
-        if (!gaForLipService.isLipApp(caseData)) {
+        if (!gaForLipService.isLipApp(caseData) || !gaForLipService.isLipResp(caseData)) {
             customProps.put(
                 PARTY_REFERENCE,
                 Objects.requireNonNull(getSolicitorReferences(caseData.getEmailPartyReference()))
