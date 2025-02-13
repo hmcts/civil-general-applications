@@ -409,7 +409,7 @@ public class JudicialNotificationService implements NotificationData {
                 sendNotificationForJudicialDecision(
                     caseData,
                     appSolicitorEmail,
-                    notificationProperties.getLipGeneralAppApplicantEmailTemplate()
+                    getLiPApplicantTemplate(caseData)
                 );
             } else {
                 sendNotificationForJudicialDecision(
@@ -645,7 +645,12 @@ public class JudicialNotificationService implements NotificationData {
                 && caseData.getBusinessProcess().getCamundaEvent()
                 .equals("MAKE_DECISION")
                 && caseData.getBusinessProcess().getActivityId()
-                .equals("StartRespondentNotificationProcessMakeDecision"));
+                .equals("StartRespondentNotificationProcessMakeDecision"))
+            || (Objects.nonNull(judicialDecision)
+            && caseData.getBusinessProcess().getCamundaEvent()
+            .equals("APPROVE_CONSENT_ORDER")
+            && caseData.getBusinessProcess().getActivityId()
+            .equals("NotifyConsentOrderDefendant"));
     }
 
 }
