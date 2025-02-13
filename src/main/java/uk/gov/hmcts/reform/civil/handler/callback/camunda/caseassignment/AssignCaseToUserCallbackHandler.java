@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
+import uk.gov.hmcts.reform.civil.service.roleassignment.RolesAndAccessAssignmentService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +59,10 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
     private final CaseDetailsConverter caseDetailsConverter;
 
     private final GaForLipService gaForLipService;
+
+    private final RolesAndAccessAssignmentService rolesAndAccessAssignmentService;
+
+    private final FeatureToggleService featureToggleService;
 
     @Override
     protected Map<String, Callback> callbacks() {
@@ -148,6 +154,10 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
                             .orgPolicyCaseAssignedRole(DEFENDANT.getFormattedName()).build());
                 }
 
+            }
+
+            if (featureToggleService.isMultiOrIntermediateTrackEnabled()) {
+                rolesAndAccessAssignmentService.copyAllocatedRolesFromRolesAndAccess(caseData.getGeneralAppParentCaseLink().getCaseReference(), caseId);
             }
 
             return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper)).errors(
