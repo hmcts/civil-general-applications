@@ -62,7 +62,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
             && caseData.getJudicialDecision() != null
             && caseData.getJudicialDecision().getDecision() == GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_WRITTEN_REPRESENTATION_REQUIRED_RESPONDENT.getScenario();
-        } else if (caseData.judgeHasMadeAnOrder()
+        } else if ((caseData.judgeHasMadeAnOrder() || caseData.getApproveConsentOrder() != null)
             && List.of(
                 CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION,
                 CaseState.ADDITIONAL_RESPONSE_TIME_EXPIRED

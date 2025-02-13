@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApproveConsentOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
@@ -50,6 +51,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
@@ -113,6 +115,7 @@ class JudicialApplicantNotificationServiceTest {
     private static final String LIP_APPLN_TEMPLATE = "ga-judicial-notification-applicant-template-lip-id";
     private static final String LIP_APPLN_WELSH_TEMPLATE = "ga-judicial-notification-applicant-welsh-template-lip-id";
     private static final String JUDGES_DECISION = "MAKE_DECISION";
+    private static final String CONSENT_ORDER = "APPROVE_CONSENT_ORDER";
     private static final String PARTY_REFERENCE = "Claimant Reference: Not provided - Defendant Reference: Not provided";
     private LocalDateTime responseDate = LocalDateTime.now();
     private LocalDateTime deadline = LocalDateTime.now().plusDays(5);
@@ -458,6 +461,28 @@ class JudicialApplicantNotificationServiceTest {
             );
         }
 
+        @Test
+        void shouldSendNotification_LipRespondent_Application_WhenApproveConsentOrder() {
+
+            CaseData caseData
+                = caseDataForCaseworkerApproveConsentOrderApplication();
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
+            when(gaForLipService.isLipResp(any())).thenReturn(true);
+
+            judicialNotificationService.sendNotification(caseData, RESPONDENT);
+
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+
+                "general-application-apps-judicial-notification-template-lip-id",
+                notificationPropertiesToStayTheClaimLip(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
         private CaseData caseDataListForHearing() {
             return CaseData.builder()
                 .judicialDecision(GAJudicialDecision.builder()
@@ -511,6 +536,36 @@ class JudicialApplicantNotificationServiceTest {
                 .generalAppType(GAApplicationType.builder()
                                     .types(applicationTypeToStayTheClaim()).build())
                 .generalAppPBADetails(GAPbaDetails.builder().build())
+                .build();
+
+        }
+
+        private CaseData caseDataForCaseworkerApproveConsentOrderApplication() {
+
+            return CaseData.builder()
+                .generalAppConsentOrder(YES)
+                .generalAppRespondentSolicitors(respondentSolicitors())
+                .isMultiParty(NO)
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build())
+                .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                              .email(DUMMY_EMAIL).build())
+                .approveConsentOrder(GAApproveConsentOrder.builder()
+                                         .consentOrderDescription("description")
+                                         .consentOrderDateToEnd(LocalDate.now())
+                                         .build())
+                .isGaApplicantLip(YES)
+                .isGaRespondentOneLip(YES)
+                .applicantPartyName("App")
+                .claimant1PartyName("CL")
+                .defendant1PartyName("DEF")
+                .businessProcess(BusinessProcess.builder().camundaEvent(CONSENT_ORDER)
+                                     .activityId("NotifyConsentOrderDefendant").build())
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                              .caseReference(CASE_REFERENCE.toString()).build())
+                .generalAppType(GAApplicationType.builder()
+                                    .types(applicationTypeToStayTheClaim()).build())
+                .generalAppPBADetails(GAPbaDetails.builder().build())
+                .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .build();
 
         }
@@ -2029,7 +2084,7 @@ class JudicialApplicantNotificationServiceTest {
                                                                                       REQUEST_MORE_INFORMATION)
                 .toBuilder()
                 .generalAppConsentOrder(YES)
-                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
+                .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .build();
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
