@@ -295,7 +295,6 @@ public class CreateMakeDecisionDashboardNotificationForApplicantHandlerTest exte
             );
         }
 
-
         @Test
         void shouldNotRecordOrderMadeApplicantScenarioWhenInvoked_isWIthNoticeApplication_OrderNotMade() {
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();

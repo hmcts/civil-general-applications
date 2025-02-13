@@ -553,7 +553,6 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
             );
         }
 
-
         @Test
         void shouldRecordOrderMadeApplicantScenarioWhenInvoked_isWIthNoticeApplication_whenStateIsNotCorrect() {
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
