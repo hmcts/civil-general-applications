@@ -43,7 +43,6 @@ public class RolesAndAccessAssignmentService {
     }
 
     private void getCaseRoles(String mainCaseId, String gaCaseId, String bearerToken) {
-        log.info("GET Assigned roles for {}, user id{}", bearerToken, userService.getUserInfo(bearerToken).getUid());
         RoleAssignmentServiceResponse roleAssignmentResponse = roleAssignmentService.queryRoleAssignmentsByCaseIdAndRole(mainCaseId, ROLE_TYPE, ROLE_NAMES, bearerToken);
         Optional.ofNullable(roleAssignmentResponse.getRoleAssignmentResponse())
             .ifPresentOrElse(response -> {
