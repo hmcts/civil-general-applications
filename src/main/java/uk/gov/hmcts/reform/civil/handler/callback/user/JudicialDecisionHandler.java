@@ -169,8 +169,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
             "The claimant and defendant should upload any written submissions and evidence by 4pm on %s";
     private static final String JUDICIAL_HEARING_REQ = "Hearing requirements %s";
     private final JudicialDecisionWrittenRepService judicialDecisionWrittenRepService;
-    public static final String RESPOND_TO_DIRECTIONS_DATE_REQUIRED = "The date, by which the response to direction"
-            + " should be given, is required.";
     public static final String RESPOND_TO_DIRECTIONS_DATE_IN_PAST = "The date, by which the response to direction"
             + " should be given, cannot be in past.";
 
@@ -635,10 +633,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     public List<String> validateUrgencyDates(GAJudicialMakeAnOrder judicialDecisionMakeOrder) {
         List<String> errors = new ArrayList<>();
-        if (GIVE_DIRECTIONS_WITHOUT_HEARING.equals(judicialDecisionMakeOrder.getMakeAnOrder())
-                && judicialDecisionMakeOrder.getDirectionsResponseByDate() == null) {
-            errors.add(RESPOND_TO_DIRECTIONS_DATE_REQUIRED);
-        }
 
         if (GIVE_DIRECTIONS_WITHOUT_HEARING.equals(judicialDecisionMakeOrder.getMakeAnOrder())
                 && judicialDecisionMakeOrder.getDirectionsResponseByDate() != null) {

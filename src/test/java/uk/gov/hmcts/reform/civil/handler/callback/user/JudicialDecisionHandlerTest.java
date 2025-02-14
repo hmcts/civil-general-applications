@@ -2678,8 +2678,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
 
-            assertThat(response.getErrors()).isNotEmpty();
-            assertThat(response.getErrors()).contains(RESPOND_TO_DIRECTIONS_DATE_REQUIRED);
+            assertThat(response.getErrors()).isEmpty();
+
         }
 
         @Test
