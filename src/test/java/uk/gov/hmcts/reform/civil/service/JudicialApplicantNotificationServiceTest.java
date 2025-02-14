@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.service;
 
 import com.google.common.collect.ImmutableMap;
-import org.apache.ibatis.annotations.Case;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -42,7 +41,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.HashMap;
 
@@ -624,7 +622,7 @@ class JudicialApplicantNotificationServiceTest {
         private Map<String, String> notificationPropertiesVaryOrder() {
 
             customProp.put(NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString());
-            customProp.put( NotificationData.GENAPP_REFERENCE, CASE_REFERENCE.toString());
+            customProp.put(NotificationData.GENAPP_REFERENCE, CASE_REFERENCE.toString());
             customProp.put(NotificationData.GA_APPLICATION_TYPE,
                            GeneralApplicationTypes.VARY_ORDER.getDisplayedValue());
             customProp.put(NotificationData.PARTY_REFERENCE, PARTY_REFERENCE.toString());
