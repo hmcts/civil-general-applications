@@ -459,24 +459,20 @@ public class JudicialNotificationService implements NotificationData {
 
     private void applicationFreeFormOrder(CaseData caseData, String solicitorType) {
 
-        if (solicitorType.equals(RESPONDENT)) {
+        if (solicitorType.equals(RESPONDENT) && gaForLipService.isLipResp(caseData)) {
             if (isWithNoticeOrConsent(caseData) && areRespondentSolicitorsPresent(caseData)) {
                 sendEmailToRespondent(
                     caseData,
-                    gaForLipService.isLipResp(caseData)
-                        ? notificationProperties.getJudgeFreeFormOrderRespondentLipEmailTemplate()
-                        : notificationProperties.getJudgeFreeFormOrderEmailTemplate()
+                    getLiPRespondentTemplate(caseData)
                 );
             }
         }
 
-        if (solicitorType.equals(APPLICANT)) {
+        if (solicitorType.equals(APPLICANT) && gaForLipService.isLipApp(caseData)) {
             sendNotificationForJudicialDecision(
                 caseData,
                 caseData.getGeneralAppApplnSolicitor().getEmail(),
-                gaForLipService.isLipApp(caseData)
-                    ? notificationProperties.getJudgeFreeFormOrderApplicantLipEmailTemplate()
-                    : notificationProperties.getJudgeFreeFormOrderEmailTemplate()
+                getLiPApplicantTemplate(caseData)
             );
         }
     }

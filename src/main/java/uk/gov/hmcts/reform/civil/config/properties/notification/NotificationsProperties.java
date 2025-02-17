@@ -51,15 +51,6 @@ public class NotificationsProperties {
     private String judgeListsForHearingRespondentEmailTemplate;
 
     @NotEmpty
-    private String judgeFreeFormOrderEmailTemplate;
-
-    @NotEmpty
-    private String judgeFreeFormOrderApplicantLipEmailTemplate;
-
-    @NotEmpty
-    private String judgeFreeFormOrderRespondentLipEmailTemplate;
-
-    @NotEmpty
     private String judgeForApprovedCaseApplicantEmailTemplate;
 
     @NotEmpty
