@@ -34,6 +34,7 @@ java:
     DASHBOARD_API_URL: http://${SERVICE_NAME}-civil-service
     SOME_ENV_VARIABLE: true
     STITCHING_API_ENABLED: false
+    DUMMY_PROPERTY: true
   keyVaults:
     civil:
       resourceGroup: civil
