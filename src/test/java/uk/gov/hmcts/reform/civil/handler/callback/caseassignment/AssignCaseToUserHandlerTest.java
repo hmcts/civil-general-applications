@@ -36,6 +36,7 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.civil.service.OrganisationService;
+import uk.gov.hmcts.reform.civil.service.roleassignment.RolesAndAccessAssignmentService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,6 +90,9 @@ public class AssignCaseToUserHandlerTest extends BaseCallbackHandlerTest {
 
     @MockBean
     private FeatureToggleService featureToggleService;
+
+    @MockBean
+    private RolesAndAccessAssignmentService rolesAndAccessAssignmentService;
 
     private CallbackParams params;
     private GeneralApplication generalApplication;
