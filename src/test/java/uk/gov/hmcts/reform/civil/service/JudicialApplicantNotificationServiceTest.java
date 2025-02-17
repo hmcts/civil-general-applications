@@ -166,12 +166,6 @@ class JudicialApplicantNotificationServiceTest {
             .thenReturn(LIP_APPLN_TEMPLATE);
         when(notificationsProperties.getLipGeneralAppApplicantEmailTemplateInWelsh())
             .thenReturn(LIP_APPLN_WELSH_TEMPLATE);
-        when(notificationsProperties.getJudgeFreeFormOrderEmailTemplate())
-            .thenReturn(SAMPLE_TEMPLATE);
-        when(notificationsProperties.getJudgeFreeFormOrderApplicantLipEmailTemplate())
-            .thenReturn(SAMPLE_LIP_TEMPLATE);
-        when(notificationsProperties.getJudgeFreeFormOrderRespondentLipEmailTemplate())
-            .thenReturn(SAMPLE_LIP_TEMPLATE);
     }
 
     @Nested
