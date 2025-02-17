@@ -513,7 +513,6 @@ class JudicialApplicantNotificationServiceTest {
             verifyNoInteractions(notificationService);
         }
 
-
         private CaseData caseDataListForHearing() {
             return CaseData.builder()
                 .judicialDecision(GAJudicialDecision.builder()
