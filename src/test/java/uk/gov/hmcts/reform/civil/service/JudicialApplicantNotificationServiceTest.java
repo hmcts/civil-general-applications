@@ -49,6 +49,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.PaymentStatus.SUCCESS;
@@ -489,6 +490,29 @@ class JudicialApplicantNotificationServiceTest {
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
         }
+
+        @Test
+        void notificationShouldNotSendApplicantForFreeFormOrder_ifNotLiP() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataFreeFormOrder());
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
+            when(gaForLipService.isLipApp(any())).thenReturn(false);
+            judicialNotificationService.sendNotification(caseDataFreeFormOrder(), APPLICANT);
+            verifyNoInteractions(notificationService);
+        }
+
+        @Test
+        void notificationShouldNotSendRespondentForFreeFormOrder_ifNotLiP() {
+
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseDataFreeFormOrder());
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
+            when(gaForLipService.isLipResp(any())).thenReturn(false);
+            judicialNotificationService.sendNotification(caseDataFreeFormOrder(), RESPONDENT);
+            verifyNoInteractions(notificationService);
+        }
+
 
         private CaseData caseDataListForHearing() {
             return CaseData.builder()
