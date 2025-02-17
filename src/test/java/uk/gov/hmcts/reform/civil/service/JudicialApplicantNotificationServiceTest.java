@@ -513,6 +513,20 @@ class JudicialApplicantNotificationServiceTest {
             verifyNoInteractions(notificationService);
         }
 
+        @Test
+        void notificationShouldNotSendRespondentForFreeFormOrder_ifNotWithNoticeOrConsent() {
+            CaseData caseData = caseDataFreeFormOrder();
+            caseData = caseData.toBuilder()
+                .generalAppInformOtherParty(GAInformOtherParty.builder().build())
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build()).build();
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
+            when(gaForLipService.isLipResp(any())).thenReturn(true);
+            judicialNotificationService.sendNotification(caseData, RESPONDENT);
+            verifyNoInteractions(notificationService);
+        }
+
         private CaseData caseDataListForHearing() {
             return CaseData.builder()
                 .judicialDecision(GAJudicialDecision.builder()
