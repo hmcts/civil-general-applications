@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Slf4j
 @Service
@@ -68,5 +70,21 @@ public class FeatureToggleService {
         } catch (IOException e) {
             log.error("Error in closing the Launchdarkly client::", e);
         }
+    }
+
+    public boolean isMintiEnabled() {
+        return internalClient.boolVariation("minti", createLDUser().build(), false);
+    }
+
+    public boolean isFeatureEnabledForDate(String feature, Long date, boolean defaultValue) {
+        return internalClient.boolVariation(feature, createLDUser().custom("timestamp", date).build(), defaultValue);
+    }
+
+    public boolean isMultiOrIntermediateTrackEnabled() {
+        ZoneId zoneId = ZoneId.systemDefault();
+        long epoch;
+        epoch = LocalDateTime.now().atZone(zoneId).toEpochSecond();
+        return isMintiEnabled()
+            && isFeatureEnabledForDate("multi-or-intermediate-track", epoch, false);
     }
 }
