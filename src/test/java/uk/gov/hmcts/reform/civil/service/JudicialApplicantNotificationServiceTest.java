@@ -468,7 +468,7 @@ class JudicialApplicantNotificationServiceTest {
             judicialNotificationService.sendNotification(caseDataFreeFormOrder(), APPLICANT);
             verify(notificationService).sendMail(
                 DUMMY_EMAIL,
-                "general-application-apps-judicial-notification-template-lip-id",
+                "ga-judicial-notification-applicant-template-lip-id",
                 notificationPropertiesSummeryJudgement(),
                 "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
             );
