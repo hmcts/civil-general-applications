@@ -509,6 +509,27 @@ class JudicialApplicantNotificationServiceTest {
             verifyNoInteractions(notificationService);
         }
 
+        @Test
+        void notificationShouldSendRespondentForFreeFormOrder_ifMadeWithNotice() {
+            CaseData caseData = caseDataFreeFormOrder();
+            caseData = caseData.toBuilder()
+                .generalAppInformOtherParty(GAInformOtherParty.builder().build())
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .applicationIsUncloakedOnce(YES)
+                .build();
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
+            when(gaForLipService.isLipResp(any())).thenReturn(true);
+            judicialNotificationService.sendNotification(caseData, RESPONDENT);
+            verify(notificationService).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-lip-id",
+                notificationPropertiesSummeryJudgement(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
         private CaseData caseDataListForHearing() {
             return CaseData.builder()
                 .judicialDecision(GAJudicialDecision.builder()

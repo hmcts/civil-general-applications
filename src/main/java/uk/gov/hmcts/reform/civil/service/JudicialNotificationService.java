@@ -485,7 +485,8 @@ public class JudicialNotificationService implements NotificationData {
         return (caseData.getGeneralAppInformOtherParty() != null
             && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
             || (caseData.getGeneralAppRespondentAgreement() != null
-            && YES.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed()));
+            && YES.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
+            || caseData.getApplicationIsUncloakedOnce() == YES);
     }
 
     private void applicationDismissedByJudge(CaseData caseData, String solicitorType) {
