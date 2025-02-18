@@ -65,6 +65,7 @@ import uk.gov.hmcts.reform.civil.service.DeadlinesCalculator;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
+import uk.gov.hmcts.reform.civil.service.JudicialTimeEstimateHelper;
 import uk.gov.hmcts.reform.civil.service.Time;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
@@ -187,6 +188,8 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
     private CaseDetailsConverter caseDetailsConverter;
     @MockBean
     private CoreCaseDataService coreCaseDataService;
+    @MockBean
+    private JudicialTimeEstimateHelper timeEstimateHelper;
 
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
     private static final String BUSINESS_PROCESS_INSTANCE_ID = "11111";
@@ -1980,6 +1983,7 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
 
             String expectedJudicialHearingTypeText = "The hearing will be %s.";
             String expeceedJudicialTimeEstimateText = "Estimated length of hearing is %s";
+            when(timeEstimateHelper.getEstimatedHearingLength(any())).thenReturn("2 hours");
 
             List<SupportRequirements> judgeSupportReqChoices = new ArrayList<>();
 
