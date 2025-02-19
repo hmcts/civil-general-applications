@@ -23,6 +23,7 @@ import java.util.List;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DISMISSAL_ORDER;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_DISMISSAL_ORDER_LIP;
+import static uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator.showRecital;
 
 @Slf4j
 @Service
@@ -84,7 +85,7 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecis
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())
-                .judgeRecital(caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
+                .judgeRecital(showRecital(caseData) ? caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText() : null)
                 .dismissalOrder(caseData.getJudicialDecisionMakeOrder().getDismissalOrderText())
                 .submittedOn(LocalDate.now())
                 .reasonAvailable(docmosisService.reasonAvailable(caseData))

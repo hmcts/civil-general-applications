@@ -66,6 +66,9 @@ public class GADraftForm implements MappableObject {
     private final String supportRequirementOther;
     private final Boolean isOtherSupportExists;
     private final String name;
+    private final String role;
+    private final String responseSotName;
+    private final String responseSotRole;
 
     private final YesOrNo resp1HasAgreed;
     private final YesOrNo gaResp1Consent;

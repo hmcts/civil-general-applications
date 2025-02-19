@@ -45,6 +45,7 @@ import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.GeneralAppLocationRefDataService;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionWrittenRepService;
+import uk.gov.hmcts.reform.civil.service.JudicialTimeEstimateHelper;
 import uk.gov.hmcts.reform.civil.service.docmosis.directionorder.DirectionOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder.DismissalOrderGenerator;
 import uk.gov.hmcts.reform.civil.service.docmosis.finalorder.FreeFormOrderGenerator;
@@ -113,6 +114,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private final GeneralAppLocationRefDataService locationRefDataService;
     private final JudicialDecisionHelper helper;
     private final AssignCaseToResopondentSolHelper assignCaseToResopondentSolHelper;
+    private final JudicialTimeEstimateHelper timeEstimateHelper;
     private static final String VALIDATE_MAKE_DECISION_SCREEN = "validate-make-decision-screen";
     private static final String VALIDATE_MAKE_AN_ORDER = "validate-make-an-order";
     private static final int ONE_V_ONE = 0;
@@ -268,12 +270,14 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
-
+        caseDataBuilder.judicialDecision(GAJudicialDecision.builder().build());
         UserInfo userDetails = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
         caseDataBuilder.judgeTitle(IdamUserUtils.getIdamUserFullName(userDetails));
 
-        if (caseData.getApplicationIsCloaked() == null) {
+        if (caseData.getApplicationIsCloaked() == null && !gaForLipService.isGaForLip(caseData)) {
             caseDataBuilder.applicationIsCloaked(helper.isApplicationCreatedWithoutNoticeByApplicant(caseData));
+        } else if (caseData.getApplicationIsCloaked() == null && gaForLipService.isGaForLip(caseData)) {
+            caseDataBuilder.applicationIsCloaked(helper.isLipApplicationCreatedWithoutNoticeByApplicant(caseData));
         }
 
         caseDataBuilder.judicialDecisionMakeOrder(makeAnOrderBuilder(caseData, callbackParams).build());
@@ -663,8 +667,13 @@ public class JudicialDecisionHandler extends CallbackHandler {
         ArrayList<String> errors = new ArrayList<>();
 
         if ((caseData.getApplicationIsUncloakedOnce() == null
+                && helper.isLipApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
+                && caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
+                && gaForLipService.isGaForLip(caseData))
+                || (caseData.getApplicationIsUncloakedOnce() == null
                 && helper.isApplicationCreatedWithoutNoticeByApplicant(caseData).equals(YES)
-                && caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS))
+                && caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
+                && !gaForLipService.isGaForLip(caseData))
                 || (caseData.getApplicationIsUncloakedOnce() != null
                 && caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
                 && caseData.getApplicationIsUncloakedOnce().equals(NO))) {
@@ -1174,7 +1183,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
 
     private String getJudgeHearingTimeEstPrePopulatedText(CaseData caseData) {
         return format(
-                JUDICIAL_TIME_ESTIMATE, caseData.getJudicialListForHearing().getJudicialTimeEstimate().getDisplayedValue());
+                JUDICIAL_TIME_ESTIMATE, timeEstimateHelper.getEstimatedHearingLength(caseData));
     }
 
     private String getJudicalSequentialDatePupulatedText(CaseData caseData) {

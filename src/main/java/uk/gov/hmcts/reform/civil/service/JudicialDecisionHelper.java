@@ -27,6 +27,12 @@ public class JudicialDecisionHelper {
             ? YES : NO;
     }
 
+    public YesOrNo isLipApplicationCreatedWithoutNoticeByApplicant(CaseData caseData) {
+        return (caseData.getGeneralAppInformOtherParty() != null
+            && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())
+            || Objects.nonNull(caseData.getGeneralAppConsentOrder())) ? NO : YES;
+    }
+
     public boolean isApplicantAndRespondentLocationPrefSame(CaseData caseData) {
         if (caseData.getGeneralAppHearingDetails() == null
             || caseData.getGeneralAppHearingDetails().getHearingPreferredLocation() == null
