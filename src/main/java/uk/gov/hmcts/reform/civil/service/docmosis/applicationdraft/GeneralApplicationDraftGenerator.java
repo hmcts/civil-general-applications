@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.applicationdraft;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -119,6 +121,9 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .isOtherSupportExists(checkAdditionalSupport(caseData, OTHER_SUPPORT))
                 .name(caseData.getGeneralAppStatementOfTruth() != null ? caseData
                     .getGeneralAppStatementOfTruth().getName() : null)
+                .role(caseData.getGeneralAppStatementOfTruth() != null && caseData
+                    .getGeneralAppStatementOfTruth().getRole() != null ? caseData
+                    .getGeneralAppStatementOfTruth().getRole() : null)
                 .date(LocalDate.now());
 
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() >= ONE_V_ONE) {
@@ -155,7 +160,12 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .isResp1LanguageInterpreterExists(checkResp1AdditionalSupport(caseData, LANGUAGE_INTERPRETER))
                 .isResp1OtherSupportExists(checkResp1AdditionalSupport(caseData, OTHER_SUPPORT))
                 .resp1Other(gaResp1HearingDetails.getSupportRequirementOther())
-                .isLipCase(gaForLipService.isGaForLip(caseData) ? YesOrNo.YES : YesOrNo.NO);
+                .isLipCase(gaForLipService.isGaForLip(caseData) ? YesOrNo.YES : YesOrNo.NO)
+                .responseSotName(caseData.getGeneralAppResponseStatementOfTruth() != null ? caseData
+                    .getGeneralAppResponseStatementOfTruth().getName() : null)
+                .responseSotRole(caseData.getGeneralAppResponseStatementOfTruth() != null && caseData
+                    .getGeneralAppResponseStatementOfTruth().getRole() != null ? caseData
+                    .getGeneralAppResponseStatementOfTruth().getRole() : null);
         }
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() > ONE_V_ONE) {
             GAHearingDetails gaResp2HearingDetails = caseData.getRespondentsResponses().get(1)
@@ -348,21 +358,37 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
     }
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
-        GADraftForm templateData = getTemplateData(caseData);
+        try {
+            GADraftForm templateData = getTemplateData(caseData);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String jsonString = objectMapper.writeValueAsString(templateData);
+            log.info("Template Data in JSON: {}", jsonString);
+            DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 
-        DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
+            DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
+                templateData,
+                docmosisTemplate
+            );
+            log.info("Generate general application draft for caseId: {}", caseData.getCcdCaseReference());
 
-        DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
-            templateData,
-            docmosisTemplate
-        );
-        log.info("Generate general application draft for caseId: {}", caseData.getCcdCaseReference());
-
-        return documentManagementService.uploadDocument(
-            authorisation,
-            new PDF(getFileName(docmosisTemplate), docmosisDocument.getBytes(),
-                    DocumentType.GENERAL_APPLICATION_DRAFT)
-        );
+            return documentManagementService.uploadDocument(
+                authorisation,
+                new PDF(getFileName(docmosisTemplate), docmosisDocument.getBytes(),
+                        DocumentType.GENERAL_APPLICATION_DRAFT
+                )
+            );
+        } catch (JsonProcessingException e) {
+            // Catch the specific JsonProcessingException for object serialization issues
+            log.error("Error serializing template data for caseId: {}", caseData.getCcdCaseReference(), e);
+            throw new RuntimeException(
+                "Error serializing template data",
+                e
+            ); // Optionally rethrow or handle accordingly
+        } catch (Exception e) {
+            // Catch all other exceptions
+            log.error("Error generating general application draft for caseId: {}", caseData.getCcdCaseReference(), e);
+            throw new RuntimeException("Error generating general application draft", e); // Rethrow or handle as needed
+        }
     }
 
     private String getFileName(DocmosisTemplates docmosisTemplate) {
