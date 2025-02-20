@@ -1,12 +1,15 @@
 package uk.gov.hmcts.reform.civil.utils;
 
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 
 import java.util.List;
+
+import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isNotificationCriteriaSatisfied;
 
 public class RespondentsResponsesUtil {
 
@@ -54,5 +57,15 @@ public class RespondentsResponsesUtil {
 
         return false;
 
+    }
+
+    public boolean isVaryJudgementTakenOffline(CaseData caseData) {
+        if(caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppType().getTypes().contains(
+            GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT) && isNotificationCriteriaSatisfied(caseData) && isRespondentsResponseSatisfied(
+            caseData,
+            caseData.toBuilder().build())) {
+            return true;
+        }
+        return false;
     }
 }
