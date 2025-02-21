@@ -66,11 +66,8 @@ import static uk.gov.hmcts.reform.civil.enums.GARespondentDebtorOfferOptionsGAsp
 import static uk.gov.hmcts.reform.civil.enums.GARespondentDebtorOfferOptionsGAspec.DECLINE;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
-import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_APPLICANT;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
-import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isNotificationCriteriaSatisfied;
-import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
 
 @Slf4j
 @Service
@@ -184,10 +181,14 @@ public class RespondToApplicationHandler extends CallbackHandler {
         // Generate Dashboard Notification for Lip Party
         if (gaForLipService.isGaForLip(caseData)) {
 
-            if(caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppType().getTypes().contains(
+            if (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppType().getTypes().contains(
                 GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT)) {
-                dashboardNotificationService.createOfflineResponseDashboardNotification(caseData, "APPLICANT", authToken);
-                dashboardNotificationService.createOfflineResponseDashboardNotification(caseData, "RESPONDENT", authToken);
+                if (gaForLipService.isLipApp(caseData)) {
+                    dashboardNotificationService.createOfflineResponseDashboardNotification(caseData, "DEFENDANT", authToken);
+                } else if (gaForLipService.isLipResp(caseData)) {
+                    dashboardNotificationService.createOfflineResponseDashboardNotification(caseData, "CLAIMANT", authToken);
+                }
+
             } else {
                 dashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", authToken);
                 dashboardNotificationService.createResponseDashboardNotification(caseData, "RESPONDENT", authToken);

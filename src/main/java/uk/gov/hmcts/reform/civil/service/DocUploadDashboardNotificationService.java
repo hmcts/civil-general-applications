@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_OTHER_PARTY_UPLOADED_DOC_APPLICANT;
@@ -76,12 +77,12 @@ public class DocUploadDashboardNotificationService {
 
     public void createOfflineResponseDashboardNotification(CaseData caseData, String role, String authToken) {
 
-        String scenario = getResponseOfflineDashboardScenario(role, caseData);
+        String scenario = getResponseOfflineDashboardScenario(role);
         ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
             caseData)).build();
         if (scenario != null) {
             dashboardApiClient.recordScenario(
-                caseData.getCcdCaseReference().toString(),
+                caseData.getParentCaseReference(),
                 scenario,
                 authToken,
                 scenarioParams
@@ -89,11 +90,11 @@ public class DocUploadDashboardNotificationService {
         }
     }
 
-    private String getResponseOfflineDashboardScenario(String role, CaseData caseData) {
-        if (role.equalsIgnoreCase("APPLICANT") && gaForLipService.isLipApp(caseData)) {
-            return SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_APPLICANT.getScenario();
-        } else if (role.equalsIgnoreCase("RESPONDENT") && gaForLipService.isLipResp(caseData)) {
+    private String getResponseOfflineDashboardScenario(String role) {
+        if (role.equalsIgnoreCase("DEFENDANT")) {
             return SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_RESPONDENT.getScenario();
+        } else if (role.equalsIgnoreCase("CLAIMANT")) {
+            return SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_APPLICANT.getScenario();
         }
         return null;
     }
@@ -115,6 +116,6 @@ public class DocUploadDashboardNotificationService {
 
     private boolean isWithNoticeOrConsent(CaseData caseData) {
         return JudicialDecisionNotificationUtil.isWithNotice(caseData)
-            || caseData.getGeneralAppConsentOrder() == YesOrNo.YES;
+            || caseData.getGeneralAppConsentOrder() == YES;
     }
 }

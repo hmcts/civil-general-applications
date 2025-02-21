@@ -110,9 +110,9 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
             GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID)) {
             newState = APPLICATION_DISMISSED;
         } else if (data.getParentClaimantIsApplicant().equals(YesOrNo.NO) && data.getGeneralAppType().getTypes().contains(
-            GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT) && isNotificationCriteriaSatisfied(data) && isRespondentsResponseSatisfied(
+            GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT) && isRespondentsResponseSatisfied(
             data,
-            data.toBuilder().build())){
+            data.toBuilder().build())) {
             newState = PROCEEDS_IN_HERITAGE;
         } else {
             newState = (isNotificationCriteriaSatisfied(data) && !isRespondentsResponseSatisfied(
