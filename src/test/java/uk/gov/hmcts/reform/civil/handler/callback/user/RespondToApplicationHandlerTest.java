@@ -71,6 +71,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -194,8 +195,9 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         CallbackParams params = callbackParamsOf(getVaryCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION),
                                                  CallbackType.SUBMITTED);
         var response = (SubmittedCallbackResponse) handler.handle(params);
-        verify(dashboardNotificationService).createOfflineResponseDashboardNotification(any(), any(), anyString());
-        verify(dashboardNotificationService).createOfflineResponseDashboardNotification(any(), any(), anyString());
+
+        verify(dashboardNotificationService, times(2))
+            .createOfflineResponseDashboardNotification(any(), any(), anyString());
         assertThat(response).isNotNull();
     }
 
