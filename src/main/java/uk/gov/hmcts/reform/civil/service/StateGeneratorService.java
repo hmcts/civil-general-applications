@@ -97,13 +97,18 @@ public class StateGeneratorService {
                 return APPLICATION_ADD_PAYMENT;
             } else if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() != null
                 && nonNull(caseData.getGeneralAppConsentOrder())
-                && isRespondentsResponseSatisfied(caseData, caseData.toBuilder().build())) {
+                && (isUrgentWithoutNotice(caseData)
+                || isRespondentsResponseSatisfied(caseData, caseData.toBuilder().build()))) {
                 return APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
             } else {
                 return AWAITING_RESPONDENT_RESPONSE;
             }
         }
         return AWAITING_ADDITIONAL_INFORMATION;
+    }
+
+    private boolean isUrgentWithoutNotice(CaseData caseData) {
+        return YesOrNo.NO.equals(caseData.getGeneralAppConsentOrder()) && caseData.isUrgent();
     }
 
 }

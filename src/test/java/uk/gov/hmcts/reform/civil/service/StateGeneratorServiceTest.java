@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
 import java.time.LocalDate;
@@ -286,6 +287,27 @@ public class StateGeneratorServiceTest {
         when(judicialDecisionHelper.containsTypesNeedNoAdditionalFee(any())).thenReturn(false);
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
         assertThat(caseState).isEqualTo(AWAITING_RESPONDENT_RESPONSE);
+    }
+
+    @Test
+    void shouldAwaitingJudicialDecision__WhenAdditionalPaymentReceived_RequestMoreInformation_UrgentWithoutNotice() {
+        CaseData caseData = CaseDataBuilder.builder()
+            .generalAppRespondentSolicitors(getRespondentSolicitors())
+            .judicialDecisionWithUncloakRequestForInformationApplication(SEND_APP_TO_OTHER_PARTY, NO, YesOrNo.NO)
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .additionalPaymentDetails(PaymentDetails.builder()
+                                                                    .reference("123456")
+                                                                    .status(PaymentStatus.SUCCESS)
+                                                                    .build())
+                                      .build())
+            .generalAppRespondentSolicitors(getRespondentSolicitors())
+            .generalAppConsentOrder(NO)
+            .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
+            .build();
+
+        when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
+        CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
+        assertThat(caseState).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
     }
 
     @Test
