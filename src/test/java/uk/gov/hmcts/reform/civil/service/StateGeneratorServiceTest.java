@@ -301,7 +301,7 @@ public class StateGeneratorServiceTest {
                                                                     .build())
                                       .build())
             .generalAppRespondentSolicitors(getRespondentSolicitors())
-            .generalAppConsentOrder(NO)
+            .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
             .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
             .build();
 

@@ -95,10 +95,8 @@ public class StateGeneratorService {
             if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null
                 && !judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
                 return APPLICATION_ADD_PAYMENT;
-            } else if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() != null
-                && nonNull(caseData.getGeneralAppConsentOrder())
-                && (isUrgentWithoutNotice(caseData)
-                || isRespondentsResponseSatisfied(caseData, caseData.toBuilder().build()))) {
+            } else if (hasPayment(caseData)
+                && (isConsentOrderRespondentSatisfied(caseData) || isUrgentWithoutNotice(caseData))) {
                 return APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
             } else {
                 return AWAITING_RESPONDENT_RESPONSE;
@@ -107,8 +105,20 @@ public class StateGeneratorService {
         return AWAITING_ADDITIONAL_INFORMATION;
     }
 
-    private boolean isUrgentWithoutNotice(CaseData caseData) {
-        return YesOrNo.NO.equals(caseData.getGeneralAppConsentOrder()) && caseData.isUrgent();
+    private static boolean hasPayment(CaseData caseData) {
+        return caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() != null;
     }
 
+    private static boolean isConsentOrderRespondentSatisfied(CaseData caseData) {
+        return nonNull(caseData.getGeneralAppConsentOrder()) && isRespondentsResponseSatisfied(
+            caseData,
+            caseData.toBuilder().build()
+        );
+    }
+
+    private boolean isUrgentWithoutNotice(CaseData caseData) {
+        return caseData.getGeneralAppInformOtherParty() != null
+            && YesOrNo.NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())
+            && caseData.isUrgent();
+    }
 }
