@@ -15,6 +15,8 @@ import java.util.List;
 
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_APPLICANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_OTHER_PARTY_UPLOADED_DOC_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_OTHER_PARTY_UPLOADED_DOC_RESPONDENT;
 
@@ -68,6 +70,30 @@ public class DocUploadDashboardNotificationService {
             return SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_APPLICANT.getScenario();
         } else if (role.equalsIgnoreCase("RESPONDENT") && gaForLipService.isLipResp(caseData)) {
             return SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_RESPONDENT.getScenario();
+        }
+        return null;
+    }
+
+    public void createOfflineResponseDashboardNotification(CaseData caseData, String role, String authToken) {
+
+        String scenario = getResponseOfflineDashboardScenario(role);
+        ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
+            caseData)).build();
+        if (scenario != null) {
+            dashboardApiClient.recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                scenario,
+                authToken,
+                scenarioParams
+            );
+        }
+    }
+
+    private String getResponseOfflineDashboardScenario(String role) {
+        if (role.equalsIgnoreCase("DEFENDANT")) {
+            return SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_RESPONDENT.getScenario();
+        } else if (role.equalsIgnoreCase("CLAIMANT")) {
+            return SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_APPLICANT.getScenario();
         }
         return null;
     }
