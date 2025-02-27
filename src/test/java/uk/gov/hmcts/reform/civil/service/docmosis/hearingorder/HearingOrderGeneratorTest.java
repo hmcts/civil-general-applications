@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderCourtOwnInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAOrderWithoutNoticeGAspec;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.JudicialTimeEstimateHelper;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.SecuredDocumentManagementService;
@@ -67,6 +68,8 @@ class HearingOrderGeneratorTest {
     private HearingOrderGenerator hearingOrderGenerator;
     @MockBean
     private DocmosisService docmosisService;
+    @MockBean
+    private JudicialTimeEstimateHelper timeEstimateHelper;
 
     @Test
     void shouldGenerateHearingOrderDocument() {
@@ -135,6 +138,7 @@ class HearingOrderGeneratorTest {
         void whenJudgeMakeDecision_ShouldGetHearingOrderData() {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
+            when(timeEstimateHelper.getEstimatedHearingLength(any())).thenReturn("15 minutes");
             CaseData caseData = CaseDataBuilder.builder()
                 .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
                 .isMultiParty(YES)
@@ -190,6 +194,7 @@ class HearingOrderGeneratorTest {
         void whenJudgeMakeDecision_ShouldGetHearingOrderData() {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
+            when(timeEstimateHelper.getEstimatedHearingLength(any())).thenReturn("15 minutes");
             CaseData caseData = CaseDataBuilder.builder()
                 .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
                 .isMultiParty(YES)
@@ -232,6 +237,7 @@ class HearingOrderGeneratorTest {
         void whenJudgeMakeDecision_ShouldGetHearingOrderData_Option2() {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Manchester").build());
+            when(timeEstimateHelper.getEstimatedHearingLength(any())).thenReturn("15 minutes");
             CaseData caseData = CaseDataBuilder.builder()
                 .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
                 .isMultiParty(NO)
@@ -286,6 +292,7 @@ class HearingOrderGeneratorTest {
         void whenJudgeMakeDecision_ShouldGetHearingOrderData_Option3() {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("London").build());
+            when(timeEstimateHelper.getEstimatedHearingLength(any())).thenReturn("15 minutes");
             CaseData caseData = CaseDataBuilder.builder()
                 .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
                 .isMultiParty(NO)
@@ -331,6 +338,7 @@ class HearingOrderGeneratorTest {
         void whenJudgeMakeDecision_ShouldGetHearingOrderData_Option3_1v1() {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").externalShortName("Reading").build());
+            when(timeEstimateHelper.getEstimatedHearingLength(any())).thenReturn("15 minutes");
             CaseData caseData = CaseDataBuilder.builder()
                 .hearingOrderApplication(YesOrNo.NO, YesOrNo.YES).build().toBuilder()
                 .isMultiParty(YES)

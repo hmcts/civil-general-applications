@@ -110,6 +110,14 @@ public class JudicialNotificationService implements NotificationData {
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
         customProps.put(
+            GENAPP_REFERENCE,
+            String.valueOf(Objects.requireNonNull(caseData.getCcdCaseReference()))
+        );
+        customProps.put(
+            PARTY_REFERENCE,
+            Objects.requireNonNull(getSolicitorReferences(caseData.getEmailPartyReference()))
+        );
+        customProps.put(
             CASE_REFERENCE,
             Objects.requireNonNull(caseData.getGeneralAppParentCaseLink().getCaseReference())
         );
@@ -117,18 +125,6 @@ public class JudicialNotificationService implements NotificationData {
             GA_APPLICATION_TYPE,
             Objects.requireNonNull(requiredGAType(caseData))
         );
-        if (!gaForLipService.isLipApp(caseData)) {
-            customProps.put(
-                GENAPP_REFERENCE,
-                String.valueOf(Objects.requireNonNull(caseData.getCcdCaseReference()))
-            );
-        }
-        if (!gaForLipService.isLipApp(caseData)) {
-            customProps.put(
-                PARTY_REFERENCE,
-                Objects.requireNonNull(getSolicitorReferences(caseData.getEmailPartyReference()))
-            );
-        }
 
         if (gaForLipService.isGaForLip(caseData)) {
             String caseTitle = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
@@ -438,6 +434,7 @@ public class JudicialNotificationService implements NotificationData {
             * Respondent should receive notification only if it's with notice application
             *  */
             if (isWithNotice(caseData) && areRespondentSolicitorsPresent(caseData)) {
+
                 sendEmailToRespondent(
                     caseData,
                     gaForLipService.isLipResp(caseData)
