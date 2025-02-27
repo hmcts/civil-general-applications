@@ -141,7 +141,7 @@ class ApplicationProceedsInHeritageEventCallbackHandlerTest  extends BaseCallbac
         }
 
         @Test
-        void ShouldThrowNotificationOnlyOnceToLipApplicant() {
+        void shouldThrowNotificationOnlyOnceToLipApplicant() {
             when(gaForLipService.isGaForLip(any())).thenReturn(true);
             when(gaForLipService.isLipApp(any())).thenReturn(true);
             when(gaForLipService.isLipResp(any())).thenReturn(false);
