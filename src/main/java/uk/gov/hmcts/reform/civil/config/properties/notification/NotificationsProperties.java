@@ -75,6 +75,12 @@ public class NotificationsProperties {
     private String judgeRequestForInformationRespondentEmailTemplate;
 
     @NotEmpty
+    private String judgeFreeFormOrderApplicantEmailTemplate;
+
+    @NotEmpty
+    private String judgeFreeFormOrderRespondentEmailTemplate;
+
+    @NotEmpty
     private String judgeUncloakApplicationEmailTemplate;
 
     @NotEmpty
