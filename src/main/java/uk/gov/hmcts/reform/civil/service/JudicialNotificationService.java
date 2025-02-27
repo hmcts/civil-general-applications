@@ -22,6 +22,7 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
@@ -72,6 +73,9 @@ public class JudicialNotificationService implements NotificationData {
                 break;
             case LIST_FOR_HEARING:
                 applicationListForHearing(caseData, solicitorType);
+                break;
+            case JUDGE_FREE_FORM_ORDER:
+                applicationFreeFormOrder(caseData, solicitorType);
                 break;
             case JUDGE_APPROVED_THE_ORDER:
                 applicationApprovedNotification(caseData, solicitorType);
@@ -448,6 +452,38 @@ public class JudicialNotificationService implements NotificationData {
                     : notificationProperties.getJudgeListsForHearingApplicantEmailTemplate()
             );
         }
+    }
+
+    private void applicationFreeFormOrder(CaseData caseData, String solicitorType) {
+
+        if (solicitorType.equals(RESPONDENT)) {
+            if (isWithNoticeOrConsent(caseData) && areRespondentSolicitorsPresent(caseData)) {
+                sendEmailToRespondent(
+                    caseData,
+                    gaForLipService.isLipResp(caseData)
+                        ? getLiPRespondentTemplate(caseData)
+                        : notificationProperties.getJudgeFreeFormOrderRespondentEmailTemplate()
+                );
+            }
+        }
+
+        if (solicitorType.equals(APPLICANT)) {
+            sendNotificationForJudicialDecision(
+                caseData,
+                caseData.getGeneralAppApplnSolicitor().getEmail(),
+                gaForLipService.isLipApp(caseData)
+                    ? getLiPApplicantTemplate(caseData)
+                    : notificationProperties.getJudgeFreeFormOrderApplicantEmailTemplate()
+            );
+        }
+    }
+
+    private boolean isWithNoticeOrConsent(CaseData caseData) {
+        return (caseData.getGeneralAppInformOtherParty() != null
+            && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
+            || (caseData.getGeneralAppRespondentAgreement() != null
+            && YES.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
+            || caseData.getApplicationIsUncloakedOnce() == YES);
     }
 
     private void applicationDismissedByJudge(CaseData caseData, String solicitorType) {
