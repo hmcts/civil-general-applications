@@ -32,6 +32,7 @@ import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.NON_CRITERIO
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.REQUEST_FOR_INFORMATION;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.REQUEST_FOR_INFORMATION_CLOAK;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.SEQUENTIAL_WRITTEN_REP;
+import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_FREE_FORM_ORDER;
 
 public class JudicialDecisionNotificationUtil {
 
@@ -51,6 +52,9 @@ public class JudicialDecisionNotificationUtil {
         }
         if (isListForHearing(caseData)) {
             return LIST_FOR_HEARING;
+        }
+        if (isFreeFormOrder(caseData)) {
+            return JUDGE_FREE_FORM_ORDER;
         }
         if (isJudicialDismissalUncloak(caseData)) {
             return JUDGE_DISMISSED_APPLICATION;
@@ -185,6 +189,16 @@ public class JudicialDecisionNotificationUtil {
             && (decision != null)
             && caseData.getJudicialDecision().getDecision()
                 .equals(GAJudgeDecisionOption.LIST_FOR_A_HEARING);
+    }
+
+    private static boolean isFreeFormOrder(CaseData caseData) {
+        var decision = Optional.ofNullable(caseData.getJudicialDecision())
+            .map(GAJudicialDecision::getDecision).orElse(null);
+        return
+            isJudicialDecisionEvent(caseData)
+                && (decision != null)
+                && caseData.getJudicialDecision().getDecision()
+                .equals(GAJudgeDecisionOption.FREE_FORM_ORDER);
     }
 
     private static boolean isJudicialDismissal(CaseData caseData) {
