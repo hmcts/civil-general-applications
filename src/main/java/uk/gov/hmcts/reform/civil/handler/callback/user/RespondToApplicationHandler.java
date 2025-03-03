@@ -180,9 +180,19 @@ public class RespondToApplicationHandler extends CallbackHandler {
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         // Generate Dashboard Notification for Lip Party
         if (gaForLipService.isGaForLip(caseData)) {
-            dashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", authToken);
-            dashboardNotificationService.createResponseDashboardNotification(caseData, "RESPONDENT", authToken);
 
+            if (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppType().getTypes().contains(
+                GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT)) {
+                if (gaForLipService.isLipApp(caseData)) {
+                    dashboardNotificationService.createOfflineResponseDashboardNotification(caseData, "DEFENDANT", authToken);
+                }
+                if (gaForLipService.isLipResp(caseData)) {
+                    dashboardNotificationService.createOfflineResponseDashboardNotification(caseData, "CLAIMANT", authToken);
+                }
+            } else {
+                dashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", authToken);
+                dashboardNotificationService.createResponseDashboardNotification(caseData, "RESPONDENT", authToken);
+            }
         }
 
         return SubmittedCallbackResponse.builder()
