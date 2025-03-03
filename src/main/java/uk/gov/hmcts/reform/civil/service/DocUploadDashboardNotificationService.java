@@ -79,7 +79,8 @@ public class DocUploadDashboardNotificationService {
 
     public void createOfflineResponseDashboardNotification(CaseData caseData, String role, String authToken) {
 
-        String scenario = getResponseOfflineDashboardScenario(role);
+        String scenario = getResponseOfflineDashboardScenario(role, caseData, authToken);
+
         ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
             caseData)).build();
         if (scenario != null) {
@@ -92,10 +93,14 @@ public class DocUploadDashboardNotificationService {
         }
     }
 
-    private String getResponseOfflineDashboardScenario(String role) {
+    private String getResponseOfflineDashboardScenario(String role, CaseData caseData, String authToken) {
         if (role.equalsIgnoreCase("DEFENDANT")) {
+            dashboardApiClient.deleteNotificationsForCaseIdentifierAndRole(caseData.getCcdCaseReference().toString(),
+                                                                           "RESPONDENT", authToken);
             return SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_RESPONDENT.getScenario();
         } else if (role.equalsIgnoreCase("CLAIMANT")) {
+            dashboardApiClient.deleteNotificationsForCaseIdentifierAndRole(caseData.getCcdCaseReference().toString(),
+                                                                           "APPLICANT", authToken);
             return SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_APPLICANT.getScenario();
         }
         return null;
