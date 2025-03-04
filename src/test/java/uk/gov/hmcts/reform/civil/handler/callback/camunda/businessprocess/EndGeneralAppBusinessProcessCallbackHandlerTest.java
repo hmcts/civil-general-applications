@@ -90,6 +90,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.RELIEF_FROM_SANCTIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT;
 import static uk.gov.hmcts.reform.civil.model.common.DynamicList.fromList;
 import static uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder.CUSTOMER_REFERENCE;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
@@ -550,6 +551,148 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
     class AboutToSubmitCallback {
         private final ArgumentCaptor<String> parentCaseId = ArgumentCaptor.forClass(String.class);
         private final ArgumentCaptor<CaseDataContent> caseDataContent = ArgumentCaptor.forClass(CaseDataContent.class);
+
+        @Test
+        void shouldChangeStateToRespondentResponseWhenVaryJudgmentWhenParentIsNotClaimantAndNoResponse() {
+            List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+
+            GARespondentResponse respondent1Response = GARespondentResponse.builder()
+                .generalAppRespondent1Representative(YES)
+                .gaRespondentDetails("id")
+                .build();
+            respondentsResponses.add(element(respondent1Response));
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(caseDetailsConverter.toCaseData(getCallbackParamsOfVary(YES, YES).getRequest().getCaseDetails()))
+                .thenReturn(getSampleGeneralApplicationCaseDataForVaryJudgement(YES, YES, respondentsResponses));
+            when(caseDetailsConverter.toCaseData(getStartEventResponse(YES, NO).getCaseDetails()))
+                .thenReturn(getParentCaseDataBeforeUpdate(YES, NO));
+            when(featureToggleService.isCoSCEnabled()).thenReturn(true);
+
+            handler.handle(getCallbackParamsOfVary(YES, YES));
+
+            verify(coreCaseDataService, times(1))
+                .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
+
+            verify(coreCaseDataService, times(1)).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+            HashMap<?, ?> updatedCaseData = (HashMap<?, ?>) caseDataContent.getValue().getData();
+
+            List<?> generalApplications = objectMapper.convertValue(updatedCaseData.get("generalApplications"),
+                                                                    new TypeReference<>(){});
+            List<?> gaDetailsMasterCollection = objectMapper.convertValue(updatedCaseData
+                                                                              .get("gaDetailsMasterCollection"),
+                                                                          new TypeReference<>(){});
+            List<?> generalApplicationDetails = objectMapper.convertValue(
+                updatedCaseData.get("claimantGaAppDetails"), new TypeReference<>(){});
+            List<?> gaDetailsRespondentSol = objectMapper.convertValue(
+                updatedCaseData.get("respondentSolGaAppDetails"), new TypeReference<>(){});
+            List<?> gaDetailsRespondentSolTwo = objectMapper.convertValue(
+                updatedCaseData.get("respondentSolTwoGaAppDetails"), new TypeReference<>(){});
+
+            assertThat(generalApplications.size()).isEqualTo(1);
+            assertThat(generalApplicationDetails.size()).isEqualTo(1);
+            assertThat(gaDetailsMasterCollection.size()).isEqualTo(1);
+            assertThat(gaDetailsRespondentSol.size()).isEqualTo(1);
+            assertThat(gaDetailsRespondentSolTwo.size()).isEqualTo(1);
+
+            GeneralApplicationsDetails gaDetailsMasterColl = objectMapper.convertValue(
+                ((LinkedHashMap<?, ?>) gaDetailsMasterCollection.get(0)).get("value"),
+                new TypeReference<>() {});
+            assertThat(gaDetailsMasterColl.getCaseState())
+                .isEqualTo("Awaiting Respondent Response");;
+
+        }
+
+        @Test
+        void shouldChangeStateToProceedsInHeritageWhenVaryJudgmentWhenParentIsNotClaimant() {
+
+            List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+
+            GARespondentResponse respondent1Response = GARespondentResponse.builder()
+                .generalAppRespondent1Representative(YES)
+                .gaRespondentDetails("id")
+                .build();
+            respondentsResponses.add(element(respondent1Response));
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(NO, YES));
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(caseDetailsConverter.toCaseData(getCallbackParamsOfVary(NO, YES).getRequest().getCaseDetails()))
+                .thenReturn(getSampleGeneralApplicationCaseDataForVaryJudgement(NO, YES, respondentsResponses).toBuilder().respondentsResponses(respondentsResponses).build());
+            when(caseDetailsConverter.toCaseData(getStartEventResponse(NO, YES).getCaseDetails()))
+                .thenReturn(getParentCaseDataBeforeUpdate(NO, YES));
+            when(featureToggleService.isCoSCEnabled()).thenReturn(true);
+
+            handler.handle(getCallbackParamsOfVary(NO, YES));
+
+            verify(coreCaseDataService, times(1))
+                .startUpdate("1645779506193000", UPDATE_CASE_WITH_GA_STATE);
+
+            verify(coreCaseDataService, times(1)).submitUpdate(parentCaseId.capture(), caseDataContent.capture());
+            HashMap<?, ?> updatedCaseData = (HashMap<?, ?>) caseDataContent.getValue().getData();
+
+            List<?> generalApplications = objectMapper.convertValue(updatedCaseData.get("generalApplications"),
+                                                                    new TypeReference<>(){});
+            List<?> gaDetailsMasterCollection = objectMapper.convertValue(updatedCaseData
+                                                                              .get("gaDetailsMasterCollection"),
+                                                                          new TypeReference<>(){});
+            List<?> generalApplicationDetails = objectMapper.convertValue(
+                updatedCaseData.get("claimantGaAppDetails"), new TypeReference<>(){});
+            List<?> gaDetailsRespondentSol = objectMapper.convertValue(
+                updatedCaseData.get("respondentSolGaAppDetails"), new TypeReference<>(){});
+            List<?> gaDetailsRespondentSolTwo = objectMapper.convertValue(
+                updatedCaseData.get("respondentSolTwoGaAppDetails"), new TypeReference<>(){});
+
+            assertThat(generalApplications.size()).isEqualTo(1);
+            assertThat(generalApplicationDetails.size()).isEqualTo(1);
+            assertThat(gaDetailsMasterCollection.size()).isEqualTo(1);
+            assertThat(gaDetailsRespondentSol.size()).isEqualTo(1);
+            assertThat(gaDetailsRespondentSolTwo.size()).isEqualTo(1);
+
+            GeneralApplicationsDetails gaDetailsMasterColl = objectMapper.convertValue(
+                ((LinkedHashMap<?, ?>) gaDetailsMasterCollection.get(0)).get("value"),
+                new TypeReference<>() {});
+            assertThat(gaDetailsMasterColl.getCaseState())
+                .isEqualTo("Proceeds In Heritage");;
+
+        }
+
+        @Test
+        void shouldReturn_Awaiting_respondent_response_3Def_1Response_Vary() {
+
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+            GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id2")
+                .email(DUMMY_EMAIL).organisationIdentifier("org2").build();
+            GASolicitorDetailsGAspec respondent3 = GASolicitorDetailsGAspec.builder().id("id3")
+                .email(DUMMY_EMAIL).organisationIdentifier("org3").build();
+            respondentSols.add(element(respondent1));
+            respondentSols.add(element(respondent2));
+            respondentSols.add(element(respondent3));
+
+            List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+
+            GARespondentResponse respondent1Response = GARespondentResponse.builder()
+                .generalAppRespondent1Representative(YES)
+                .gaRespondentDetails("id")
+                .build();
+            GARespondentResponse respondent2Response = GARespondentResponse.builder()
+                .generalAppRespondent1Representative(YES)
+                .gaRespondentDetails("id3")
+                .build();
+            respondentsResponses.add(element(respondent1Response));
+            respondentsResponses.add(element(respondent2Response));
+            when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(NO, NO));
+            when(coreCaseDataService.caseDataContentFromStartEventResponse(any(), anyMap())).thenCallRealMethod();
+            when(caseDetailsConverter.toCaseData(getCallbackParamsMulti(NO, NO, respondentsResponses, respondentSols).getRequest().getCaseDetails()))
+                .thenReturn(getCaseMulti(respondentSols, respondentsResponses));
+            when(caseDetailsConverter.toCaseData(getStartEventResponse(NO, NO).getCaseDetails()))
+                .thenReturn(getParentCaseDataBeforeUpdate(NO, NO));
+
+            AboutToStartOrSubmitCallbackResponse response
+                = (AboutToStartOrSubmitCallbackResponse) handler.handle(getCallbackParamsMulti(NO, NO, respondentsResponses, respondentSols));
+            assertThat(response.getState()).isEqualTo(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION.name());
+        }
 
         @Test
         void shouldChangeStateToApplicationDismissedWhenCOSC() {
@@ -1180,18 +1323,17 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                     .generalAppRespondentSolicitors(wrapElements(GASolicitorDetailsGAspec.builder()
                             .email("abc@gmail.com").build()))
                     .isMultiParty(NO)
-                    .parentClaimantIsApplicant(YES)
+                    .parentClaimantIsApplicant(isConsented)
                     .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                             .caseReference(PARENT_CCD_REF.toString()).build())
                     .build();
         }
 
-        private GeneralApplication getGeneralApplicationMulti(YesOrNo isConsented, YesOrNo isTobeNotified,
-                                                              List<Element<GARespondentResponse>> respondentResponses,
-                                                              List<Element<GASolicitorDetailsGAspec>> respondentDetails) {
+        private GeneralApplication getGeneralApplicationVary(YesOrNo isConsented, YesOrNo isTobeNotified, List<Element<GARespondentResponse>> respondentsResponses) {
+
             return GeneralApplication.builder()
                 .caseLink(CaseLink.builder().caseReference("1646003133062762").build())
-                .generalAppType(GAApplicationType.builder().types(List.of(RELIEF_FROM_SANCTIONS)).build())
+                .generalAppType(GAApplicationType.builder().types(List.of(VARY_PAYMENT_TERMS_OF_JUDGMENT)).build())
                 .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(isConsented).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isTobeNotified).build())
                 .generalAppPBADetails(
@@ -1213,10 +1355,47 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
                 .generalAppStatementOfTruth(GAStatementOfTruth.builder().build())
                 .generalAppHearingDetails(GAHearingDetails.builder().build())
-                .isMultiParty(YES)
+                .generalAppRespondentSolicitors(wrapElements(GASolicitorDetailsGAspec.builder()
+                                                                 .email("abc@gmail.com").build()))
+                .respondentsResponses(respondentsResponses)
+                .isMultiParty(NO)
+                .parentClaimantIsApplicant(isConsented)
+                .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
+                                              .caseReference(PARENT_CCD_REF.toString()).build())
+                .build();
+        }
+
+        private GeneralApplication getGeneralApplicationMulti(YesOrNo isConsented, YesOrNo isTobeNotified,
+                                                              List<Element<GARespondentResponse>> respondentResponses,
+                                                              List<Element<GASolicitorDetailsGAspec>> respondentDetails) {
+            return GeneralApplication.builder()
+                .caseLink(CaseLink.builder().caseReference("1646003133062762").build())
+                .generalAppType(GAApplicationType.builder().types(List.of(VARY_PAYMENT_TERMS_OF_JUDGMENT)).build())
+                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(isConsented).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(isTobeNotified).build())
+                .generalAppPBADetails(
+                    GAPbaDetails.builder()
+                        .paymentDetails(PaymentDetails.builder()
+                                            .status(PaymentStatus.SUCCESS)
+                                            .reference("RC-1658-4258-2679-9795")
+                                            .customerReference(CUSTOMER_REFERENCE)
+                                            .build())
+                        .fee(
+                            Fee.builder()
+                                .code("FE203")
+                                .calculatedAmountInPence(BigDecimal.valueOf(27500))
+                                .version("1")
+                                .build())
+                        .serviceReqReference(CUSTOMER_REFERENCE).build())
+                .generalAppDetailsOfOrder(STRING_CONSTANT)
+                .generalAppReasonsOfOrder(STRING_CONSTANT)
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
+                .generalAppStatementOfTruth(GAStatementOfTruth.builder().build())
+                .generalAppHearingDetails(GAHearingDetails.builder().build())
+                .isMultiParty(isConsented)
                 .respondentsResponses(respondentResponses)
                 .generalAppRespondentSolicitors(respondentDetails)
-                .parentClaimantIsApplicant(YES)
+                .parentClaimantIsApplicant(isConsented)
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                               .caseReference(PARENT_CCD_REF.toString()).build())
                 .build();
@@ -1262,6 +1441,16 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
             return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
                     getGeneralApplication(isConsented, isTobeNotified))
                 .toBuilder().ccdCaseReference(CHILD_CCD_REF).generalAppType(GAApplicationType.builder().types(types).build()).build();
+        }
+
+        private CaseData getSampleGeneralApplicationCaseDataForVaryJudgement(YesOrNo isConsented, YesOrNo isTobeNotified,
+                                                                             List<Element<GARespondentResponse>> respondentsResponses) {
+            List<GeneralApplicationTypes> types = Arrays.asList(VARY_PAYMENT_TERMS_OF_JUDGMENT);
+
+            return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
+                    getGeneralApplicationVary(isConsented, isTobeNotified, respondentsResponses))
+                .toBuilder().ccdCaseReference(CHILD_CCD_REF)
+                .generalAppType(GAApplicationType.builder().types(types).build()).build();
         }
 
         private CaseData getSampleGeneralApplicationCaseDataMulti(YesOrNo isConsented, YesOrNo isTobeNotified,
@@ -1317,6 +1506,24 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                              .build())
                 .caseData(getSampleGeneralApplicationCaseDataMulti(isConsented, isTobeNotified,
                                                                    respondentResponses, respondentDetails))
+                .version(null)
+                .params(null)
+                .build();
+        }
+
+        private CallbackParams getCallbackParamsOfVary(YesOrNo isConsented, YesOrNo isTobeNotified) {
+            List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+            return CallbackParams.builder()
+                .type(ABOUT_TO_SUBMIT)
+                .pageId(null)
+                .request(CallbackRequest.builder()
+                             .caseDetails(CaseDetails.builder()
+                                              .data(objectMapper.convertValue(
+                                                  getSampleGeneralApplicationCaseDataForVaryJudgement(isConsented, isTobeNotified, respondentsResponses),
+                                                  new TypeReference<Map<String, Object>>() {})).id(CASE_ID).build())
+                             .eventId("END_BUSINESS_PROCESS_GASPEC")
+                             .build())
+                .caseData(getSampleGeneralApplicationCaseDataForVaryJudgement(isConsented, isTobeNotified, respondentsResponses))
                 .version(null)
                 .params(null)
                 .build();
@@ -1425,6 +1632,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                                         .build())
                 .respondentsResponses(respondentsResponses)
                 .isMultiParty(NO)
+                .parentClaimantIsApplicant(YES)
                 .generalAppRespondent1Representative(
                     GARespondentRepresentative.builder()
                         .generalAppRespondent1Representative(YES)
@@ -1454,6 +1662,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                                                                                 .build()).build())
                 .generalAppRespondentSolicitors(respondentSols)
                 .isMultiParty(YES)
+                .parentClaimantIsApplicant(NO)
                 .hearingDetailsResp(GAHearingDetails.builder()
                                         .hearingPreferredLocation(
                                             dynamicListTest)

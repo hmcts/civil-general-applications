@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 import uk.gov.hmcts.reform.civil.stateflow.model.State;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_ORDER;
@@ -65,7 +66,7 @@ public class StateFlowEngineTest {
 
     @Test
     void shouldReturnApplicationSubmittedWhenPBAPaymentIsSuccess() {
-        CaseData caseData = CaseDataBuilder.builder().withNoticeCaseData();
+        CaseData caseData = CaseDataBuilder.builder().withNoticeCaseData().toBuilder().parentClaimantIsApplicant(NO).build();
         StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
 
         assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
@@ -88,6 +89,7 @@ public class StateFlowEngineTest {
                                         .build()).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(YES).build())
+            .parentClaimantIsApplicant(NO)
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
                                                .hasAgreed(YES).build()).build();
         StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
@@ -114,6 +116,7 @@ public class StateFlowEngineTest {
                                         .build()).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(YES).build())
+            .parentClaimantIsApplicant(YES)
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
                                                .hasAgreed(YES).build()).build();
         StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
@@ -140,6 +143,7 @@ public class StateFlowEngineTest {
                                         .build()).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(YES).build())
+            .parentClaimantIsApplicant(YES)
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
                                                .hasAgreed(YES).build()).build();
         StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
@@ -166,6 +170,7 @@ public class StateFlowEngineTest {
                                         .build()).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(YES).build())
+            .parentClaimantIsApplicant(NO)
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
                                                .hasAgreed(YES).build()).build();
         StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
@@ -192,6 +197,7 @@ public class StateFlowEngineTest {
                                         .build()).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(YES).build())
+            .parentClaimantIsApplicant(YES)
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
                                                .hasAgreed(YES).build()).build();
         StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
@@ -214,6 +220,7 @@ public class StateFlowEngineTest {
             .judicialListForHearing(GAJudgesHearingListGAspec.builder().build())
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(YES).build())
+            .parentClaimantIsApplicant(YES)
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
                                                .hasAgreed(YES).build()).build();
         StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
@@ -235,6 +242,7 @@ public class StateFlowEngineTest {
             .judicialDecision(GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(YES).build())
+            .parentClaimantIsApplicant(YES)
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
                                                .hasAgreed(YES).build()).build();
         StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
@@ -259,6 +267,7 @@ public class StateFlowEngineTest {
                     GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(YES).build())
+            .parentClaimantIsApplicant(YES)
             .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
                                                .hasAgreed(YES).build()).build();
         StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
