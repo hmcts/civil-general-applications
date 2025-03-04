@@ -80,7 +80,6 @@ public class DocUploadDashboardNotificationService {
     public void createOfflineResponseDashboardNotification(CaseData caseData, String role, String authToken) {
 
         String scenario = getResponseOfflineDashboardScenario(role, caseData, authToken);
-
         ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
             caseData)).build();
         if (scenario != null) {

@@ -412,6 +412,7 @@ public class DocUploadDashboardNotificationServiceTest {
 
             verify(dashboardApiClient).recordScenario(
                 caseData.getCcdCaseReference().toString(),
+
                 SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_APPLICANT.getScenario(),
                 "BEARER_TOKEN",
                 ScenarioRequestParams.builder().params(scenarioParams).build()
