@@ -34,6 +34,7 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESE
 import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.PROCEEDS_IN_HERITAGE;
 import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.ASSISTED_ORDER;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isNotificationCriteriaSatisfied;
 import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
@@ -108,6 +109,11 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
         } else if (featureToggleService.isCoSCEnabled() && data.getGeneralAppType().getTypes().contains(
             GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID)) {
             newState = APPLICATION_DISMISSED;
+        } else if (data.getParentClaimantIsApplicant().equals(YesOrNo.NO) && data.getGeneralAppType().getTypes().contains(
+            GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT) && isRespondentsResponseSatisfied(
+            data,
+            data.toBuilder().build())) {
+            newState = PROCEEDS_IN_HERITAGE;
         } else {
             newState = (isNotificationCriteriaSatisfied(data) && !isRespondentsResponseSatisfied(
                 data,

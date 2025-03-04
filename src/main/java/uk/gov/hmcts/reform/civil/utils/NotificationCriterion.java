@@ -13,5 +13,6 @@ public enum NotificationCriterion {
     LIST_FOR_HEARING,
     CONCURRENT_WRITTEN_REP,
     SEQUENTIAL_WRITTEN_REP,
+    JUDGE_FREE_FORM_ORDER,
     NON_CRITERION
 }
