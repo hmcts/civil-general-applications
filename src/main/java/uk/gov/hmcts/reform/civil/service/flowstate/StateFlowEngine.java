@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.stateflow.model.State;
 
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isLipApplication;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isLipRespondent;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isVaryJudgementAppByResp;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeDecision;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeDirections;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeListingForHearing;
@@ -45,6 +46,7 @@ public class StateFlowEngine {
                 .set((c, flags) -> {
                     flags.put(FlowFlag.LIP_APPLICANT.name(), isLipApplication.test(c));
                     flags.put(FlowFlag.LIP_RESPONDENT.name(), isLipRespondent.test(c));
+                    flags.put(FlowFlag.VARY_JUDGE_GA_BY_RESP.name(), isVaryJudgementAppByResp.test(c));
                 })
             .state(APPLICATION_SUBMITTED)
                 .transitionTo(PROCEED_GENERAL_APPLICATION)
@@ -52,6 +54,7 @@ public class StateFlowEngine {
                     .set((c, flags) -> {
                         flags.put(FlowFlag.LIP_APPLICANT.name(), isLipApplication.test(c));
                         flags.put(FlowFlag.LIP_RESPONDENT.name(), isLipRespondent.test(c));
+                        flags.put(FlowFlag.VARY_JUDGE_GA_BY_RESP.name(), isVaryJudgementAppByResp.test(c));
                     })
             .state(PROCEED_GENERAL_APPLICATION)
                 .transitionTo(APPLICATION_SUBMITTED_JUDICIAL_DECISION)
@@ -59,6 +62,7 @@ public class StateFlowEngine {
                     .set((c, flags) -> {
                         flags.put(FlowFlag.LIP_APPLICANT.name(), isLipApplication.test(c));
                         flags.put(FlowFlag.LIP_RESPONDENT.name(), isLipRespondent.test(c));
+                        flags.put(FlowFlag.VARY_JUDGE_GA_BY_RESP.name(), isVaryJudgementAppByResp.test(c));
                     })
             .state(APPLICATION_SUBMITTED_JUDICIAL_DECISION)
                 .transitionTo(LISTED_FOR_HEARING).onlyIf(judgeMadeListingForHearing)

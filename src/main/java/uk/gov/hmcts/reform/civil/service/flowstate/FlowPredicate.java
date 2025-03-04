@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.service.flowstate;
 
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
 import java.util.function.Predicate;
@@ -67,4 +68,7 @@ public class FlowPredicate {
 
     public static final Predicate<CaseData> isLipApplication = caseData -> caseData.getIsGaApplicantLip() == YES;
     public static final Predicate<CaseData> isLipRespondent = caseData -> caseData.getIsGaRespondentOneLip() == YES;
+
+    public static final Predicate<CaseData> isVaryJudgementAppByResp = caseData -> caseData.getParentClaimantIsApplicant().equals(NO)
+            && caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT);
 }
