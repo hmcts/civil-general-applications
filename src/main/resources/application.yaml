@@ -160,6 +160,8 @@ notifications:
   judgeForDirectionOrderRespondentEmailTemplate: "cf12bfa1-9b86-40a4-a354-ec61c0dd0275"
   judgeRequestForInformationApplicantEmailTemplate: "a61402a1-6864-4a3d-bbff-c22fdbb96a18"
   judgeRequestForInformationRespondentEmailTemplate: "21a82e0b-755f-4d33-b59e-e3f38e9032a1"
+  judgeFreeFormOrderApplicantEmailTemplate: "d4f1d7f0-d9cf-4295-bc87-502bab67170f"
+  judgeFreeFormOrderRespondentEmailTemplate: "20c146c4-71e4-4469-8efa-b0ed8bf87c67"
   judgeUncloakApplicationEmailTemplate: "b3507f62-a3e5-4043-a7e2-17ec0324b0d1"
   judgeApproveOrderToStrikeOutDamages: "23ec8bfb-b069-4f16-bf78-e6595698da00"
   judgeApproveOrderToStrikeOutOCMC: "3a8eddbf-a7c9-4bb1-a4a6-31d3aa1b841d"
