@@ -69,10 +69,10 @@ public class ApplicationProceedsInHeritageEventCallbackHandler extends CallbackH
                 .applicationTakenOfflineDate(time.now());
             if (gaForLipService.isGaForLip(caseData)) {
                 if (gaForLipService.isLipApp(caseData)) {
-                    dashboardNotificationService.createOfflineResponseDashboardNotification(caseData, "CLAIMANT", authToken);
+                    dashboardNotificationService.createOfflineResponseDashboardNotification(caseData, "APPLICANT", authToken);
                 }
                 if (gaForLipService.isLipResp(caseData)) {
-                    dashboardNotificationService.createOfflineResponseDashboardNotification(caseData, "DEFENDANT", authToken);
+                    dashboardNotificationService.createOfflineResponseDashboardNotification(caseData, "RESPONDENT", authToken);
                 }
             }
             return AboutToStartOrSubmitCallbackResponse.builder()
