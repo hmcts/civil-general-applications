@@ -358,7 +358,7 @@ public class DocUploadDashboardNotificationServiceTest {
 
             docUploadDashboardNotificationService.createOfflineResponseDashboardNotification(
                 caseData,
-                "DEFENDANT",
+                "RESPONDENT",
                 "BEARER_TOKEN"
             );
 
@@ -406,7 +406,7 @@ public class DocUploadDashboardNotificationServiceTest {
 
             docUploadDashboardNotificationService.createOfflineResponseDashboardNotification(
                 caseData,
-                "CLAIMANT",
+                "APPLICANT",
                 "BEARER_TOKEN"
             );
 
@@ -515,7 +515,7 @@ public class DocUploadDashboardNotificationServiceTest {
 
             docUploadDashboardNotificationService.createOfflineResponseDashboardNotification(
                 caseData,
-                "APPLICANT",
+                "CLAIMANT",
                 "BEARER_TOKEN"
             );
 
@@ -563,7 +563,7 @@ public class DocUploadDashboardNotificationServiceTest {
 
             docUploadDashboardNotificationService.createOfflineResponseDashboardNotification(
                 caseData,
-                "RESPONDENT",
+                "DEFENDANT",
                 "BEARER_TOKEN"
             );
 
@@ -656,7 +656,7 @@ public class DocUploadDashboardNotificationServiceTest {
 
             docUploadDashboardNotificationService.createResponseDashboardNotification(
                 caseData,
-                "RESPONDENT",
+                "DEFENDANT",
                 "BEARER_TOKEN"
             );
 
