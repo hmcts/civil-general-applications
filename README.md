@@ -104,6 +104,7 @@ Here are some other functionalities it provides:
 ## Adding Git Conventions
 
 ### Include the git conventions.
+
 * Make sure your git version is at least 2.9 using the `git --version` command
 * Run the following command:
 ```
