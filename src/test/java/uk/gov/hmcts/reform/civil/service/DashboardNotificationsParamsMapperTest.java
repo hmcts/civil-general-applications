@@ -165,7 +165,7 @@ public class DashboardNotificationsParamsMapperTest {
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
 
         assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("application");
-        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("cais");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("gwneud cais");
     }
 
     @Test
@@ -186,7 +186,7 @@ public class DashboardNotificationsParamsMapperTest {
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
 
         assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("application");
-        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("cais");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("gwneud cais");
     }
 
     @Test
@@ -208,7 +208,7 @@ public class DashboardNotificationsParamsMapperTest {
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
 
         assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("additional application");
-        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("ffi ychwanegol i wneud cais");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("ychwanegol i wneud cais");
     }
 
     @Test
@@ -229,7 +229,7 @@ public class DashboardNotificationsParamsMapperTest {
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
 
         assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("application");
-        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("cais");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("gwneud cais");
         assertThat(result).extracting("remissionAmount").isEqualTo("£75.00");
         assertThat(result).extracting("outstandingFeeInPounds").isEqualTo("£2.00");
     }
@@ -252,7 +252,7 @@ public class DashboardNotificationsParamsMapperTest {
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
 
         assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("additional application");
-        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("ffi ychwanegol i wneud cais");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("ychwanegol i wneud cais");
         assertThat(result).extracting("remissionAmount").isEqualTo("£75.00");
         assertThat(result).extracting("outstandingFeeInPounds").isEqualTo("£2.00");
     }
@@ -274,7 +274,7 @@ public class DashboardNotificationsParamsMapperTest {
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
 
         assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("application");
-        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("cais");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("gwneud cais");
     }
 
     @Test
@@ -292,7 +292,7 @@ public class DashboardNotificationsParamsMapperTest {
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
 
         assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("additional application");
-        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("ffi ychwanegol i wneud cais");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("ychwanegol i wneud cais");
     }
 
     @Test
@@ -312,7 +312,7 @@ public class DashboardNotificationsParamsMapperTest {
         Map<String, Object> result = mapper.mapCaseDataToParams(caseData);
 
         assertThat(result).extracting("applicationFeeTypeEn").isEqualTo("additional application");
-        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("ffi ychwanegol i wneud cais");
+        assertThat(result).extracting("applicationFeeTypeCy").isEqualTo("ychwanegol i wneud cais");
     }
 
     @Test
