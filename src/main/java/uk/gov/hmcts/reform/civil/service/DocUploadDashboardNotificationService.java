@@ -16,6 +16,8 @@ import java.util.List;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_APPLICANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_OTHER_PARTY_UPLOADED_DOC_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_OTHER_PARTY_UPLOADED_DOC_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_APPLICANT;
@@ -77,12 +79,12 @@ public class DocUploadDashboardNotificationService {
 
     public void createOfflineResponseDashboardNotification(CaseData caseData, String role, String authToken) {
 
-        String scenario = getResponseOfflineDashboardScenario(role);
+        String scenario = getResponseOfflineDashboardScenario(role, caseData, authToken);
         ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
             caseData)).build();
         if (scenario != null) {
             dashboardApiClient.recordScenario(
-                caseData.getParentCaseReference(),
+                caseData.getCcdCaseReference().toString(),
                 scenario,
                 authToken,
                 scenarioParams
@@ -90,10 +92,14 @@ public class DocUploadDashboardNotificationService {
         }
     }
 
-    private String getResponseOfflineDashboardScenario(String role) {
-        if (role.equalsIgnoreCase("DEFENDANT")) {
+    private String getResponseOfflineDashboardScenario(String role, CaseData caseData, String authToken) {
+        if (role.equalsIgnoreCase("RESPONDENT")) {
+            dashboardApiClient.deleteNotificationsForCaseIdentifierAndRole(caseData.getCcdCaseReference().toString(),
+                                                                           "RESPONDENT", authToken);
             return SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_RESPONDENT.getScenario();
-        } else if (role.equalsIgnoreCase("CLAIMANT")) {
+        } else if (role.equalsIgnoreCase("APPLICANT")) {
+            dashboardApiClient.deleteNotificationsForCaseIdentifierAndRole(caseData.getCcdCaseReference().toString(),
+                                                                           "APPLICANT", authToken);
             return SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_APPLICANT.getScenario();
         }
         return null;
