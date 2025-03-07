@@ -22,6 +22,7 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
@@ -45,6 +46,7 @@ public class JudicialNotificationService implements NotificationData {
     private final NotificationService notificationService;
     private final Map<String, String> customProps = new HashMap<>();
     private static final String REFERENCE_TEMPLATE = "general-apps-judicial-notification-make-decision-%s";
+    private static final String EMPTY_SOLICITOR_REFERENCES_1V1 = "Claimant Reference: Not provided - Defendant Reference: Not provided";
 
     private final DeadlinesCalculator deadlinesCalculator;
     private static final int NUMBER_OF_DEADLINE_DAYS = 5;
@@ -71,6 +73,9 @@ public class JudicialNotificationService implements NotificationData {
                 break;
             case LIST_FOR_HEARING:
                 applicationListForHearing(caseData, solicitorType);
+                break;
+            case JUDGE_FREE_FORM_ORDER:
+                applicationFreeFormOrder(caseData, solicitorType);
                 break;
             case JUDGE_APPROVED_THE_ORDER:
                 applicationApprovedNotification(caseData, solicitorType);
@@ -105,6 +110,14 @@ public class JudicialNotificationService implements NotificationData {
     @Override
     public Map<String, String> addProperties(CaseData caseData) {
         customProps.put(
+            GENAPP_REFERENCE,
+            String.valueOf(Objects.requireNonNull(caseData.getCcdCaseReference()))
+        );
+        customProps.put(
+            PARTY_REFERENCE,
+            Objects.requireNonNull(getSolicitorReferences(caseData.getEmailPartyReference()))
+        );
+        customProps.put(
             CASE_REFERENCE,
             Objects.requireNonNull(caseData.getGeneralAppParentCaseLink().getCaseReference())
         );
@@ -129,7 +142,9 @@ public class JudicialNotificationService implements NotificationData {
 
         if (gaForLipService.isLipResp(caseData)
             && isRespondentNotificationMakeDecisionEvent(caseData)) {
-            String isLipRespondentName = caseData.getDefendant1PartyName();
+            String isLipRespondentName =
+                caseData.getParentClaimantIsApplicant() == NO ? caseData.getClaimant1PartyName() :
+                    caseData.getDefendant1PartyName();
             customProps.put(
                 GA_LIP_RESP_NAME,
                 Objects.requireNonNull(isLipRespondentName)
@@ -278,9 +293,7 @@ public class JudicialNotificationService implements NotificationData {
             }
             customProps.remove(GA_NOTIFICATION_DEADLINE);
 
-        }
-
-        if ((isSendUncloakAdditionalFeeEmailForWithoutNotice(caseData)
+        } else if ((isSendUncloakAdditionalFeeEmailForWithoutNotice(caseData)
             || isSendUncloakAdditionalFeeEmailConsentOrder(caseData))) {
             // Send notification to applicant only if it's without notice application
             if (solicitorType.equals(APPLICANT)
@@ -421,6 +434,7 @@ public class JudicialNotificationService implements NotificationData {
             * Respondent should receive notification only if it's with notice application
             *  */
             if (isWithNotice(caseData) && areRespondentSolicitorsPresent(caseData)) {
+
                 sendEmailToRespondent(
                     caseData,
                     gaForLipService.isLipResp(caseData)
@@ -438,6 +452,38 @@ public class JudicialNotificationService implements NotificationData {
                     : notificationProperties.getJudgeListsForHearingApplicantEmailTemplate()
             );
         }
+    }
+
+    private void applicationFreeFormOrder(CaseData caseData, String solicitorType) {
+
+        if (solicitorType.equals(RESPONDENT)) {
+            if (isWithNoticeOrConsent(caseData) && areRespondentSolicitorsPresent(caseData)) {
+                sendEmailToRespondent(
+                    caseData,
+                    gaForLipService.isLipResp(caseData)
+                        ? getLiPRespondentTemplate(caseData)
+                        : notificationProperties.getJudgeFreeFormOrderRespondentEmailTemplate()
+                );
+            }
+        }
+
+        if (solicitorType.equals(APPLICANT)) {
+            sendNotificationForJudicialDecision(
+                caseData,
+                caseData.getGeneralAppApplnSolicitor().getEmail(),
+                gaForLipService.isLipApp(caseData)
+                    ? getLiPApplicantTemplate(caseData)
+                    : notificationProperties.getJudgeFreeFormOrderApplicantEmailTemplate()
+            );
+        }
+    }
+
+    private boolean isWithNoticeOrConsent(CaseData caseData) {
+        return (caseData.getGeneralAppInformOtherParty() != null
+            && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
+            || (caseData.getGeneralAppRespondentAgreement() != null
+            && YES.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
+            || caseData.getApplicationIsUncloakedOnce() == YES);
     }
 
     private void applicationDismissedByJudge(CaseData caseData, String solicitorType) {
@@ -556,6 +602,14 @@ public class JudicialNotificationService implements NotificationData {
         return isGeneralAppConsentOrder(caseData)
             && SEND_APP_TO_OTHER_PARTY.equals(caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption())
             && caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null;
+    }
+
+    private String getSolicitorReferences(String emailPartyReference) {
+        if (emailPartyReference != null) {
+            return emailPartyReference;
+        } else {
+            return EMPTY_SOLICITOR_REFERENCES_1V1;
+        }
     }
 
     private  void addCustomPropsForRespondDeadline(LocalDate requestForInformationDeadline) {

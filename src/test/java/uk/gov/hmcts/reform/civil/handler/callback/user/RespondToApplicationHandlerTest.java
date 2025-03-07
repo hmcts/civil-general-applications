@@ -71,6 +71,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -184,6 +185,57 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         verify(dashboardNotificationService).createResponseDashboardNotification(any(), eq("APPLICANT"), anyString());
         assertThat(response).isNotNull();
         assertThat(response.getConfirmationBody()).isEqualTo(CONFIRMATION_MESSAGE);
+    }
+
+    @Test
+    void buildResponseConfirmationReturnsCorrectMessageWhenGaHasLipAndVaryJudgeApppLipVLip() {
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        when(gaForLipService.isLipApp(any())).thenReturn(true);
+        when(gaForLipService.isLipResp(any())).thenReturn(true);
+        CallbackParams params = callbackParamsOf(getVaryCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION),
+                                                 CallbackType.SUBMITTED);
+        var response = (SubmittedCallbackResponse) handler.handle(params);
+
+        verify(dashboardNotificationService, times(2))
+            .createOfflineResponseDashboardNotification(any(), any(), anyString());
+        assertThat(response).isNotNull();
+    }
+
+    @Test
+    void buildResponseConfirmationReturnsCorrectMessageWhenGaHasLipAndVaryJudgeApppLRvLR() {
+        when(gaForLipService.isGaForLip(any())).thenReturn(false);
+        when(gaForLipService.isLipApp(any())).thenReturn(false);
+        when(gaForLipService.isLipResp(any())).thenReturn(false);
+        CallbackParams params = callbackParamsOf(getVaryCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION),
+                                                 CallbackType.SUBMITTED);
+        var response = (SubmittedCallbackResponse) handler.handle(params);
+        verifyNoInteractions(dashboardNotificationService);
+
+        assertThat(response).isNotNull();
+    }
+
+    @Test
+    void buildResponseConfirmationReturnsCorrectMessageWhenGaHasLipAndVaryJudgeApppLipVLR() {
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        when(gaForLipService.isLipApp(any())).thenReturn(true);
+        when(gaForLipService.isLipResp(any())).thenReturn(false);
+        CallbackParams params = callbackParamsOf(getVaryCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION),
+                                                 CallbackType.SUBMITTED);
+        var response = (SubmittedCallbackResponse) handler.handle(params);
+        verify(dashboardNotificationService).createOfflineResponseDashboardNotification(any(), any(), anyString());
+        assertThat(response).isNotNull();
+    }
+
+    @Test
+    void buildResponseConfirmationReturnsCorrectMessageWhenGaHasLipAndVaryJudgeApppLRVLip() {
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        when(gaForLipService.isLipApp(any())).thenReturn(true);
+        when(gaForLipService.isLipResp(any())).thenReturn(false);
+        CallbackParams params = callbackParamsOf(getVaryCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION),
+                                                 CallbackType.SUBMITTED);
+        var response = (SubmittedCallbackResponse) handler.handle(params);
+        verify(dashboardNotificationService).createOfflineResponseDashboardNotification(any(), any(), anyString());
+        assertThat(response).isNotNull();
     }
 
     @Test
@@ -825,6 +877,44 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
     }
 
     @Test
+    void shouldPopulatePreferredLocation_WhenRespondentIsLiP() {
+
+        CaseData caseData = getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
+        caseDataBuilder.parentClaimantIsApplicant(NO)
+            .generalAppType(GAApplicationType.builder().types(List.of(SUMMARY_JUDGEMENT)).build()).build();
+        caseDataBuilder.hearingDetailsResp(caseData.getHearingDetailsResp().toBuilder()
+                                               .hearingPreferencesPreferredType(GAHearingType.VIDEO).build());
+        caseDataBuilder.isGaRespondentOneLip(YES);
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseDataBuilder.build(), new TypeReference<>() {
+        });
+        // Civil Claim CaseDate
+        CaseDetails civil = CaseDetails.builder().id(123L).build();
+        when(coreCaseDataService.getCase(123L)).thenReturn(civil);
+        when(caseDetailsConverter.toCaseData(civil))
+            .thenReturn(getCivilCaseData(DUMMY_EMAIL, "abcd@gmail.com", "abc@gmail.com"));
+
+        // GA CaseData
+        CaseDetails ga = CaseDetails.builder().id(456L).build();
+        when(coreCaseDataService.getCase(456L)).thenReturn(ga);
+        when(caseDetailsConverter.toCaseData(ga))
+            .thenReturn(caseDataBuilder.build());
+
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+        CallbackParams.CallbackParamsBuilder callbackParamsBuilder = params.toBuilder();
+        callbackParamsBuilder.request(CallbackRequest.builder().caseDetails(ga).build());
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(callbackParamsBuilder.build());
+
+        CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+        assertThat(response).isNotNull();
+        assertThat(responseCaseData.getHearingDetailsResp()).isNull();
+        assertThat(responseCaseData.getRespondentsResponses()
+                       .get(0).getValue().getGaHearingDetails()
+                       .getHearingPreferredLocation().getValue().getLabel()).isEqualTo("ABCD - RG0 0AL");
+    }
+
+    @Test
     void shouldReturn_No_WhenRespondIsNotAcceptedByRespondent() {
 
         // Civil Claim Case Data
@@ -1316,6 +1406,50 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         respondentSols.add(element(respondent2));
 
         return respondentSols;
+    }
+
+    private CaseData getVaryCase(CaseState state) {
+        List<GeneralApplicationTypes> types = List.of(
+            (VARY_PAYMENT_TERMS_OF_JUDGMENT));
+        DynamicList dynamicListTest = fromList(getSampleCourLocations());
+        Optional<DynamicListElement> first = dynamicListTest.getListItems().stream().findFirst();
+        first.ifPresent(dynamicListTest::setValue);
+
+        return CaseData.builder()
+            .generalAppRespondent1Representative(
+                GARespondentRepresentative.builder()
+                    .generalAppRespondent1Representative(YES)
+                    .build())
+            .defendant2PartyName("Defendant Two")
+            .defendant1PartyName("Defendant One")
+            .claimant1PartyName("Claimant One")
+            .claimant2PartyName("Claimant Two")
+            .judicialListForHearing(GAJudgesHearingListGAspec.builder()
+                                        .hearingPreferredLocation(dynamicListTest)
+                                        .hearingPreferencesPreferredType(GAJudicialHearingType.IN_PERSON)
+                                        .build())
+            .hearingDetailsResp(GAHearingDetails.builder()
+                                    .hearingPreferredLocation(dynamicListTest)
+                                    .hearingPreferencesPreferredType(GAHearingType.IN_PERSON)
+                                    .build())
+            .generalAppType(
+                GAApplicationType
+                    .builder()
+                    .types(types).build())
+            .parentClaimantIsApplicant(NO)
+            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("123").build())
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
+                                          .email("abc@gmail.com").id(APP_UID).build())
+            .generalAppRespondentSolicitors(getRespondentSolicitors())
+            .businessProcess(BusinessProcess
+                                 .builder()
+                                 .camundaEvent(CAMUNDA_EVENT)
+                                 .processInstanceId(BUSINESS_PROCESS_INSTANCE_ID)
+                                 .status(BusinessProcessStatus.STARTED)
+                                 .activityId(ACTIVITY_ID)
+                                 .build())
+            .ccdState(state)
+            .build();
     }
 
     private CaseData getCase(CaseState state) {

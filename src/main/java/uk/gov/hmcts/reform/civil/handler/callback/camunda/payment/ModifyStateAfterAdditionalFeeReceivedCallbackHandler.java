@@ -12,11 +12,14 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
+import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
@@ -25,9 +28,11 @@ import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
 import uk.gov.hmcts.reform.civil.service.StateGeneratorService;
 import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Collections.singletonList;
@@ -86,13 +91,20 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
     private CallbackResponse changeApplicationState(CallbackParams callbackParams) {
         Long caseId = callbackParams.getCaseData().getCcdCaseReference();
         CaseData caseData = callbackParams.getCaseData();
+        // Do not progress the application if payment not successful
+        if (gaForLipService.isLipApp(caseData) && getPaymentStatus(caseData) == PaymentStatus.FAILED) {
+            log.info("Payment status is failed for caseId: {}", caseData.getCcdCaseReference());
+            return AboutToStartOrSubmitCallbackResponse.builder().build();
+        }
         String newCaseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData).toString();
         log.info("Changing state to {} for caseId: {}", newCaseState, caseId);
 
         if (caseData.getMakeAppVisibleToRespondents() != null
             || isApplicationUncloakedForRequestMoreInformation(caseData).equals(YES)) {
             assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId.toString());
-            updateDashboardTaskListAndNotification(callbackParams, getDashboardNotificationRespondentScenario(caseData),
+            updateDashboardTaskListAndNotification(
+                callbackParams,
+                getScenariosAsList(getDashboardNotificationRespondentScenario(caseData)),
                                                    caseData.getCcdCaseReference().toString());
         }
 
@@ -103,32 +115,37 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
             .build();
     }
 
-    private void updateDashboardTaskListAndNotification(CallbackParams callbackParams, String scenario, String caseReference) {
+    private void updateDashboardTaskListAndNotification(CallbackParams callbackParams, List<String> scenarios,
+                                                        String caseReference) {
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         CaseData caseData = callbackParams.getCaseData();
-        if (featureToggleService.isDashboardServiceEnabled() && gaForLipService.isGaForLip(caseData)) {
+        if (gaForLipService.isGaForLip(caseData)) {
             ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
                 caseData)).build();
-            if (scenario != null) {
-                dashboardApiClient.recordScenario(
+            if (scenarios != null) {
+                scenarios.forEach(scenario -> dashboardApiClient.recordScenario(
                     caseReference,
                     scenario,
                     authToken,
                     scenarioParams
-                );
+                ));
             }
         }
     }
 
-    private String getDashboardNotificationScenarioForApplicant(CaseData caseData) {
+    private List<String> getDashboardNotificationScenarioForApplicant(CaseData caseData) {
+        List<String> scenarios = new ArrayList<>();
         if (caseData.getIsGaApplicantLip() == YES
-            && caseData.claimIssueFeePaymentDoneWithHWF(caseData)) {
-            return caseData.claimIssueFullRemissionNotGrantedHWF(caseData)
-                ? SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario()
-                : SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT.getScenario();
+            && (Objects.nonNull(caseData.getAdditionalHwfDetails()))) {
+            if (caseData.gaAdditionalFeeFullRemissionNotGrantedHWF(caseData)) {
+                scenarios.add(SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario());
+            } else {
+                scenarios.add(SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT.getScenario());
+            }
         }
 
-        return SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario();
+        scenarios.add(SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario());
+        return scenarios;
     }
 
     private YesOrNo isApplicationUncloakedForRequestMoreInformation(CaseData caseData) {
@@ -143,6 +160,11 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
 
     private CallbackResponse changeGADetailsStatusInParent(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
+        // Do not progress the application if payment not successful
+        if (gaForLipService.isLipApp(caseData) && getPaymentStatus(caseData) == PaymentStatus.FAILED) {
+            log.info("Payment status is failed for caseId: {}", caseData.getCcdCaseReference());
+            return SubmittedCallbackResponse.builder().build();
+        }
         String newCaseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData)
             .getDisplayedValue();
         log.info("Updating parent with latest state {} of application-caseId: {}",
@@ -154,6 +176,13 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
         );
         updateTaskListClaimantAndDefendant(callbackParams, caseData);
         return SubmittedCallbackResponse.builder().build();
+    }
+
+    private PaymentStatus getPaymentStatus(CaseData caseData) {
+        return Optional.of(caseData)
+            .map(CaseData::getGeneralAppPBADetails)
+            .map(GAPbaDetails::getAdditionalPaymentDetails)
+            .map(PaymentDetails::getStatus).orElse(null);
     }
 
     private void updateTaskListClaimantAndDefendant(CallbackParams callbackParams, CaseData caseData) {
@@ -203,8 +232,16 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
             && parentCaseData.getRespondentSolGaAppDetails().size() > 0) {
             defendantScenario = SCENARIO_AAA6_GENERAL_APPLICATION_AVAILABLE_DEFENDANT.getScenario();
         }
-        updateDashboardTaskListAndNotification(callbackParams, claimantScenario, caseData.getParentCaseReference());
-        updateDashboardTaskListAndNotification(callbackParams, defendantScenario, caseData.getParentCaseReference());
+        updateDashboardTaskListAndNotification(
+            callbackParams,
+            getScenariosAsList(claimantScenario),
+            caseData.getParentCaseReference()
+        );
+        updateDashboardTaskListAndNotification(
+            callbackParams,
+            getScenariosAsList(defendantScenario),
+            caseData.getParentCaseReference()
+        );
     }
 
     private String getDashboardNotificationRespondentScenario(CaseData caseData) {
@@ -215,4 +252,9 @@ public class ModifyStateAfterAdditionalFeeReceivedCallbackHandler extends Callba
         }
     }
 
+    private List<String> getScenariosAsList(String scenario) {
+        return Optional.ofNullable(scenario)
+            .map(List::of)
+            .orElse(Collections.emptyList());
+    }
 }

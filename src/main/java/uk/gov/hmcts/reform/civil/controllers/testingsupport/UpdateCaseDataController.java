@@ -32,6 +32,7 @@ public class UpdateCaseDataController {
 
     @PutMapping("/testing-support/case/{caseId}")
     public void updateCaseData(@PathVariable("caseId") Long caseId, @RequestBody Map<String, Object> caseDataMap) {
+        log.info("Update case data for caseId: {}", caseId);
         try {
             var startEventResponse = coreCaseDataService.startUpdate(caseId.toString(), UPDATE_CASE_DATA);
             coreCaseDataService.submitUpdate(caseId.toString(), caseDataContent(startEventResponse, caseDataMap));
@@ -43,6 +44,7 @@ public class UpdateCaseDataController {
 
     @PutMapping("/testing-support/app/case/{caseId}")
     public void updateGaCaseData(@PathVariable("caseId") Long caseId, @RequestBody Map<String, Object> caseDataMap) {
+        log.info("Update GA case data for caseId: {}", caseId);
         try {
             var startEventResponse = coreCaseDataService.startGaUpdate(caseId.toString(),
                                                                        LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE);
@@ -55,6 +57,7 @@ public class UpdateCaseDataController {
 
     @PostMapping("/testing-support/case/{caseId}/trigger/{eventName}")
     public void triggerGAEvent(@PathVariable("caseId") Long caseId, @PathVariable("eventName") CaseEvent eventName) {
+        log.info("Trigger GA event for caseId: {}", caseId);
         try {
             coreCaseDataService.triggerGaEvent(caseId, eventName, Map.of());
         } catch (FeignException e) {

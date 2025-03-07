@@ -5,6 +5,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.FULL_REMISSION_HWF_GA;
 
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.Callback;
@@ -23,15 +24,15 @@ import java.util.Optional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class FullRemissionHWFCallbackHandler extends HWFCallbackHandlerBase {
 
     private static final List<CaseEvent> EVENTS = List.of(FULL_REMISSION_HWF_GA);
     private final Map<String, Callback> callbackMap = Map.of(
-            callbackKey(ABOUT_TO_START), this::setData,
-            callbackKey(ABOUT_TO_SUBMIT),
-            this::fullRemissionHWF,
-            callbackKey(SUBMITTED), this::emptySubmittedCallbackResponse
+        callbackKey(ABOUT_TO_START), this::emptyCallbackResponse,
+        callbackKey(ABOUT_TO_SUBMIT), this::fullRemissionHWF,
+        callbackKey(SUBMITTED), this::emptySubmittedCallbackResponse
     );
 
     public FullRemissionHWFCallbackHandler(ObjectMapper objectMapper) {
@@ -55,18 +56,19 @@ public class FullRemissionHWFCallbackHandler extends HWFCallbackHandlerBase {
 
         if (caseData.getHwfFeeType().equals(FeeType.APPLICATION)
                 && feeAmount.compareTo(BigDecimal.ZERO) != 0) {
+            log.info("HWF fee type is application for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
             Optional.ofNullable(caseData.getGaHwfDetails())
                 .ifPresentOrElse(
                     gaHwfDetails -> updatedData.gaHwfDetails(
                         gaHwfDetails.toBuilder().remissionAmount(feeAmount)
-                            .outstandingFeeInPounds(BigDecimal.ZERO)
+                            .outstandingFee(BigDecimal.ZERO)
                             .hwfFeeType(FeeType.APPLICATION)
                             .hwfCaseEvent(FULL_REMISSION_HWF_GA)
                             .build()
                     ),
                     () -> updatedData.gaHwfDetails(
                         HelpWithFeesDetails.builder().remissionAmount(feeAmount)
-                            .outstandingFeeInPounds(BigDecimal.ZERO)
+                            .outstandingFee(BigDecimal.ZERO)
                             .hwfFeeType(FeeType.APPLICATION)
                             .hwfCaseEvent(FULL_REMISSION_HWF_GA)
                             .build()
@@ -74,17 +76,19 @@ public class FullRemissionHWFCallbackHandler extends HWFCallbackHandlerBase {
                 );
         } else if (caseData.getHwfFeeType().equals(FeeType.ADDITIONAL)
                 && feeAmount.compareTo(BigDecimal.ZERO) != 0) {
+            log.info("HWF fee type is additional for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
             Optional.ofNullable(caseData.getAdditionalHwfDetails())
                 .ifPresentOrElse(
-                    hearingHwfDetails -> updatedData.additionalHwfDetails(
-                        HelpWithFeesDetails.builder().remissionAmount(feeAmount)
-                            .outstandingFeeInPounds(BigDecimal.ZERO)
+                    additionalHwfDetails -> updatedData.additionalHwfDetails(
+                        additionalHwfDetails.toBuilder().remissionAmount(feeAmount)
+                            .outstandingFee(BigDecimal.ZERO)
                             .hwfCaseEvent(FULL_REMISSION_HWF_GA)
                             .hwfFeeType(FeeType.ADDITIONAL)
                             .build()
                     ),
                     () -> updatedData.additionalHwfDetails(
                         HelpWithFeesDetails.builder().remissionAmount(feeAmount)
+                            .outstandingFee(BigDecimal.ZERO)
                             .hwfCaseEvent(FULL_REMISSION_HWF_GA)
                             .hwfFeeType(FeeType.ADDITIONAL)
                             .build()

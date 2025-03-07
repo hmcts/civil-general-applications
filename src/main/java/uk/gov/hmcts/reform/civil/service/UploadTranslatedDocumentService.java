@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.civil.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocument;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -24,7 +23,6 @@ import static java.util.Optional.ofNullable;
 @Service
 public class UploadTranslatedDocumentService {
 
-    private final FeatureToggleService featureToggleService;
     private final AssignCategoryId assignCategoryId;
 
     public CaseData.CaseDataBuilder processTranslatedDocument(CaseData caseData, String translator) {
@@ -48,6 +46,8 @@ public class UploadTranslatedDocumentService {
                 }
             });
         }
+        // Copy to different field so XUI data can be cleared
+        caseDataBuilder.translatedDocumentsBulkPrint(caseData.getTranslatedDocuments());
         caseDataBuilder.translatedDocuments(null);
         return caseDataBuilder;
     }
@@ -84,6 +84,8 @@ public class UploadTranslatedDocumentService {
                 return ofNullable(caseData.getGeneralOrderDocument()).orElse(new ArrayList<>());
             case HEARING_ORDER:
                 return ofNullable(caseData.getHearingOrderDocument()).orElse(new ArrayList<>());
+            case HEARING_NOTICE:
+                return ofNullable(caseData.getHearingNoticeDocument()).orElse(new ArrayList<>());
             case DISMISSAL_ORDER:
                 return ofNullable(caseData.getDismissalOrderDocument()).orElse(new ArrayList<>());
             case WRITTEN_REPRESENTATION_CONCURRENT:
@@ -116,6 +118,9 @@ public class UploadTranslatedDocumentService {
                 break;
             case HEARING_ORDER:
                 caseDataBuilder.hearingOrderDocument(documents);
+                break;
+            case HEARING_NOTICE:
+                caseDataBuilder.hearingNoticeDocument(documents);
                 break;
             case WRITTEN_REPRESENTATION_CONCURRENT:
                 caseDataBuilder.writtenRepConcurrentDocument(documents);

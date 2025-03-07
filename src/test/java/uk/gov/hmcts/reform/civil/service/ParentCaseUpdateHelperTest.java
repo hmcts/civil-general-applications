@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.CaseLink;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
@@ -74,6 +75,8 @@ class ParentCaseUpdateHelperTest {
     CoreCaseDataService coreCaseDataService;
     @MockBean
     CaseDetailsConverter caseDetailsConverter;
+    @MockBean
+    FeatureToggleService featureToggleService;
     @Autowired
     ObjectMapper objectMapper;
     @Captor
@@ -226,6 +229,13 @@ class ParentCaseUpdateHelperTest {
                                 .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder()
                                         .organisationIdentifier("Nothing").build()).build()))
                 .isNull();
+
+        role = "RespondentLip";
+        when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+        assertThat(parentCaseUpdateHelper
+                       .findGaCreator(getVaryMainCaseData(role),
+                                      getGaVaryCaseData(role, PENDING_APPLICATION_ISSUED, NO)))
+            .isEqualTo("RespondentSol");
     }
 
     @Test
@@ -294,17 +304,14 @@ class ParentCaseUpdateHelperTest {
 
     @Test
     void updateParentWithGAState_with_n245_before_payment() {
-        CaseData gaCase = getGaVaryCaseData("RespondentSolTwo", PENDING_APPLICATION_ISSUED, YES);
-        CaseData civilCase = getVaryMainCaseData("RespondentSolTwo");
+        CaseData gaCase = getGaVaryCaseDataForAddlDoc("RespondentSol", PENDING_APPLICATION_ISSUED, YES);
+        CaseData civilCase = getVaryMainCaseData("RespondentSol");
         when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
         when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCase);
         parentCaseUpdateHelper.updateParentWithGAState(gaCase, AWAITING_APPLICATION_PAYMENT.toString());
         verify(coreCaseDataService, times(1))
                 .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
-        assertThat(mapCaptor.getValue().get("gaEvidenceDocRespondentSolTwo")).isNotNull();
-        assertThat(mapCaptor.getValue().get("gaEvidenceDocStaff")).isNull();
-        assertThat(mapCaptor.getValue().get("gaEvidenceDocRespondentSol")).isNull();
-        assertThat(mapCaptor.getValue().get("gaEvidenceDocClaimant")).isNull();
+        assertThat(mapCaptor.getValue().get("gaAddlDocRespondentSol")).isNotNull();
     }
 
     @Test
@@ -678,6 +685,67 @@ class ParentCaseUpdateHelperTest {
                     .isMultiParty(isMultiparty).generalAppApplnSolicitor(
                         GASolicitorDetailsGAspec.builder()
                                 .organisationIdentifier("RespondentSolTwo").build());
+                break;
+            case "RespondentLip":
+                builder.parentClaimantIsApplicant(NO)
+                    .isGaApplicantLip(YES)
+                    .isMultiParty(isMultiparty)
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().build());
+                break;
+            default:
+                break;
+        }
+        return builder.build();
+    }
+
+    private CaseData getGaVaryCaseDataForAddlDoc(String role, CaseState state, YesOrNo isMultiparty) {
+        CaseData.CaseDataBuilder builder = CaseData.builder();
+        builder.generalAppType(GAApplicationType.builder()
+                                   .types(List.of(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT)).build())
+            .ccdCaseReference(CaseDataBuilder.CASE_ID)
+            .generalAppParentCaseLink(GeneralAppParentCaseLink
+                                          .builder().caseReference(CaseDataBuilder.CASE_ID.toString()).build())
+            .ccdState(state);
+        CaseDocument pdfDocument = CaseDocument.builder()
+            .createdBy("John")
+            .documentName("documentName")
+            .documentSize(0L)
+            .createdDatetime(now())
+            .documentLink(Document.builder()
+                              .documentUrl("fake-url")
+                              .documentFileName("file-name")
+                              .documentBinaryUrl("binary-url")
+                              .build())
+            .build();
+        String uid = "f000aa01-0451-4000-b000-000000000000";
+        builder.gaAddlDoc(singletonList(Element.<CaseDocument>builder()
+                                            .id(UUID.fromString(uid))
+                                            .value(pdfDocument).build()));
+        switch (role) {
+            case "Claimant":
+                builder.parentClaimantIsApplicant(YES)
+                    .isMultiParty(isMultiparty)
+                    .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YES).build());
+                break;
+            case "RespondentSol":
+                builder.parentClaimantIsApplicant(NO)
+                    .isMultiParty(isMultiparty).generalAppApplnSolicitor(
+                        GASolicitorDetailsGAspec.builder()
+                            .organisationIdentifier("RespondentSol").build())
+                    .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YES).build());
+                break;
+            case "RespondentSolTwo":
+                builder.parentClaimantIsApplicant(NO)
+                    .generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YES).build())
+                    .isMultiParty(isMultiparty).generalAppApplnSolicitor(
+                        GASolicitorDetailsGAspec.builder()
+                            .organisationIdentifier("RespondentSolTwo").build());
+                break;
+            case "RespondentLip":
+                builder.parentClaimantIsApplicant(NO)
+                    .isGaApplicantLip(YES)
+                    .isMultiParty(isMultiparty)
+                    .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().build());
                 break;
             default:
                 break;

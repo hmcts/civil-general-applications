@@ -35,6 +35,7 @@ public class EndGaHwfNotifyProcessTaskHandler extends BaseExternalTaskHandler {
         String caseId = externalTaskInput.getCaseId();
         StartEventResponse startEventResponse = coreCaseDataService
             .startGaUpdate(caseId, END_GA_HWF_NOTIFY_PROCESS);
+        log.info("Started update for case ID: {} with event: {}", caseId, END_GA_HWF_NOTIFY_PROCESS);
         CaseData data = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         BusinessProcess businessProcess = data.getBusinessProcess();
         coreCaseDataService.submitGaUpdate(caseId, caseDataContent(startEventResponse, businessProcess));

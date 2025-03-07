@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.RespondentLiPResponse;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
@@ -654,6 +655,10 @@ public class CreateApplicationTaskHandlerTest {
                 any(StartEventResponse.class),
                 anyMap()
             )).thenReturn(caseDataContent);
+
+            when(coreCaseDataService.submitUpdate(any(), any()))
+                .thenReturn(CaseData.builder().generalAppParentCaseLink(
+                    GeneralAppParentCaseLink.builder().caseReference("123").build()).build());
 
             createApplicationTaskHandler.execute(mockTask, externalTaskService);
 

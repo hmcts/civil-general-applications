@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Slf4j
 @Service
@@ -52,10 +54,6 @@ public class FeatureToggleService {
         return internalClient.boolVariation("case-file-view", createLDUser().build(), false);
     }
 
-    public boolean isDashboardServiceEnabled() {
-        return internalClient.boolVariation("dashboard-service", createLDUser().build(), false);
-    }
-
     public boolean isCoSCEnabled() {
         return internalClient.boolVariation("isCoSCEnabled", createLDUser().build(), false);
     }
@@ -72,5 +70,16 @@ public class FeatureToggleService {
         } catch (IOException e) {
             log.error("Error in closing the Launchdarkly client::", e);
         }
+    }
+
+    public boolean isFeatureEnabledForDate(String feature, Long date, boolean defaultValue) {
+        return internalClient.boolVariation(feature, createLDUser().custom("timestamp", date).build(), defaultValue);
+    }
+
+    public boolean isMultiOrIntermediateTrackEnabled() {
+        ZoneId zoneId = ZoneId.systemDefault();
+        long epoch;
+        epoch = LocalDateTime.now().atZone(zoneId).toEpochSecond();
+        return isFeatureEnabledForDate("multi-or-intermediate-track", epoch, false);
     }
 }

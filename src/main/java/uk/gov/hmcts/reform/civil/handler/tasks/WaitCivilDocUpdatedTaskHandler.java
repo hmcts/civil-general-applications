@@ -24,8 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-
-import static com.google.common.collect.Lists.newArrayList;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -34,6 +33,7 @@ public class WaitCivilDocUpdatedTaskHandler extends BaseExternalTaskHandler {
 
     protected static int maxWait = 10;
     protected static int waitGap = 3;
+    private static final String DRAFT_APPLICATION_PREFIX = "Draft_application_";
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final GaForLipService gaForLipService;
@@ -48,6 +48,7 @@ public class WaitCivilDocUpdatedTaskHandler extends BaseExternalTaskHandler {
         StartEventResponse startEventResponse = coreCaseDataService
             .startGaUpdate(caseId, eventType);
         CaseData gaCaseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
+        log.info("Started GA update for Case ID: {}, Event Type: {}", caseId, eventType);
 
         if (!gaForLipService.isGaForLip(gaCaseData)) {
             boolean civilUpdated = checkCivilDocUpdated(gaCaseData);
@@ -75,14 +76,26 @@ public class WaitCivilDocUpdatedTaskHandler extends BaseExternalTaskHandler {
     private Map<String, Object> getUpdatedCaseData(CaseData gaCaseData) {
         Map<String, Object> output = gaCaseData.toMap(mapper);
         try {
-            if (gaForLipService.isGaForLip(gaCaseData) && (Objects.nonNull(gaCaseData.getGaDraftDocument()) && gaCaseData.getGaDraftDocument().size() > 1)) {
-                gaCaseData.getGaDraftDocument().sort(Comparator.comparing(gaDocElement -> gaDocElement.getValue().getCreatedDatetime(), Comparator.reverseOrder()));
-                gaCaseData.getGaDraftDocument().remove(1);
-                List<Element<CaseDocument>> draftApplicationList = newArrayList();
-                draftApplicationList.addAll(gaCaseData.getGaDraftDocument());
-                output.put("gaDraftDocument", draftApplicationList);
+            if (gaForLipService.isGaForLip(gaCaseData)
+                && (Objects.nonNull(gaCaseData.getGaDraftDocument()) && gaCaseData.getGaDraftDocument().size() > 1)) {
+                List<Element<CaseDocument>> draftApplications = gaCaseData.getGaDraftDocument().stream()
+                    .filter(gaDocElement -> gaDocElement.getValue().getDocumentName()
+                        .startsWith(DRAFT_APPLICATION_PREFIX))
+                    .sorted(Comparator.comparing(
+                        gaDocElement -> gaDocElement.getValue().getCreatedDatetime(),
+                        Comparator.reverseOrder()
+                    ))
+                    .toList();
+                if (!draftApplications.isEmpty()) {
+                    List<Element<CaseDocument>> latestDraftApplication = List.of(draftApplications.get(0));
+                    List<Element<CaseDocument>> updatedDocuments = gaCaseData.getGaDraftDocument().stream()
+                        .filter(gaDocElement -> !gaDocElement.getValue().getDocumentName()
+                            .startsWith(DRAFT_APPLICATION_PREFIX))
+                        .collect(Collectors.toList());
+                    updatedDocuments.addAll(latestDraftApplication);
+                    output.put("gaDraftDocument", updatedDocuments);
+                }
             }
-
         } catch (Exception e) {
             log.error(e.getMessage());
         }

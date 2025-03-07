@@ -29,7 +29,7 @@ public class InvalidHwFCallbackHandler extends HWFCallbackHandlerBase {
     private static final List<CaseEvent> EVENTS = List.of(INVALID_HWF_REFERENCE_GA);
 
     private final Map<String, Callback> callbackMap = Map.of(
-        callbackKey(ABOUT_TO_START), this::setData,
+        callbackKey(ABOUT_TO_START), this::emptyCallbackResponse,
         callbackKey(ABOUT_TO_SUBMIT), this::aboutToSubmit,
         callbackKey(SUBMITTED), this::emptySubmittedCallbackResponse
     );
@@ -55,7 +55,9 @@ public class InvalidHwFCallbackHandler extends HWFCallbackHandlerBase {
     private CaseData setUpBusinessProcess(CaseData caseData) {
         CaseData.CaseDataBuilder updatedData = caseData.toBuilder()
                 .businessProcess(BusinessProcess.ready(NOTIFY_APPLICANT_LIP_HWF));
+        log.info("Start business process NOTIFY_APPLICANT_LIP_HWF for caseId: {}", caseData.getCcdCaseReference());
         HwFFeeTypeService.updateEventInHwfDetails(caseData, updatedData, INVALID_HWF_REFERENCE_GA);
+        log.info("Update event in HWF to INVALID_HWF_REFERENCE_GA for caseId: {}", caseData.getCcdCaseReference());
         return updatedData.build();
     }
 }

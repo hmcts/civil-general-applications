@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.businessprocess;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -33,10 +34,12 @@ import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_WRITTEN_REPRESE
 import static uk.gov.hmcts.reform.civil.enums.CaseState.LISTING_FOR_A_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.ORDER_MADE;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.PROCEEDS_IN_HERITAGE;
 import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.ASSISTED_ORDER;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isNotificationCriteriaSatisfied;
 import static uk.gov.hmcts.reform.civil.utils.RespondentsResponsesUtil.isRespondentsResponseSatisfied;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler {
@@ -60,6 +63,7 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
     }
 
     private CallbackResponse endGeneralApplicationBusinessProcess(CallbackParams callbackParams) {
+        log.info("End general application business process for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
 
         if (!gaForLipService.isGaForLip(data)
@@ -105,6 +109,11 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
         } else if (featureToggleService.isCoSCEnabled() && data.getGeneralAppType().getTypes().contains(
             GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID)) {
             newState = APPLICATION_DISMISSED;
+        } else if (data.getParentClaimantIsApplicant().equals(YesOrNo.NO) && data.getGeneralAppType().getTypes().contains(
+            GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT) && isRespondentsResponseSatisfied(
+            data,
+            data.toBuilder().build())) {
+            newState = PROCEEDS_IN_HERITAGE;
         } else {
             newState = (isNotificationCriteriaSatisfied(data) && !isRespondentsResponseSatisfied(
                 data,
@@ -126,6 +135,7 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
 
     private CallbackResponse evaluateReady(CallbackParams callbackParams,
                                            CaseState newState) {
+        log.info("Evaluate ready for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
         Map<String, Object> output = callbackParams.getRequest().getCaseDetails().getData();
 
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -142,12 +152,14 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
     }
 
     private boolean isLipPaymentViaServiceRequest(CaseData data) {
+        log.info("Is LIP payment via service request for caseId: {}", data.getCcdCaseReference());
         return data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
             && (Objects.isNull(data.getGeneralAppHelpWithFees())
             || data.getGeneralAppHelpWithFees().getHelpWithFee() == YesOrNo.NO);
     }
 
     private boolean isLipPaymentViaHelpWithFees(CaseData data) {
+        log.info("Is LIP payment via help with fees for caseId: {}", data.getCcdCaseReference());
         return data.getCcdState().equals(AWAITING_APPLICATION_PAYMENT)
             && !Objects.isNull(data.getGeneralAppHelpWithFees())
             && data.getGeneralAppHelpWithFees().getHelpWithFee() == YesOrNo.YES

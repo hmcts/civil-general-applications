@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.businessprocess;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
@@ -20,6 +21,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_HEARING_SCHEDULED_PROCESS_GASPEC;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.HEARING_SCHEDULED;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EndHearingScheduledBusinessProcessCallbackHandler extends CallbackHandler {
@@ -40,6 +42,7 @@ public class EndHearingScheduledBusinessProcessCallbackHandler extends CallbackH
     }
 
     private CallbackResponse endHearingScheduledBusinessProcess(CallbackParams callbackParams) {
+        log.info("End hearing scheduled business process for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         parentCaseUpdateHelper.updateParentWithGAState(
                 data, HEARING_SCHEDULED.getDisplayedValue());
@@ -49,6 +52,7 @@ public class EndHearingScheduledBusinessProcessCallbackHandler extends CallbackH
 
     private CallbackResponse evaluateReady(CallbackParams callbackParams,
                                            CaseState newState) {
+        log.info("Evaluate ready for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
         Map<String, Object> output = callbackParams.getRequest().getCaseDetails().getData();
 
         return AboutToStartOrSubmitCallbackResponse.builder()

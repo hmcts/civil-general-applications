@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications;
 
+import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
@@ -17,6 +18,7 @@ import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -24,6 +26,7 @@ import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifi
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ApplicationSubmittedDashboardNotificationHandler extends CallbackHandler {
@@ -36,7 +39,7 @@ public class ApplicationSubmittedDashboardNotificationHandler extends CallbackHa
 
     @Override
     protected Map<String, Callback> callbacks() {
-        return featureToggleService.isDashboardServiceEnabled() && featureToggleService.isGaForLipsEnabled()
+        return featureToggleService.isGaForLipsEnabled()
             ? Map.of(callbackKey(ABOUT_TO_SUBMIT), this::configureDashboardScenario)
             : Map.of(callbackKey(ABOUT_TO_SUBMIT), this::emptyCallbackResponse);
     }
@@ -48,8 +51,8 @@ public class ApplicationSubmittedDashboardNotificationHandler extends CallbackHa
 
     public List<String> getScenarios(CaseData caseData) {
         List<String> scenarios = new ArrayList<>();
-        if (caseData.claimIssueFeePaymentDoneWithHWF(caseData)) {
-            if (caseData.claimIssueFullRemissionNotGrantedHWF(caseData)) {
+        if (Objects.nonNull(caseData.getGaHwfDetails())) {
+            if (caseData.gaApplicationFeeFullRemissionNotGrantedHWF(caseData)) {
                 scenarios.add(SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario());
             } else {
                 scenarios.add(SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT.getScenario());

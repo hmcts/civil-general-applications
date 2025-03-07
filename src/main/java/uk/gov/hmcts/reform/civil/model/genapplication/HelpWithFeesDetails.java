@@ -22,7 +22,7 @@ public class HelpWithFeesDetails {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private BigDecimal remissionAmount;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private BigDecimal outstandingFeeInPounds;
+    private BigDecimal outstandingFee;
     private String noRemissionDetails;
     private NoRemissionDetailsSummary noRemissionDetailsSummary;
     private String hwfReferenceNumber;

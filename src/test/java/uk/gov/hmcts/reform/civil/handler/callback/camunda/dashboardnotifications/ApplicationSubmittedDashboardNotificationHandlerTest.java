@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +15,7 @@ import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.genapplication.FeePaymentOutcomeDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.DashboardNotificationsParamsMapper;
@@ -28,6 +28,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.FEE_PAYMENT_OUTCOME_GA;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.FULL_REMISSION_HWF_GA;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NO_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_GA_DASHBOARD_NOTIFICATION;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT;
@@ -52,10 +55,6 @@ class ApplicationSubmittedDashboardNotificationHandlerTest extends BaseCallbackH
 
     @Nested
     class AboutToSubmitCallback {
-        @BeforeEach
-        void setup() {
-            when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
-        }
 
         @Test
         void shouldRecordApplicationSubmittedScenario_whenInvoked() {
@@ -88,6 +87,7 @@ class ApplicationSubmittedDashboardNotificationHandlerTest extends BaseCallbackH
                 .feePaymentOutcomeDetails(FeePaymentOutcomeDetails
                                               .builder()
                                               .hwfFullRemissionGrantedForGa(YesOrNo.NO).build())
+                .gaHwfDetails(HelpWithFeesDetails.builder().hwfCaseEvent(NO_REMISSION_HWF_GA).build())
                 .generalAppHelpWithFees(
                     HelpWithFees.builder()
                         .helpWithFeesReferenceNumber("ABC-DEF-IJK")
@@ -102,10 +102,30 @@ class ApplicationSubmittedDashboardNotificationHandlerTest extends BaseCallbackH
             handler.handle(params);
             verify(dashboardApiClient).recordScenario(
                 caseData.getCcdCaseReference().toString(),
-                SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario(),
+                SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario(),
                 "BEARER_TOKEN",
                 ScenarioRequestParams.builder().params(scenarioParams).build()
             );
+
+        }
+
+        @Test
+        void shouldRecordWhenLipApplicationIsFeePaidThroughCard() {
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            CaseData caseData = CaseData.builder()
+                .ccdCaseReference(123456L)
+                .generalAppHelpWithFees(
+                    HelpWithFees.builder()
+                        .helpWithFeesReferenceNumber("ABC-DEF-IJK")
+                        .helpWithFee(YesOrNo.YES).build()).build();
+
+            HashMap<String, Object> scenarioParams = new HashMap<>();
+            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
+                CallbackRequest.builder().eventId(UPDATE_GA_DASHBOARD_NOTIFICATION.name())
+                    .build()
+            ).build();
+            handler.handle(params);
             verify(dashboardApiClient).recordScenario(
                 caseData.getCcdCaseReference().toString(),
                 SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario(),
@@ -123,6 +143,7 @@ class ApplicationSubmittedDashboardNotificationHandlerTest extends BaseCallbackH
                 .feePaymentOutcomeDetails(FeePaymentOutcomeDetails
                                               .builder()
                                               .hwfFullRemissionGrantedForGa(YesOrNo.YES).build())
+                .gaHwfDetails(HelpWithFeesDetails.builder().hwfCaseEvent(FULL_REMISSION_HWF_GA).build())
                 .generalAppHelpWithFees(
                     HelpWithFees.builder()
                         .helpWithFeesReferenceNumber("ABC-DEF-IJK")
@@ -138,6 +159,77 @@ class ApplicationSubmittedDashboardNotificationHandlerTest extends BaseCallbackH
             verify(dashboardApiClient).recordScenario(
                 caseData.getCcdCaseReference().toString(),
                 SCENARIO_AAA6_GENERAL_APPS_HWF_FULL_REMISSION_APPLICANT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
+        }
+
+        @Test
+        void shouldRecordWhenLipApplicationIsFeePaidNoRemission() {
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            CaseData caseData = CaseData.builder()
+                .ccdCaseReference(123456L)
+                .feePaymentOutcomeDetails(FeePaymentOutcomeDetails
+                                              .builder()
+                                              .hwfFullRemissionGrantedForGa(YesOrNo.YES).build())
+                .gaHwfDetails(HelpWithFeesDetails.builder().hwfCaseEvent(NO_REMISSION_HWF_GA).build())
+                .generalAppHelpWithFees(
+                    HelpWithFees.builder()
+                        .helpWithFeesReferenceNumber("ABC-DEF-IJK")
+                        .helpWithFee(YesOrNo.YES).build()).build();
+
+            HashMap<String, Object> scenarioParams = new HashMap<>();
+            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
+                CallbackRequest.builder().eventId(UPDATE_GA_DASHBOARD_NOTIFICATION.name())
+                    .build()
+            ).build();
+            handler.handle(params);
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
+        }
+
+        @Test
+        void shouldRecordWhenLipApplicationIsFeePaidFeePaymentOutCome() {
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            CaseData caseData = CaseData.builder()
+                .ccdCaseReference(123456L)
+                .feePaymentOutcomeDetails(FeePaymentOutcomeDetails
+                                              .builder()
+                                              .hwfFullRemissionGrantedForGa(YesOrNo.NO).build())
+                .gaHwfDetails(HelpWithFeesDetails.builder().hwfCaseEvent(FEE_PAYMENT_OUTCOME_GA).build())
+                .generalAppHelpWithFees(
+                    HelpWithFees.builder()
+                        .helpWithFeesReferenceNumber("ABC-DEF-IJK")
+                        .helpWithFee(YesOrNo.YES).build()).build();
+
+            HashMap<String, Object> scenarioParams = new HashMap<>();
+            when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
+                CallbackRequest.builder().eventId(UPDATE_GA_DASHBOARD_NOTIFICATION.name())
+                    .build()
+            ).build();
+            handler.handle(params);
+
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario(),
                 "BEARER_TOKEN",
                 ScenarioRequestParams.builder().params(scenarioParams).build()
             );

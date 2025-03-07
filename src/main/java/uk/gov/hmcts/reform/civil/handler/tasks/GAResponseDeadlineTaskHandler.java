@@ -14,10 +14,13 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.search.CaseStateSearchService;
 
 import java.util.List;
+import java.util.Set;
 
 import static java.time.LocalDateTime.now;
+import static java.util.stream.Collectors.toSet;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPONDENT_RESPONSE_DEADLINE_CHECK;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_RESPONDENT_RESPONSE;
 
 @Slf4j
@@ -34,11 +37,17 @@ public class GAResponseDeadlineTaskHandler extends BaseExternalTaskHandler {
 
     @Override
     public ExternalTaskData handleTask(ExternalTask externalTask) {
-        List<CaseDetails> cases = getAwaitingResponseCasesThatArePastDueDate();
-        log.info("Job '{}' found {} case(s)", externalTask.getTopicName(), cases.size());
+        Set<CaseDetails> cases = getAwaitingResponseCasesThatArePastDueDate();
+        List<Long> ids = cases.stream().map(CaseDetails::getId).toList();
+        log.info("GAResponseDeadlineTaskHandler Job '{}' found {} case(s) with ids {}", externalTask.getTopicName(), cases.size(), ids);
 
         cases.forEach(this::deleteDashboardNotifications);
         cases.forEach(this::fireEventForStateChange);
+
+        Set<CaseDetails> caseList = getUrgentApplicationCasesThatArePastDueDate();
+        List<Long> ids2 = caseList.stream().map(CaseDetails::getId).toList();
+        log.info("GAResponseDeadlineTaskHandler Job '{}' found {} case(s) with ids {}", externalTask.getTopicName(), caseList.size(), ids2);
+        caseList.forEach(this::deleteDashboardNotifications);
 
         return ExternalTaskData.builder().build();
     }
@@ -69,8 +78,8 @@ public class GAResponseDeadlineTaskHandler extends BaseExternalTaskHandler {
         }
     }
 
-    protected List<CaseDetails> getAwaitingResponseCasesThatArePastDueDate() {
-        List<CaseDetails> awaitingResponseCases = caseSearchService
+    protected Set<CaseDetails> getAwaitingResponseCasesThatArePastDueDate() {
+        Set<CaseDetails> awaitingResponseCases = caseSearchService
             .getGeneralApplications(AWAITING_RESPONDENT_RESPONSE);
 
         return awaitingResponseCases.stream()
@@ -84,7 +93,25 @@ public class GAResponseDeadlineTaskHandler extends BaseExternalTaskHandler {
                 }
                 return false;
             })
-            .toList();
+            .collect(toSet());
+    }
+
+    protected Set<CaseDetails> getUrgentApplicationCasesThatArePastDueDate() {
+        Set<CaseDetails> awaitingResponseCases = caseSearchService
+            .getGeneralApplications(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION);
+
+        return awaitingResponseCases.stream()
+            .filter(a -> {
+                try {
+                    return caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate() != null
+                        && now().isAfter(
+                        caseDetailsConverter.toCaseData(a).getGeneralAppNotificationDeadlineDate());
+                } catch (Exception e) {
+                    log.error("GAResponseDeadlineTaskHandler failed: " + e);
+                }
+                return false;
+            })
+            .collect(toSet());
     }
 
     @Override

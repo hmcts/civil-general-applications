@@ -77,6 +77,46 @@ public class JudicialDecisionHelperTest {
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build()).build();
             assertThat(helper.isApplicationCreatedWithoutNoticeByApplicant(caseData)).isEqualTo(YES);
         }
+
+        @Test
+        void isLipApplicationCloaked_shouldReturnNoWhenGeneralAppInformOtherPartyIsNull() {
+            CaseData caseData = CaseData.builder().generalAppRespondentAgreement(
+                    GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .generalAppInformOtherParty(null).build();
+            assertThat(helper.isLipApplicationCreatedWithoutNoticeByApplicant(caseData)).isEqualTo(YES);
+        }
+
+        @Test
+        void isLipApplicationCloaked_shouldReturnNoWhenGeneralAppInformOtherPartyIsYes() {
+            CaseData caseData = CaseData.builder().generalAppRespondentAgreement(
+                    GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YES).build()).build();
+            assertThat(helper.isLipApplicationCreatedWithoutNoticeByApplicant(caseData)).isEqualTo(NO);
+        }
+
+        @Test
+        void isLipApplicationCloaked_shouldReturnNoWhenGeneralAppInformOtherPartyIsNo() {
+            CaseData caseData = CaseData.builder().generalAppRespondentAgreement(
+                    GARespondentOrderAgreement.builder().hasAgreed(NO).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build()).build();
+            assertThat(helper.isLipApplicationCreatedWithoutNoticeByApplicant(caseData)).isEqualTo(YES);
+        }
+
+        @Test
+        void isLipApplicationCloaked_shouldReturnNoWhenConsentOrder() {
+            CaseData caseData = CaseData.builder().generalAppRespondentAgreement(
+                    GARespondentOrderAgreement.builder().hasAgreed(NO).build()).generalAppConsentOrder(YES).build();
+            assertThat(helper.isLipApplicationCreatedWithoutNoticeByApplicant(caseData)).isEqualTo(NO);
+
+        }
+
+        @Test
+        void isLipApplicationCloaked_shouldReturnNoWhenConsentOrderIsNull() {
+            CaseData caseData = CaseData.builder().generalAppRespondentAgreement(
+                GARespondentOrderAgreement.builder().hasAgreed(NO).build()).build();
+            assertThat(helper.isLipApplicationCreatedWithoutNoticeByApplicant(caseData)).isEqualTo(YES);
+
+        }
     }
 
     @Nested
@@ -325,7 +365,7 @@ public class JudicialDecisionHelperTest {
                             .types(List.of(VARY_ORDER, EXTEND_TIME))
                             .build())
                     .build();
-            assertThat(helper.containsTypesNeedNoAdditionalFee(caseData)).isTrue();
+            assertThat(helper.containsTypesNeedNoAdditionalFee(caseData)).isFalse();
         }
     }
 

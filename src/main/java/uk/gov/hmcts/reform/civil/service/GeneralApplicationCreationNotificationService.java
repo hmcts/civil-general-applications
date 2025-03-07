@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
@@ -22,11 +23,14 @@ import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isNotificationCriteriaSatisfied;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isUrgentApplnNotificationCriteriaSatisfied;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GeneralApplicationCreationNotificationService  implements NotificationData {
 
     private static final String REFERENCE_TEMPLATE = "general-application-respondent-notification-%s";
+
+    private static final String EMPTY_SOLICITOR_REFERENCES_1V1 = "Claimant Reference: Not provided - Defendant Reference: Not provided";
 
     private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
@@ -41,6 +45,8 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
 
     public  CaseData sendNotification(CaseData caseData) throws NotificationException {
 
+        var caseReference = caseData.getCcdCaseReference();
+        log.info("Initiating notification process for Case ID: {}", caseReference);
         CaseData civilCaseData = caseDetailsConverter
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
@@ -54,6 +60,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
          * */
         if (isNotificationCriteriaSatisfied) {
 
+            log.info("Sending general notification to respondents for Case ID: {}", caseReference);
             List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = updatedCaseData
                 .getGeneralAppRespondentSolicitors();
 
@@ -73,6 +80,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
 
         if (isUrgentApplnNotificationCriteriaSatisfied
             && isFeePaid(updatedCaseData)) {
+            log.info("Sending urgent notification to respondents for Case ID: {}", caseReference);
 
             List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = updatedCaseData
                 .getGeneralAppRespondentSolicitors();
@@ -111,16 +119,28 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
             : notificationProperties.getLipGeneralAppRespondentEmailTemplate();
     }
 
+    private String getSolicitorReferences(String emailPartyReference) {
+        if (emailPartyReference != null) {
+            return emailPartyReference;
+        } else {
+            return EMPTY_SOLICITOR_REFERENCES_1V1;
+        }
+    }
+
     private void sendNotificationToGeneralAppRespondent(CaseData caseData, String recipient, String emailTemplate)
         throws NotificationException {
+        var caseReference = caseData.getCcdCaseReference();
         try {
+            log.info("Sending notification to recipient for Case ID: {} with template: {}", caseReference, emailTemplate);
             notificationService.sendMail(
                 recipient,
                 emailTemplate,
                 addProperties(caseData),
                 String.format(REFERENCE_TEMPLATE, caseData.getGeneralAppParentCaseLink().getCaseReference())
             );
+            log.info("Notification sent successfully for Case ID: {}", caseReference);
         } catch (NotificationException e) {
+            log.error("Failed to send notification for Case ID: {}", caseReference, e);
             throw new NotificationException(e);
         }
     }
@@ -138,9 +158,12 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
         return Map.of(
             APPLICANT_REFERENCE, YES.equals(caseData.getParentClaimantIsApplicant()) ? "claimant" : "respondent",
             CASE_REFERENCE, caseData.getGeneralAppParentCaseLink().getCaseReference(),
+            GENAPP_REFERENCE, String.valueOf(Objects.requireNonNull(caseData.getCcdCaseReference())),
             GA_NOTIFICATION_DEADLINE, DateFormatHelper
                 .formatLocalDateTime(caseData
                                          .getGeneralAppNotificationDeadlineDate(), DATE),
+            PARTY_REFERENCE,
+            Objects.requireNonNull(getSolicitorReferences(caseData.getEmailPartyReference())),
             GA_LIP_RESP_NAME, lipRespName,
 
             CASE_TITLE, Objects.requireNonNull(caseTitle)

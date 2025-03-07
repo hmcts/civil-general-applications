@@ -149,12 +149,14 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
                     caseData,
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
+            log.info("General app free form order has been generated for caseId: {}", caseData.getCcdCaseReference());
             caseDataBuilder.gaFinalOrderDocPreview(freeform.getDocumentLink());
         } else if (caseData.getFinalOrderSelection().equals(ASSISTED_ORDER) && errors.isEmpty()) {
             CaseDocument assistedOrder = assistedOrderFormGenerator.generate(
                 caseData,
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
+            log.info("Assisted order has been generated for caseId: {}", caseData.getCcdCaseReference());
             caseDataBuilder.gaFinalOrderDocPreview(assistedOrder.getDocumentLink());
         }
         return AboutToStartOrSubmitCallbackResponse.builder()
@@ -309,6 +311,7 @@ public class JudicialFinalDecisionHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         if (featureToggleService.isGaForLipsEnabled()) {
+            log.info("General app for LiP is enabled for caseId: {}", caseData.getCcdCaseReference());
             caseDataBuilder.bilingualHint(null);
         }
         caseDataBuilder.businessProcess(BusinessProcess.ready(GENERATE_DIRECTIONS_ORDER)).build();

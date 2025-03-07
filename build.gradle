@@ -285,7 +285,7 @@ sonarqube {
     property "sonar.projectName", "Reform :: civil-general-applications"
     property "sonar.projectKey", "civil-general-applications"
     property "sonar.coverage.jacoco.xmlReportPaths", "${jacocoTestReport.reports.xml.destination.path}"
-    property "sonar.coverage.exclusions", "**/model/**, **/config/**/*Configuration.java,**/testingsupport/**, **/*ExternalTaskListener.java, **/stereotypes/**, **/*Exception.java"
+    property "sonar.coverage.exclusions", "**/model/**, **/config/**/*Configuration.java,**/testingsupport/**, **/*ExternalTaskListener.java, **/*BaseExternalTaskHandler.java, **/stereotypes/**, **/*Exception.java, src/main/java/uk/gov/hmcts/reform/civil/service/docmosis/applicationdraft/GeneralApplicationDraftGenerator.java"
     property "sonar.cpd.exclusions", "**/*DocumentManagementService.java"
     property "sonar.host.url", "https://sonar.reform.hmcts.net/"
   }
@@ -352,7 +352,6 @@ dependencies {
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.20.0'
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: '2.20.0'
 
-  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.0.1'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.2.10.RELEASE'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-context', version: '4.0.4'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.0.4'

@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.ccd.model.SolicitorDetails;
+import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseCategory;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
@@ -99,13 +100,17 @@ public class CaseData implements MappableObject {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private final LocalDateTime createdDate;
     private final String detailsOfClaim;
+    private Party applicant1;
+    private Party respondent1;
     private final YesOrNo addApplicant2;
     private final GAApplicationType generalAppType;
     private final GARespondentOrderAgreement generalAppRespondentAgreement;
     private final YesOrNo generalAppConsentOrder;
     private final GAPbaDetails generalAppPBADetails;
     private final String generalAppDetailsOfOrder;
+    private final List<Element<String>> generalAppDetailsOfOrderColl;
     private final String generalAppReasonsOfOrder;
+    private final List<Element<String>> generalAppReasonsOfOrderColl;
     private final String legacyCaseReference;
     private final LocalDateTime notificationDeadline;
     private final LocalDate submittedOn;
@@ -113,6 +118,7 @@ public class CaseData implements MappableObject {
     private final GAInformOtherParty generalAppInformOtherParty;
     private final GAUrgencyRequirement generalAppUrgencyRequirement;
     private final GAStatementOfTruth generalAppStatementOfTruth;
+    private final GAStatementOfTruth generalAppResponseStatementOfTruth;
     private final GAHearingDetails generalAppHearingDetails;
     private final GASolicitorDetailsGAspec generalAppApplnSolicitor;
     private final List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors;
@@ -122,6 +128,7 @@ public class CaseData implements MappableObject {
     private final String generalAppRespondReason;
     private final String generalAppRespondConsentReason;
     private List<Element<TranslatedDocument>> translatedDocuments;
+    private List<Element<TranslatedDocument>> translatedDocumentsBulkPrint;
     private final List<Element<Document>> generalAppRespondDocument;
     private final List<Element<Document>> generalAppRespondConsentDocument;
     private final List<Element<Document>> generalAppRespondDebtorDocument;
@@ -140,8 +147,6 @@ public class CaseData implements MappableObject {
     private final YesOrNo isMultiParty;
     private final YesOrNo parentClaimantIsApplicant;
     private final CaseLink caseLink;
-    private Party applicant1;
-    private Party respondent1;
     private GeneralAppParentCaseLink generalAppParentCaseLink;
     private final IdamUserDetails applicantSolicitor1UserDetails;
     private final IdamUserDetails civilServiceUserRoles;
@@ -359,6 +364,16 @@ public class CaseData implements MappableObject {
     private YesOrNo bilingualHint;
     private YesOrNo applicantBilingualLanguagePreference;
     private YesOrNo respondentBilingualLanguagePreference;
+    //WA claim track description
+    private final String gaWaTrackLabel;
+    private final String emailPartyReference;
+
+    @Builder.Default
+    private final List<Value<Document>> caseDocuments = new ArrayList<>();
+    private final String caseDocument1Name;
+
+    @Builder.Default
+    private final List<IdValue<Bundle>> caseBundles = new ArrayList<>();
 
     @JsonIgnore
     public boolean isHWFTypeApplication() {
@@ -525,10 +540,19 @@ public class CaseData implements MappableObject {
     }
 
     @JsonIgnore
-    public boolean claimIssueFullRemissionNotGrantedHWF(CaseData caseData) {
-        return Objects.nonNull(caseData.getFeePaymentOutcomeDetails())
-            && (caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == NO
-            || caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForAdditionalFee() == NO);
+    public boolean gaApplicationFeeFullRemissionNotGrantedHWF(CaseData caseData) {
+        return (Objects.nonNull(caseData.getFeePaymentOutcomeDetails())
+            && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForGa() == NO)
+            || (Objects.nonNull(caseData.getGaHwfDetails())
+            && caseData.getGaHwfDetails().getHwfCaseEvent() == CaseEvent.NO_REMISSION_HWF_GA);
+    }
+
+    @JsonIgnore
+    public boolean gaAdditionalFeeFullRemissionNotGrantedHWF(CaseData caseData) {
+        return (Objects.nonNull(caseData.getFeePaymentOutcomeDetails())
+            && caseData.getFeePaymentOutcomeDetails().getHwfFullRemissionGrantedForAdditionalFee() == NO)
+            || (Objects.nonNull(caseData.getAdditionalHwfDetails())
+            && caseData.getAdditionalHwfDetails().getHwfCaseEvent() == CaseEvent.NO_REMISSION_HWF_GA);
     }
 
     @JsonIgnore

@@ -27,6 +27,12 @@ public class JudicialDecisionHelper {
             ? YES : NO;
     }
 
+    public YesOrNo isLipApplicationCreatedWithoutNoticeByApplicant(CaseData caseData) {
+        return (caseData.getGeneralAppInformOtherParty() != null
+            && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())
+            || Objects.nonNull(caseData.getGeneralAppConsentOrder())) ? NO : YES;
+    }
+
     public boolean isApplicantAndRespondentLocationPrefSame(CaseData caseData) {
         if (caseData.getGeneralAppHearingDetails() == null
             || caseData.getGeneralAppHearingDetails().getHearingPreferredLocation() == null
@@ -64,12 +70,8 @@ public class JudicialDecisionHelper {
     }
 
     public boolean containsTypesNeedNoAdditionalFee(CaseData caseData) {
-        if (caseData.getGeneralAppType().getTypes().size() == 1
+        return caseData.getGeneralAppType().getTypes().size() == 1
                 && caseData.getGeneralAppType().getTypes()
-                .contains(GeneralApplicationTypes.SET_ASIDE_JUDGEMENT)) {
-            return true;
-        }
-        return caseData.getGeneralAppType().getTypes()
-                .contains(GeneralApplicationTypes.VARY_ORDER);
+                .contains(GeneralApplicationTypes.SET_ASIDE_JUDGEMENT);
     }
 }

@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.MID;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.FEE_PAYMENT_OUTCOME_GA;
@@ -15,6 +16,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_GA_ADD_HWF;
 import org.junit.jupiter.api.BeforeEach;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
@@ -73,6 +75,94 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
     }
 
     @Nested
+    class AboutToStartCallbackHandling {
+
+        @Test
+        void updateFeeType_shouldSetAdditionalFeeTypeWithEmptyRef_whenCaseStateIsApplicationAddPayment() {
+            // Arrange
+            CaseData caseData = CaseData.builder()
+                .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
+                .generalAppHelpWithFees(HelpWithFees.builder().build())
+                .hwfFeeType(FeeType.ADDITIONAL)
+                .generalAppPBADetails(GAPbaDetails.builder().fee(
+                    Fee.builder()
+                        .calculatedAmountInPence(BigDecimal.valueOf(180))
+                        .code("FEE123").build()).build())
+                .build();
+
+            // Act
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
+            AboutToStartOrSubmitCallbackResponse response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+            // Assert
+            assertThat(updatedData.getHwfFeeType()).isEqualTo(FeeType.ADDITIONAL);
+            assertThat(updatedData.getFeePaymentOutcomeDetails().getHwfNumberAvailable()).isEqualTo(YesOrNo.NO);
+        }
+
+        @Test
+        void updateFeeType_shouldSetAdditionalFeeTypeWithRef_whenCaseStateIsApplicationAddPayment() {
+            // Arrange
+            CaseData caseData = CaseData.builder()
+                .ccdState(CaseState.APPLICATION_ADD_PAYMENT)
+                .hwfFeeType(FeeType.ADDITIONAL)
+                .generalAppHelpWithFees(HelpWithFees.builder().helpWithFeesReferenceNumber("123").build())
+                .build();
+
+            // Act
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
+            AboutToStartOrSubmitCallbackResponse response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+            // Assert
+            assertThat(updatedData.getHwfFeeType()).isEqualTo(FeeType.ADDITIONAL);
+            assertThat(updatedData.getFeePaymentOutcomeDetails().getHwfNumberAvailable()).isEqualTo(YesOrNo.YES);
+            assertThat(updatedData.getFeePaymentOutcomeDetails().getHwfNumberForFeePaymentOutcome()).isEqualTo("123");
+        }
+
+        @Test
+        void updateFeeType_shouldSetApplicationFeeTypeWithEmptyRef_whenCaseStateIsNotApplicationAddPayment() {
+            // Arrange
+            CaseData caseData = CaseData.builder()
+                .ccdState(CaseState.AWAITING_RESPONDENT_RESPONSE)
+                .hwfFeeType(FeeType.APPLICATION)
+                .generalAppHelpWithFees(HelpWithFees.builder().build())
+                .generalAppPBADetails(GAPbaDetails.builder().fee(
+                    Fee.builder()
+                        .calculatedAmountInPence(BigDecimal.valueOf(180))
+                        .code("FEE123").build()).build())
+                .build();
+
+            // Act
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
+            AboutToStartOrSubmitCallbackResponse response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            // Assert
+            assertThat(updatedData.getHwfFeeType()).isEqualTo(FeeType.APPLICATION);
+            assertThat(updatedData.getFeePaymentOutcomeDetails().getHwfNumberAvailable()).isEqualTo(YesOrNo.NO);
+        }
+
+        @Test
+        void updateFeeType_shouldSetApplicationFeeTypeWithRef_whenCaseStateIsNotApplicationAddPayment() {
+            // Arrange
+            CaseData caseData = CaseData.builder()
+                .ccdState(CaseState.AWAITING_RESPONDENT_RESPONSE)
+                .hwfFeeType(FeeType.APPLICATION)
+                .generalAppHelpWithFees(HelpWithFees.builder().helpWithFeesReferenceNumber("123").build())
+                .build();
+
+            // Act
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_START);
+            AboutToStartOrSubmitCallbackResponse response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            // Assert
+            assertThat(updatedData.getHwfFeeType()).isEqualTo(FeeType.APPLICATION);
+            assertThat(updatedData.getFeePaymentOutcomeDetails().getHwfNumberAvailable()).isEqualTo(YesOrNo.YES);
+            assertThat(updatedData.getFeePaymentOutcomeDetails().getHwfNumberForFeePaymentOutcome()).isEqualTo("123");
+        }
+    }
+
+    @Nested
     class MidCallback {
 
         @Test
@@ -84,7 +174,7 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
                             .hwfFullRemissionGrantedForGa(YesOrNo.YES).build())
                     .hwfFeeType(FeeType.APPLICATION)
                     .gaHwfDetails(HelpWithFeesDetails.builder()
-                            .outstandingFeeInPounds(BigDecimal.valueOf(100.00))
+                            .outstandingFee(BigDecimal.valueOf(100.00))
                             .build())
                     .build();
             //When
@@ -103,7 +193,7 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
                             .hwfFullRemissionGrantedForAdditionalFee(YesOrNo.YES).build())
                     .hwfFeeType(FeeType.ADDITIONAL)
                     .additionalHwfDetails(HelpWithFeesDetails.builder()
-                            .outstandingFeeInPounds(BigDecimal.valueOf(100.00))
+                            .outstandingFee(BigDecimal.valueOf(100.00))
                             .build())
                     .build();
             //When

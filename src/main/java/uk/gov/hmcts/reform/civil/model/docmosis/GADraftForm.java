@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Builder(toBuilder = true)
@@ -54,14 +55,7 @@ public class GADraftForm implements MappableObject {
     private final String hearingDetailsTelephoneNumber;
     private final String hearingDetailsEmailId;
     private final YesOrNo unavailableTrialRequiredYesOrNo;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
-    @JsonSerialize(using = LocalDateSerializer.class)
-    private final LocalDate unavailableTrialDateFrom;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
-    @JsonSerialize(using = LocalDateSerializer.class)
-    private final LocalDate unavailableTrialDateTo;
+    private final List<UnavailableDates> unavailableTrialDates;
 
     private final YesOrNo vulnerabilityQuestionsYesOrNo;
     private final String supportRequirement;
@@ -72,6 +66,9 @@ public class GADraftForm implements MappableObject {
     private final String supportRequirementOther;
     private final Boolean isOtherSupportExists;
     private final String name;
+    private final String role;
+    private final String responseSotName;
+    private final String responseSotRole;
 
     private final YesOrNo resp1HasAgreed;
     private final YesOrNo gaResp1Consent;
@@ -89,13 +86,7 @@ public class GADraftForm implements MappableObject {
     private final String resp1PreferredTelephone;
     private final String resp1PreferredEmail;
     private final YesOrNo resp1UnavailableTrialRequired;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
-    @JsonSerialize(using = LocalDateSerializer.class)
-    private final LocalDate resp1UnavailableTrialDateFrom;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
-    @JsonSerialize(using = LocalDateSerializer.class)
-    private final LocalDate resp1UnavailableTrialDateTo;
+    private List<UnavailableDates> resp1UnavailableTrialDates;
 
     private final YesOrNo resp1VulnerableQuestions;
     private final String resp1SupportRequirement;
@@ -125,13 +116,7 @@ public class GADraftForm implements MappableObject {
     private final String resp2PreferredTelephone;
     private final String resp2PreferredEmail;
     private final YesOrNo resp2UnavailableTrialRequired;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
-    @JsonSerialize(using = LocalDateSerializer.class)
-    private final LocalDate resp2UnavailableTrialDateFrom;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
-    @JsonSerialize(using = LocalDateSerializer.class)
-    private final LocalDate resp2UnavailableTrialDateTo;
+    private List<UnavailableDates> resp2UnavailableTrialDates;
 
     private final YesOrNo resp2VulnerableQuestions;
     private final String resp2SupportRequirement;
@@ -142,4 +127,5 @@ public class GADraftForm implements MappableObject {
     private final Boolean isResp2LanguageInterpreterExists;
     private final Boolean isResp2OtherSupportExists;
     private final Boolean isCasePastDueDate;
+    private final YesOrNo isLipCase;
 }

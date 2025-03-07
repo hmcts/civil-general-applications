@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.dismissalorder;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
@@ -22,7 +23,9 @@ import java.util.List;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.DISMISSAL_ORDER;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_DISMISSAL_ORDER_LIP;
+import static uk.gov.hmcts.reform.civil.service.docmosis.generalorder.GeneralOrderGenerator.showRecital;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
@@ -41,6 +44,7 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecis
 
         JudgeDecisionPdfDocument templateData = getTemplateData(civilCaseData, caseData, authorisation, userType);
 
+        log.info("Generate dismissal order for caseId: {}", caseData.getCcdCaseReference());
         return generateDocmosisDocument(templateData, authorisation, userType);
     }
 
@@ -81,7 +85,7 @@ public class DismissalOrderGenerator implements TemplateDataGenerator<JudgeDecis
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())
-                .judgeRecital(caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText())
+                .judgeRecital(showRecital(caseData) ? caseData.getJudicialDecisionMakeOrder().getJudgeRecitalText() : null)
                 .dismissalOrder(caseData.getJudicialDecisionMakeOrder().getDismissalOrderText())
                 .submittedOn(LocalDate.now())
                 .reasonAvailable(docmosisService.reasonAvailable(caseData))

@@ -10,21 +10,25 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
 import uk.gov.hmcts.reform.civil.enums.MakeAppAvailableCheckGAspec;
+import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.FeePaymentOutcomeDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GADetailsRespondentSol;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAMakeApplicationAvailableCheck;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplicationsDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesDetails;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.service.AssignCaseToResopondentSolHelper;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -46,7 +50,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.FULL_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MODIFY_STATE_AFTER_ADDITIONAL_FEE_PAID;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NO_REMISSION_HWF_GA;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.PARTIAL_REMISSION_HWF_GA;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_CLOSED;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.AWAITING_APPLICATION_PAYMENT;
@@ -233,7 +240,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             .thenReturn(AWAITING_RESPONDENT_RESPONSE);
         when(coreCaseDataService.getCase(any())).thenReturn(CaseDetails.builder().build());
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
         HashMap<String, Object> scenarioParams = new HashMap<>();
@@ -251,7 +257,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             ScenarioRequestParams.builder().params(scenarioParams).build()
         );
         verify(dashboardApiClient).recordScenario(
-            caseData.getCcdCaseReference().toString(),
+            caseData.getParentCaseReference(),
             SCENARIO_AAA6_GENERAL_APPLICATION_ACTION_NEEDED_DEFENDANT.getScenario(),
             "BEARER_TOKEN",
             ScenarioRequestParams.builder().params(scenarioParams).build()
@@ -280,7 +286,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             .thenReturn(AWAITING_RESPONDENT_RESPONSE);
         when(coreCaseDataService.getCase(any())).thenReturn(CaseDetails.builder().build());
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
         HashMap<String, Object> scenarioParams = new HashMap<>();
@@ -292,13 +297,13 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             AWAITING_RESPONDENT_RESPONSE.getDisplayedValue()
         );
         verify(dashboardApiClient).recordScenario(
-            caseData.getCcdCaseReference().toString(),
+            caseData.getParentCaseReference(),
             SCENARIO_AAA6_GENERAL_APPLICATION_IN_PROGRESS_CLAIMANT.getScenario(),
             "BEARER_TOKEN",
             ScenarioRequestParams.builder().params(scenarioParams).build()
         );
         verify(dashboardApiClient).recordScenario(
-            caseData.getCcdCaseReference().toString(),
+            caseData.getParentCaseReference(),
             SCENARIO_AAA6_GENERAL_APPLICATION_IN_PROGRESS_DEFENDANT.getScenario(),
             "BEARER_TOKEN",
             ScenarioRequestParams.builder().params(scenarioParams).build()
@@ -327,7 +332,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             .thenReturn(AWAITING_RESPONDENT_RESPONSE);
         when(coreCaseDataService.getCase(any())).thenReturn(CaseDetails.builder().build());
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
         HashMap<String, Object> scenarioParams = new HashMap<>();
@@ -339,13 +343,13 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             AWAITING_RESPONDENT_RESPONSE.getDisplayedValue()
         );
         verify(dashboardApiClient).recordScenario(
-            caseData.getCcdCaseReference().toString(),
+            caseData.getParentCaseReference(),
             SCENARIO_AAA6_GENERAL_APPLICATION_AVAILABLE_CLAIMANT.getScenario(),
             "BEARER_TOKEN",
             ScenarioRequestParams.builder().params(scenarioParams).build()
         );
         verify(dashboardApiClient).recordScenario(
-            caseData.getCcdCaseReference().toString(),
+            caseData.getParentCaseReference(),
             SCENARIO_AAA6_GENERAL_APPLICATION_AVAILABLE_DEFENDANT.getScenario(),
             "BEARER_TOKEN",
             ScenarioRequestParams.builder().params(scenarioParams).build()
@@ -369,11 +373,11 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             .isGaRespondentOneLip(YES)
             .parentClaimantIsApplicant(YES)
             .isGaApplicantLip(NO)
-            .ccdCaseReference(CCD_CASE_REFERENCE).build();
+            .ccdCaseReference(CCD_CASE_REFERENCE).build()
+            .toBuilder().parentCaseReference("1234").build();
 
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
@@ -383,7 +387,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
         handler.handle(params);
 
         verify(dashboardApiClient).recordScenario(
-            caseData.getCcdCaseReference().toString(),
+            caseData.getParentCaseReference(),
             SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario(),
             "BEARER_TOKEN",
             ScenarioRequestParams.builder().params(scenarioParams).build()
@@ -391,7 +395,7 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
     }
 
     @Test
-    void shouldUpdateClaimantTaskListIfGaApplicantLipAndFeeIsPaid() {
+    void shouldUpdateClaimantTaskListIfGaApplicantLipAndFeeIsPaidPartialRemission() {
 
         CaseData caseData = CaseData.builder()
             .isMultiParty(NO)
@@ -403,7 +407,8 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             .isGaApplicantLip(YES)
             .feePaymentOutcomeDetails(FeePaymentOutcomeDetails
                                           .builder()
-                                          .hwfFullRemissionGrantedForGa(NO).build())
+                                          .hwfFullRemissionGrantedForAdditionalFee(NO).build())
+            .additionalHwfDetails(HelpWithFeesDetails.builder().hwfCaseEvent(PARTIAL_REMISSION_HWF_GA).build())
             .generalAppHelpWithFees(
                 HelpWithFees.builder()
                     .helpWithFeesReferenceNumber("ABC-DEF-IJK")
@@ -412,7 +417,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
@@ -424,6 +428,90 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
         verify(dashboardApiClient).recordScenario(
             caseData.getCcdCaseReference().toString(),
             SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario(),
+            "BEARER_TOKEN",
+            ScenarioRequestParams.builder().params(scenarioParams).build()
+        );
+        verify(dashboardApiClient).recordScenario(
+            caseData.getCcdCaseReference().toString(),
+            SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario(),
+            "BEARER_TOKEN",
+            ScenarioRequestParams.builder().params(scenarioParams).build()
+        );
+    }
+
+    @Test
+    void shouldUpdateClaimantTaskListIfGaApplicantLipAndFeeIsPaidNoRemission() {
+
+        CaseData caseData = CaseData.builder()
+            .isMultiParty(NO)
+            .generalAppRespondentSolicitors(getRespondentSolicitors())
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                                          .email("test@gmail.com").organisationIdentifier("org1").build())
+            .makeAppVisibleToRespondents(gaMakeApplicationAvailableCheck)
+            .isGaRespondentOneLip(NO)
+            .isGaApplicantLip(YES)
+            .additionalHwfDetails(HelpWithFeesDetails.builder().hwfCaseEvent(NO_REMISSION_HWF_GA).build())
+            .generalAppHelpWithFees(
+                HelpWithFees.builder()
+                    .helpWithFeesReferenceNumber("ABC-DEF-IJK")
+                    .helpWithFee(YES).build())
+            .ccdCaseReference(CCD_CASE_REFERENCE).build();
+
+        HashMap<String, Object> scenarioParams = new HashMap<>();
+
+        when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
+        when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+        when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
+            .thenReturn(AWAITING_RESPONDENT_RESPONSE);
+
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        handler.handle(params);
+
+        verify(dashboardApiClient).recordScenario(
+            caseData.getCcdCaseReference().toString(),
+            SCENARIO_AAA6_GENERAL_APPS_HWF_FEE_PAID_APPLICANT.getScenario(),
+            "BEARER_TOKEN",
+            ScenarioRequestParams.builder().params(scenarioParams).build()
+        );
+        verify(dashboardApiClient).recordScenario(
+            caseData.getCcdCaseReference().toString(),
+            SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario(),
+            "BEARER_TOKEN",
+            ScenarioRequestParams.builder().params(scenarioParams).build()
+        );
+    }
+
+    @Test
+    void shouldUpdateClaimantTaskListIfGaApplicantLipAndFeeIsPaidThroughWhenHwfIsRejected() {
+
+        CaseData caseData = CaseData.builder()
+            .isMultiParty(NO)
+            .generalAppRespondentSolicitors(getRespondentSolicitors())
+            .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().id("id")
+                                          .email("test@gmail.com").organisationIdentifier("org1").build())
+            .makeAppVisibleToRespondents(gaMakeApplicationAvailableCheck)
+            .isGaRespondentOneLip(NO)
+            .isGaApplicantLip(YES)
+            .generalAppHelpWithFees(
+                HelpWithFees.builder()
+                    .helpWithFeesReferenceNumber("ABC-DEF-IJK")
+                    .helpWithFee(YES).build())
+            .additionalHwfDetails(HelpWithFeesDetails.builder().hwfCaseEvent(NO_REMISSION_HWF_GA).build())
+            .ccdCaseReference(CCD_CASE_REFERENCE).build();
+
+        HashMap<String, Object> scenarioParams = new HashMap<>();
+
+        when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
+        when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
+        when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
+            .thenReturn(AWAITING_RESPONDENT_RESPONSE);
+
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        handler.handle(params);
+
+        verify(dashboardApiClient).recordScenario(
+            caseData.getCcdCaseReference().toString(),
+            SCENARIO_AAA6_GENERAL_APPLICATION_SUBMITTED_APPLICANT.getScenario(),
             "BEARER_TOKEN",
             ScenarioRequestParams.builder().params(scenarioParams).build()
         );
@@ -447,11 +535,11 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
                 HelpWithFees.builder()
                     .helpWithFeesReferenceNumber("ABC-DEF-IJK")
                     .helpWithFee(YES).build())
+            .additionalHwfDetails(HelpWithFeesDetails.builder().hwfCaseEvent(FULL_REMISSION_HWF_GA).build())
             .ccdCaseReference(CCD_CASE_REFERENCE).build();
 
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
@@ -483,7 +571,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(false);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
             .thenReturn(AWAITING_RESPONDENT_RESPONSE);
@@ -510,7 +597,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
@@ -543,7 +629,6 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
 
         HashMap<String, Object> scenarioParams = new HashMap<>();
 
-        when(featureToggleService.isDashboardServiceEnabled()).thenReturn(true);
         when(gaForLipService.isGaForLip(caseData)).thenReturn(true);
         when(mapper.mapCaseDataToParams(any())).thenReturn(scenarioParams);
         when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any()))
@@ -558,6 +643,41 @@ class ModifyStateAfterAdditionalFeeReceivedCallbackHandlerTest extends BaseCallb
             "BEARER_TOKEN",
             ScenarioRequestParams.builder().params(scenarioParams).build()
         );
+    }
+
+    @Test
+    void shouldNotUpdateApplication_whenPaymentFailed() {
+        CaseData caseData = CaseDataBuilder.builder().ccdCaseReference(CCD_CASE_REFERENCE).build();
+        caseData = caseData.toBuilder()
+            .parentCaseReference("1234")
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .additionalPaymentDetails(PaymentDetails.builder()
+                                                                    .status(PaymentStatus.FAILED).build()).build())
+            .build();
+        when(gaForLipService.isLipApp(caseData)).thenReturn(true);
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+        handler.handle(params);
+
+        verifyNoInteractions(dashboardApiClient);
+    }
+
+    @Test
+    void shouldNotUpdateParent_whenPaymentFailed() {
+        CaseData caseData = CaseDataBuilder.builder().ccdCaseReference(CCD_CASE_REFERENCE).build();
+        caseData = caseData.toBuilder()
+            .parentCaseReference("1234")
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .additionalPaymentDetails(PaymentDetails.builder()
+                                                                    .status(PaymentStatus.FAILED).build()).build())
+            .build();
+        when(gaForLipService.isLipApp(caseData)).thenReturn(true);
+        CallbackParams params = callbackParamsOf(caseData, SUBMITTED);
+
+        handler.handle(params);
+
+        verifyNoInteractions(parentCaseUpdateHelper);
+        verifyNoInteractions(dashboardApiClient);
     }
 
     public List<Element<GASolicitorDetailsGAspec>> getRespondentSolicitors() {

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.hearingorder;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
@@ -11,6 +12,7 @@ import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDe
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
+import uk.gov.hmcts.reform.civil.service.JudicialTimeEstimateHelper;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
@@ -27,6 +29,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.HEARI
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_HEARING_ORDER_LIP;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService.DATE_FORMATTER;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisionPdfDocument> {
@@ -34,18 +37,19 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
     private final DocumentManagementService documentManagementService;
     private final DocumentGeneratorService documentGeneratorService;
     private final DocmosisService docmosisService;
+    private final JudicialTimeEstimateHelper timeEstimateHelper;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
 
         JudgeDecisionPdfDocument templateData = getTemplateData(null, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
-
+        log.info("Generate hearing order form with one respondent representative for caseId: {}", caseData.getCcdCaseReference());
         return generateDocmosisDocument(templateData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
     }
 
     public CaseDocument generate(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
 
         JudgeDecisionPdfDocument templateData = getTemplateData(civilCaseData, caseData, authorisation, userType);
-
+        log.info("Generate hearing order form for caseId: {}", caseData.getCcdCaseReference());
         return generateDocmosisDocument(templateData, authorisation, userType);
     }
 
@@ -87,8 +91,7 @@ public class HearingOrderGenerator implements TemplateDataGenerator<JudgeDecisio
                 .hearingOrder(caseData.getJudicialGOHearingDirections())
                 .hearingPrefType(caseData.getJudicialListForHearing()
                                      .getHearingPreferencesPreferredType().getDisplayedValue())
-                .estimatedHearingLength(caseData.getJudicialListForHearing()
-                                            .getJudicialTimeEstimate().getDisplayedValue())
+                .estimatedHearingLength(timeEstimateHelper.getEstimatedHearingLength(caseData))
                 .submittedOn(LocalDate.now())
                 .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getExternalShortName())
                 .judgeHearingLocation(caseData.getJudicialListForHearing()

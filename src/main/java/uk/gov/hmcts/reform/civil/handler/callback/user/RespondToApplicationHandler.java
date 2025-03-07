@@ -129,8 +129,10 @@ public class RespondToApplicationHandler extends CallbackHandler {
         if (caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT)
             && caseData.getParentClaimantIsApplicant().equals(NO)) {
             caseDataBuilder.generalAppVaryJudgementType(YesOrNo.YES);
+            log.info("General app vary judgement type for caseId: {}", caseData.getCcdCaseReference());
         } else {
             caseDataBuilder.generalAppVaryJudgementType(NO);
+            log.info("General app does not vary judgement type for caseId: {}", caseData.getCcdCaseReference());
         }
 
         caseDataBuilder
@@ -178,9 +180,19 @@ public class RespondToApplicationHandler extends CallbackHandler {
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         // Generate Dashboard Notification for Lip Party
         if (gaForLipService.isGaForLip(caseData)) {
-            dashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", authToken);
-            dashboardNotificationService.createResponseDashboardNotification(caseData, "RESPONDENT", authToken);
 
+            if (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppType().getTypes().contains(
+                GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT)) {
+                if (gaForLipService.isLipApp(caseData)) {
+                    dashboardNotificationService.createOfflineResponseDashboardNotification(caseData, "APPLICANT", authToken);
+                }
+                if (gaForLipService.isLipResp(caseData)) {
+                    dashboardNotificationService.createOfflineResponseDashboardNotification(caseData, "RESPONDENT", authToken);
+                }
+            } else {
+                dashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", authToken);
+                dashboardNotificationService.createResponseDashboardNotification(caseData, "RESPONDENT", authToken);
+            }
         }
 
         return SubmittedCallbackResponse.builder()
@@ -344,7 +356,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
     private GAHearingDetails populateHearingDetailsResp(CaseData caseData, UserInfo userInfo) {
         GAHearingDetails gaHearingDetailsResp;
         String preferredType = caseData.getHearingDetailsResp().getHearingPreferencesPreferredType().name();
-        if (preferredType.equals(PREFERRED_TYPE_IN_PERSON)
+        if ((preferredType.equals(PREFERRED_TYPE_IN_PERSON) || caseData.getIsGaRespondentOneLip() == YES)
             && Objects.nonNull(caseData.getHearingDetailsResp().getHearingPreferredLocation())
             && Objects.nonNull(caseData.getHearingDetailsResp().getHearingPreferredLocation().getValue())) {
             String applicationLocationLabel = caseData.getHearingDetailsResp()

@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -29,11 +30,13 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.sampledata.CallbackParamsBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDetailsBuilder;
 import uk.gov.hmcts.reform.civil.service.flowstate.FlowStateAllowedEventService;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,7 +45,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
@@ -138,6 +143,7 @@ class EventAllowedAspectTest {
                                                     .generalAppPBADetails(GAPbaDetails.builder().paymentDetails(
                                                         PaymentDetails.builder().status(PaymentStatus.SUCCESS)
                                                             .build()).build())
+                                                    .parentClaimantIsApplicant(YES)
                                                     .ccdCaseReference(12312312L)
                                                     .build()).build())
                          .build())
@@ -169,6 +175,7 @@ class EventAllowedAspectTest {
                                                             .build()).build())
                                                     .judicialDecision(GAJudicialDecision.builder().build())
                                                     .ccdCaseReference(12312312L)
+                                                    .parentClaimantIsApplicant(YES)
                                                     .build()).build())
                          .build())
             .build();
@@ -183,13 +190,15 @@ class EventAllowedAspectTest {
     void shouldProceedToMethodInvocation_whenEventIsAllowedForAboutToStartAdditionalInfo() {
         AboutToStartOrSubmitCallbackResponse response = AboutToStartOrSubmitCallbackResponse.builder().build();
         when(proceedingJoinPoint.proceed()).thenReturn(response);
-
+        List<GeneralApplicationTypes> types = Arrays.asList(VARY_PAYMENT_TERMS_OF_JUDGMENT);
         CallbackParams callbackParams = CallbackParamsBuilder.builder()
             .type(ABOUT_TO_START)
             .request(CallbackRequest.builder()
                          .eventId(CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO.name())
                          .caseDetails(CaseDetailsBuilder.builder()
                                           .data(CaseData.builder()
+                                                    .generalAppType(GAApplicationType.builder().types(types).build())
+                                                    .parentClaimantIsApplicant(NO)
                                                     .generalAppInformOtherParty(GAInformOtherParty.builder()
                                                                                     .isWithNotice(YES).build())
                                                     .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
@@ -234,6 +243,7 @@ class EventAllowedAspectTest {
                                                         GAJudicialMakeAnOrder.builder().makeAnOrder(
                                                         GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING)
                                                             .build())
+                                                    .parentClaimantIsApplicant(YES)
                                                     .ccdCaseReference(32312312L)
                                                     .build()).build())
                          .build())
@@ -266,6 +276,7 @@ class EventAllowedAspectTest {
                                                     .judicialDecision(GAJudicialDecision.builder().decision(
                                                         GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS)
                                                                           .build())
+                                                    .parentClaimantIsApplicant(YES)
                                                     .ccdCaseReference(32312312L)
                                                     .build()).build())
                          .build())
@@ -299,6 +310,7 @@ class EventAllowedAspectTest {
                                                             .build()).build())
                                                     .judicialDecision(GAJudicialDecision.builder().decision(
                                                         GAJudgeDecisionOption.LIST_FOR_A_HEARING).build())
+                                                    .parentClaimantIsApplicant(YES)
                                                     .ccdCaseReference(32312312L)
                                                     .build()).build())
                          .build())
