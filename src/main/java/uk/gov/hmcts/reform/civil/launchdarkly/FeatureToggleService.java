@@ -72,10 +72,6 @@ public class FeatureToggleService {
         }
     }
 
-    public boolean isMintiEnabled() {
-        return internalClient.boolVariation("minti", createLDUser().build(), false);
-    }
-
     public boolean isFeatureEnabledForDate(String feature, Long date, boolean defaultValue) {
         return internalClient.boolVariation(feature, createLDUser().custom("timestamp", date).build(), defaultValue);
     }
@@ -84,7 +80,6 @@ public class FeatureToggleService {
         ZoneId zoneId = ZoneId.systemDefault();
         long epoch;
         epoch = LocalDateTime.now().atZone(zoneId).toEpochSecond();
-        return isMintiEnabled()
-            && isFeatureEnabledForDate("multi-or-intermediate-track", epoch, false);
+        return isFeatureEnabledForDate("multi-or-intermediate-track", epoch, false);
     }
 }

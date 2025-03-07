@@ -144,22 +144,12 @@ class FeatureToggleServiceTest {
             .containsOnlyOnceElementsOf(customAttributesKeys);
     }
 
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void shouldReturnCorrectValue_whenMintiEnabled(Boolean toggleStat) {
-        var minti = "minti";
-        givenToggle(minti, toggleStat);
-
-        assertThat(featureToggleService.isMintiEnabled()).isEqualTo(toggleStat);
-    }
-
     @Test
     void shouldReturnFalse_whenFeatureIsDisabled() {
         String featureKey = "multi-or-intermediate-track";
         ZoneId zoneId = ZoneId.systemDefault();
         long epoch = LocalDateTime.now().atZone(zoneId).toEpochSecond();
 
-        when(featureToggleService.isMintiEnabled()).thenReturn(true);
         when(featureToggleService.isFeatureEnabledForDate(eq(featureKey), eq(epoch), eq(false)))
             .thenReturn(false);
 
