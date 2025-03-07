@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 @Slf4j
 @Service
@@ -76,10 +74,4 @@ public class FeatureToggleService {
         return internalClient.boolVariation(feature, createLDUser().custom("timestamp", date).build(), defaultValue);
     }
 
-    public boolean isMultiOrIntermediateTrackEnabled() {
-        ZoneId zoneId = ZoneId.systemDefault();
-        long epoch;
-        epoch = LocalDateTime.now().atZone(zoneId).toEpochSecond();
-        return isFeatureEnabledForDate("multi-or-intermediate-track", epoch, false);
-    }
 }
