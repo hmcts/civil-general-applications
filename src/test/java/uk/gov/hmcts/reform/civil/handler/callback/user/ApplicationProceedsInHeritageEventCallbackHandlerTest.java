@@ -17,16 +17,24 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
+import uk.gov.hmcts.reform.civil.service.DocUploadDashboardNotificationService;
+import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.Time;
 
 import java.time.LocalDateTime;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.CaseDefinitionConstants.NON_LIVE_STATES;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.APPLICATION_PROCEEDS_IN_HERITAGE;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PROCEEDS_IN_HERITAGE;
 
 @ExtendWith(SpringExtension.class)
@@ -37,6 +45,10 @@ class ApplicationProceedsInHeritageEventCallbackHandlerTest  extends BaseCallbac
 
     @MockBean
     private Time time;
+    @MockBean
+    GaForLipService gaForLipService;
+    @MockBean
+    private DocUploadDashboardNotificationService dashboardNotificationService;
 
     @Autowired
     private ApplicationProceedsInHeritageEventCallbackHandler handler;
@@ -50,6 +62,7 @@ class ApplicationProceedsInHeritageEventCallbackHandlerTest  extends BaseCallbac
         void setup() {
             localDateTime = LocalDateTime.now();
             when(time.now()).thenReturn(localDateTime);
+            when(gaForLipService.isGaForLip(any())).thenReturn(false);
         }
 
         @ParameterizedTest(name = "The application is in {0} state")
@@ -75,6 +88,72 @@ class ApplicationProceedsInHeritageEventCallbackHandlerTest  extends BaseCallbac
             } else {
                 assertThat(response).isEqualTo(AboutToStartOrSubmitCallbackResponse.builder().build());
             }
+        }
+
+        @Test
+        void shouldThrowNotificationTwiceWhenCaseIsLipVsLip() {
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
+            when(gaForLipService.isLipResp(any())).thenReturn(true);
+            CaseData caseData = CaseDataBuilder.builder()
+                .ccdCaseReference(1234L)
+                .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION).build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(dashboardNotificationService, times(2))
+                .createOfflineResponseDashboardNotification(any(), any(), anyString());
+            assertThat(response).isNotNull();
+        }
+
+        @Test
+        void shouldNotSendAnyDashboardNotificationsWhenLRvsLR() {
+            when(gaForLipService.isGaForLip(any())).thenReturn(false);
+            when(gaForLipService.isLipApp(any())).thenReturn(false);
+            when(gaForLipService.isLipResp(any())).thenReturn(false);
+            CaseData caseData = CaseDataBuilder.builder()
+                .ccdCaseReference(1234L)
+                .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION).build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verifyNoInteractions(dashboardNotificationService);
+
+            assertThat(response).isNotNull();
+        }
+
+        @Test
+        void shouldThrowNotificationApplicationWhenItisLipCaseAndLipApplicant() {
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
+            when(gaForLipService.isLipResp(any())).thenReturn(false);
+            CaseData caseData = CaseDataBuilder.builder()
+                .ccdCaseReference(1234L)
+                .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION).build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(dashboardNotificationService).createOfflineResponseDashboardNotification(any(), any(), anyString());
+            assertThat(response).isNotNull();
+        }
+
+        @Test
+        void shouldThrowNotificationOnlyOnceToLipApplicant() {
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
+            when(gaForLipService.isLipResp(any())).thenReturn(false);
+            CaseData caseData = CaseDataBuilder.builder()
+                .ccdCaseReference(1234L)
+                .ccdState(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION).build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(dashboardNotificationService).createOfflineResponseDashboardNotification(any(), any(), anyString());
+            assertThat(response).isNotNull();
         }
     }
 

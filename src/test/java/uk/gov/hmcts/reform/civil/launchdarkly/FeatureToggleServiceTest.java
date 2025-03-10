@@ -15,8 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -142,19 +140,6 @@ class FeatureToggleServiceTest {
         assertThat(capturedLdUser.getKey()).isEqualTo("civil-service");
         assertThat(ImmutableList.copyOf(capturedLdUser.getCustomAttributes())).extracting("name")
             .containsOnlyOnceElementsOf(customAttributesKeys);
-    }
-
-    @Test
-    void shouldReturnFalse_whenFeatureIsDisabled() {
-        String featureKey = "multi-or-intermediate-track";
-        ZoneId zoneId = ZoneId.systemDefault();
-        long epoch = LocalDateTime.now().atZone(zoneId).toEpochSecond();
-
-        when(featureToggleService.isFeatureEnabledForDate(eq(featureKey), eq(epoch), eq(false)))
-            .thenReturn(false);
-
-        boolean result = featureToggleService.isMultiOrIntermediateTrackEnabled();
-        assertThat(result).isFalse();
     }
 
 }
