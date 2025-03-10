@@ -156,9 +156,7 @@ public class AssignCaseToUserCallbackHandler extends CallbackHandler {
 
             }
 
-            if (featureToggleService.isMultiOrIntermediateTrackEnabled()) {
-                rolesAndAccessAssignmentService.copyAllocatedRolesFromRolesAndAccess(caseData.getGeneralAppParentCaseLink().getCaseReference(), caseId);
-            }
+            rolesAndAccessAssignmentService.copyAllocatedRolesFromRolesAndAccess(caseData.getGeneralAppParentCaseLink().getCaseReference(), caseId);
 
             return AboutToStartOrSubmitCallbackResponse.builder().data(caseDataBuilder.build().toMap(mapper)).errors(
                     errors)
