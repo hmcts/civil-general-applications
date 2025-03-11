@@ -358,12 +358,12 @@ public class DocUploadDashboardNotificationServiceTest {
 
             docUploadDashboardNotificationService.createOfflineResponseDashboardNotification(
                 caseData,
-                "DEFENDANT",
+                "RESPONDENT",
                 "BEARER_TOKEN"
             );
 
             verify(dashboardApiClient).recordScenario(
-                caseData.getParentCaseReference(),
+                caseData.getCcdCaseReference().toString(),
                 SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_RESPONDENT.getScenario(),
                 "BEARER_TOKEN",
                 ScenarioRequestParams.builder().params(scenarioParams).build()
@@ -406,12 +406,13 @@ public class DocUploadDashboardNotificationServiceTest {
 
             docUploadDashboardNotificationService.createOfflineResponseDashboardNotification(
                 caseData,
-                "CLAIMANT",
+                "APPLICANT",
                 "BEARER_TOKEN"
             );
 
             verify(dashboardApiClient).recordScenario(
-                caseData.getParentCaseReference(),
+                caseData.getCcdCaseReference().toString(),
+
                 SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_APPLICANT.getScenario(),
                 "BEARER_TOKEN",
                 ScenarioRequestParams.builder().params(scenarioParams).build()
@@ -514,7 +515,7 @@ public class DocUploadDashboardNotificationServiceTest {
 
             docUploadDashboardNotificationService.createOfflineResponseDashboardNotification(
                 caseData,
-                "APPLICANT",
+                "CLAIMANT",
                 "BEARER_TOKEN"
             );
 
@@ -562,7 +563,7 @@ public class DocUploadDashboardNotificationServiceTest {
 
             docUploadDashboardNotificationService.createOfflineResponseDashboardNotification(
                 caseData,
-                "RESPONDENT",
+                "DEFENDANT",
                 "BEARER_TOKEN"
             );
 
@@ -655,7 +656,7 @@ public class DocUploadDashboardNotificationServiceTest {
 
             docUploadDashboardNotificationService.createResponseDashboardNotification(
                 caseData,
-                "RESPONDENT",
+                "DEFENDANT",
                 "BEARER_TOKEN"
             );
 

@@ -5,6 +5,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.FeignClientProperties;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +22,13 @@ public interface DashboardApiClient {
         @PathVariable("scenario_ref") String scenarioReference,
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation,
         @Valid @RequestBody ScenarioRequestParams scenarioRequestParams
+    );
+
+    @DeleteMapping(path = "notifications/{ccd-case-identifier}/role/{role-type}")
+   ResponseEntity<Void> deleteNotificationsForCaseIdentifierAndRole(
+        @PathVariable("ccd-case-identifier") String ccdCaseIdentifier,
+        @PathVariable("role-type") String roleType,
+        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation
     );
 
 }

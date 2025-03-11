@@ -184,10 +184,10 @@ public class RespondToApplicationHandler extends CallbackHandler {
             if (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppType().getTypes().contains(
                 GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT)) {
                 if (gaForLipService.isLipApp(caseData)) {
-                    dashboardNotificationService.createOfflineResponseDashboardNotification(caseData, "DEFENDANT", authToken);
+                    dashboardNotificationService.createOfflineResponseDashboardNotification(caseData, "APPLICANT", authToken);
                 }
                 if (gaForLipService.isLipResp(caseData)) {
-                    dashboardNotificationService.createOfflineResponseDashboardNotification(caseData, "CLAIMANT", authToken);
+                    dashboardNotificationService.createOfflineResponseDashboardNotification(caseData, "RESPONDENT", authToken);
                 }
             } else {
                 dashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", authToken);
