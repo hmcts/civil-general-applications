@@ -84,6 +84,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOp
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.ADJOURN_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.EXTEND_TIME;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
@@ -492,6 +493,7 @@ public class CaseDataBuilder {
                             .build())
                     .serviceReqReference(CUSTOMER_REFERENCE).build())
             .applicant1OrganisationPolicy(OrganisationPolicy.builder().organisation(orgId).build())
+            .parentClaimantIsApplicant(YES)
             .generalAppApplnSolicitor(GASolicitorDetailsGAspec.builder().organisationIdentifier("OrgId").build())
             .build();
     }
@@ -499,9 +501,9 @@ public class CaseDataBuilder {
     public CaseData withNoticeCaseData() {
         uk.gov.hmcts.reform.ccd.model.Organisation orgId = uk.gov.hmcts.reform.ccd.model.Organisation.builder()
             .organisationID("OrgId").build();
-
+        List<GeneralApplicationTypes> types = Arrays.asList(VARY_PAYMENT_TERMS_OF_JUDGMENT);
         return build().toBuilder()
-            .ccdCaseReference(1644495739087775L)
+            .generalAppType(GAApplicationType.builder().types(types).build())
             .ccdCaseReference(1644495739087775L)
             .legacyCaseReference("000DC001")
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())

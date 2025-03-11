@@ -13,10 +13,15 @@ import uk.gov.hmcts.reform.dashboard.data.ScenarioRequestParams;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_GENERAL_APPLICATION_RESPONSE_SUBMITTED_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_APPLICANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_OTHER_PARTY_UPLOADED_DOC_APPLICANT;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_OTHER_PARTY_UPLOADED_DOC_RESPONDENT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_APPLICANT;
+import static uk.gov.hmcts.reform.civil.handler.callback.camunda.dashboardnotifications.DashboardScenarios.SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_RESPONDENT;
 
 @Slf4j
 @Service
@@ -72,6 +77,34 @@ public class DocUploadDashboardNotificationService {
         return null;
     }
 
+    public void createOfflineResponseDashboardNotification(CaseData caseData, String role, String authToken) {
+
+        String scenario = getResponseOfflineDashboardScenario(role, caseData, authToken);
+        ScenarioRequestParams scenarioParams = ScenarioRequestParams.builder().params(mapper.mapCaseDataToParams(
+            caseData)).build();
+        if (scenario != null) {
+            dashboardApiClient.recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                scenario,
+                authToken,
+                scenarioParams
+            );
+        }
+    }
+
+    private String getResponseOfflineDashboardScenario(String role, CaseData caseData, String authToken) {
+        if (role.equalsIgnoreCase("RESPONDENT")) {
+            dashboardApiClient.deleteNotificationsForCaseIdentifierAndRole(caseData.getCcdCaseReference().toString(),
+                                                                           "RESPONDENT", authToken);
+            return SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_RESPONDENT.getScenario();
+        } else if (role.equalsIgnoreCase("APPLICANT")) {
+            dashboardApiClient.deleteNotificationsForCaseIdentifierAndRole(caseData.getCcdCaseReference().toString(),
+                                                                           "APPLICANT", authToken);
+            return SCENARIO_AAA6_APPLICANT_PROCEED_OFFLINE_APPLICANT.getScenario();
+        }
+        return null;
+    }
+
     private List<String> getDashboardScenario(String role, CaseData caseData, boolean itsUploadAddlDocEvent) {
         List<String> scenarios = new ArrayList<>();
         if (DocUploadUtils.APPLICANT.equals(role) && gaForLipService.isLipResp(caseData)) {
@@ -89,6 +122,6 @@ public class DocUploadDashboardNotificationService {
 
     private boolean isWithNoticeOrConsent(CaseData caseData) {
         return JudicialDecisionNotificationUtil.isWithNotice(caseData)
-            || caseData.getGeneralAppConsentOrder() == YesOrNo.YES;
+            || caseData.getGeneralAppConsentOrder() == YES;
     }
 }

@@ -87,10 +87,10 @@ public class DashboardNotificationsParamsMapper {
         if (Objects.nonNull(caseData.getGeneralAppHelpWithFees())) {
             if (caseData.getCcdState().equals(CaseState.AWAITING_APPLICATION_PAYMENT)) {
                 params.put("applicationFeeTypeEn", "application");
-                params.put("applicationFeeTypeCy", "cais");
+                params.put("applicationFeeTypeCy", "gwneud cais");
             } else if (caseData.getCcdState().equals(CaseState.APPLICATION_ADD_PAYMENT)) {
                 params.put("applicationFeeTypeEn", "additional application");
-                params.put("applicationFeeTypeCy", "ffi ychwanegol i wneud cais");
+                params.put("applicationFeeTypeCy", "ychwanegol i wneud cais");
             }
         }
 
