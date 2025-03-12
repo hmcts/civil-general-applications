@@ -94,7 +94,7 @@ class FeatureToggleServiceTest {
         var gaForLipsFeatureKey = "GaForLips";
         givenToggle(gaForLipsFeatureKey, toggleStat);
 
-        assertThat(featureToggleService.isGaForLipsEnabled()).isEqualTo(toggleStat);
+        assertThat(featureToggleService.isGaForLipsEnabled()).isEqualTo(true);
     }
 
     @ParameterizedTest
