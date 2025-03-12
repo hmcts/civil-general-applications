@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingNoticeDetail;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.utils.DateUtils;
 import uk.gov.hmcts.reform.civil.utils.MonetaryConversions;
@@ -121,7 +122,8 @@ public class DashboardNotificationsParamsMapper {
     }
 
     private static Optional<LocalDate> getGeneralAppListingForHearingDate(CaseData caseData) {
-        return Optional.ofNullable(caseData.getGaHearingNoticeDetail().getHearingDate());
+        return Optional.ofNullable(caseData.getGaHearingNoticeDetail())
+            .map(GAHearingNoticeDetail::getHearingDate);
     }
 
     private static Optional<LocalDate> getGeneralAppNotificationDeadlineDate(CaseData caseData) {
