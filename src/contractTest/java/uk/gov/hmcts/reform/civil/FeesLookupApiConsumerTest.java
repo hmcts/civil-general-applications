@@ -14,10 +14,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import uk.gov.hmcts.reform.civil.config.GeneralAppFeesConfiguration;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentOrderAgreement;
 import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 
 import java.math.BigDecimal;
@@ -120,7 +123,8 @@ public class FeesLookupApiConsumerTest extends BaseContractTest {
     @PactTestFor(pactMethod = "getFeeForWithNotice")
     public void verifyFeeForWithNotice() {
         Fee fee = generalAppFeesService.getFeeForGA(
-            CaseData.builder().generalAppType(
+            CaseData.builder().generalAppRespondentAgreement(GARespondentOrderAgreement.builder().hasAgreed(YesOrNo.NO).build())
+                .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.YES).build()).generalAppType(
                     GAApplicationType.builder().types(List.of(GeneralApplicationTypes.SET_ASIDE_JUDGEMENT))
                         .build())
                 .build());
