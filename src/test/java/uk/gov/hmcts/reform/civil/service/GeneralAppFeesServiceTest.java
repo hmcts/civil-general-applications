@@ -160,8 +160,6 @@ class GeneralAppFeesServiceTest {
                 Arguments.of(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT, YesOrNo.YES, YesOrNo.YES, -1, FEE_PENCE),
                 Arguments.of(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT, YesOrNo.NO, YesOrNo.NO, -1, FEE_PENCE),
                 Arguments.of(GeneralApplicationTypes.SETTLE_BY_CONSENT, YesOrNo.YES, YesOrNo.YES, -1, FEE_PENCE),
-                Arguments.of(GeneralApplicationTypes.SET_ASIDE_JUDGEMENT, YesOrNo.YES, YesOrNo.YES, -1, FEE_PENCE),
-                Arguments.of(GeneralApplicationTypes.SET_ASIDE_JUDGEMENT, YesOrNo.NO, YesOrNo.NO, -1, FEE_PENCE),
                 Arguments.of(GeneralApplicationTypes.ADJOURN_HEARING, YesOrNo.NO, YesOrNo.YES, 1, FEE_PENCE),
                 Arguments.of(GeneralApplicationTypes.ADJOURN_HEARING, YesOrNo.NO, YesOrNo.NO, 1, FEE_PENCE),
                 Arguments.of(GeneralApplicationTypes.ADJOURN_HEARING, YesOrNo.NO, YesOrNo.NO, 15, FEE_PENCE)
@@ -195,8 +193,6 @@ class GeneralAppFeesServiceTest {
 
             if (generalApplicationTypes == GeneralApplicationTypes.SETTLE_BY_CONSENT) {
                 when(feesConfiguration.getConsentedOrWithoutNoticeKeyword()).thenReturn(GENERAL_APP_WITHOUT_NOTICE);
-            } else if (generalApplicationTypes == GeneralApplicationTypes.SET_ASIDE_JUDGEMENT) {
-                when(feesConfiguration.getWithNoticeKeyword()).thenReturn(GENERAL_APPLICATION_WITH_NOTICE);
             } else if (generalApplicationTypes == GeneralApplicationTypes.ADJOURN_HEARING) {
                 if (isWithNotice == YesOrNo.YES) {
                     when(feesConfiguration.getWithNoticeKeyword()).thenReturn(GENERAL_APPLICATION_WITH_NOTICE);
@@ -216,7 +212,6 @@ class GeneralAppFeesServiceTest {
 
         static Stream<Arguments> mixDefaultTypesData() {
             return Stream.of(
-                Arguments.of(GeneralApplicationTypes.SET_ASIDE_JUDGEMENT, YesOrNo.YES, YesOrNo.YES, 15, FEE_PENCE),
                 Arguments.of(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT, YesOrNo.YES, YesOrNo.YES, 15, FEE_PENCE)
             );
         }
@@ -264,9 +259,7 @@ class GeneralAppFeesServiceTest {
                 .isEqualTo(expectedFee);
             List<String> keywords = keywordCaptor.getAllValues();
             assertThat(keywords).contains(GENERAL_APP_WITHOUT_NOTICE);
-            if (generalApplicationTypes == GeneralApplicationTypes.SET_ASIDE_JUDGEMENT) {
-                assertThat(keywords).contains(GENERAL_APPLICATION_WITH_NOTICE);
-            } else if (generalApplicationTypes == GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT) {
+            if (generalApplicationTypes == GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT) {
                 assertThat(keywords).contains(APPLICATION_TO_VARY_OR_SUSPEND);
             }
         }
@@ -317,7 +310,6 @@ class GeneralAppFeesServiceTest {
         List<GeneralApplicationTypes> allTypes =
             Stream.of(GeneralApplicationTypes.values()).collect(Collectors.toList());
         allTypes.removeAll(GeneralAppFeesService.VARY_TYPES);
-        allTypes.removeAll(GeneralAppFeesService.SET_ASIDE);
         allTypes.removeAll(GeneralAppFeesService.ADJOURN_TYPES);
         allTypes.removeAll(GeneralAppFeesService.SD_CONSENT_TYPES);
         allTypes.removeAll(GeneralAppFeesService.CONFIRM_YOU_PAID_CCJ_DEBT);
