@@ -71,7 +71,7 @@ public class GeneralAppFeesService {
             String feeKeyword;
             if (caseData.getGeneralAppInformOtherParty() != null
                 && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())) {
-                feeKeyword = feesConfiguration.getConsentedOrWithoutNoticeKeyword() ;
+                feeKeyword = feesConfiguration.getConsentedOrWithoutNoticeKeyword();
             } else {
                 feeKeyword = feesConfiguration.getWithNoticeKeyword();
             }
