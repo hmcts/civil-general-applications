@@ -16,11 +16,12 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import uk.gov.hmcts.reform.auth.checker.core.RequestAuthorizer;
+import uk.gov.hmcts.reform.auth.checker.core.user.User;
 import uk.gov.hmcts.reform.authorisation.ServiceAuthorisationApi;
 import uk.gov.hmcts.reform.civil.Application;
 import uk.gov.hmcts.reform.civil.TestIdamConfiguration;
@@ -31,6 +32,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -77,12 +79,13 @@ public abstract class BaseIntegrationTest {
     @MockBean
     protected SecurityContext securityContext;
     @MockBean
-    protected JwtDecoder jwtDecoder;
-    @MockBean
     public AuthorisationService authorisationService;
 
     @MockBean
     private ServiceAuthorisationApi serviceAuthorisationApi;
+
+    @MockBean
+    public RequestAuthorizer<User> userRequestAuthorizer;
 
     @BeforeEach
     public void setUpBase() {
@@ -92,7 +95,8 @@ public abstract class BaseIntegrationTest {
         SecurityContextHolder.setContext(securityContext);
         setSecurityAuthorities(authentication);
         when(serviceAuthorisationApi.getServiceName(any())).thenReturn("payment_app");
-        when(jwtDecoder.decode(anyString())).thenReturn(getJwt());
+        when(userRequestAuthorizer.authorise(any())).thenReturn(new User("1", Set.of("caseworker-civil-solicitor")));
+
     }
 
     protected void setSecurityAuthorities(Authentication authenticationMock, String... authorities) {
