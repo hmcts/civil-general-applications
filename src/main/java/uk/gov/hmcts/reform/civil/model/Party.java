@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang.StringUtils;
+import uk.gov.hmcts.reform.civil.model.caseflags.Flags;
 import uk.gov.hmcts.reform.civil.validation.groups.DateOfBirthGroup;
 
 import java.time.LocalDate;
@@ -51,6 +52,8 @@ public class Party {
     private String partyEmail;
     private String partyPhone;
     private String legalRepHeading;
+
+    private Flags flags;
 
     public enum Type {
         INDIVIDUAL,
