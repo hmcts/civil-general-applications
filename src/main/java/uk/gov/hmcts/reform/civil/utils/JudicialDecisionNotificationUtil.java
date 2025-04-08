@@ -22,15 +22,11 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.CONCURRENT_WRITTEN_REP;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER;
-import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_APPROVED_THE_ORDER_CLOAK;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_DIRECTION_ORDER;
-import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_DIRECTION_ORDER_CLOAK;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_DISMISSED_APPLICATION;
-import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_DISMISSED_APPLICATION_CLOAK;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.LIST_FOR_HEARING;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.NON_CRITERION;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.REQUEST_FOR_INFORMATION;
-import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.REQUEST_FOR_INFORMATION_CLOAK;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.SEQUENTIAL_WRITTEN_REP;
 import static uk.gov.hmcts.reform.civil.utils.NotificationCriterion.JUDGE_FREE_FORM_ORDER;
 
@@ -56,74 +52,22 @@ public class JudicialDecisionNotificationUtil {
         if (isFreeFormOrder(caseData)) {
             return JUDGE_FREE_FORM_ORDER;
         }
-        if (isJudicialDismissalUncloak(caseData)) {
+        if (isJudicialDismissal(caseData)) {
             return JUDGE_DISMISSED_APPLICATION;
         }
-        if (isJudicialDismissalCloak(caseData)) {
-            return JUDGE_DISMISSED_APPLICATION_CLOAK;
-        }
-        if (isJudicialApprovalUncloak(caseData)) {
+        if (isJudicialApproval(caseData)) {
             return JUDGE_APPROVED_THE_ORDER;
         }
-        if (isJudicialApprovalCloak(caseData)) {
-            return JUDGE_APPROVED_THE_ORDER_CLOAK;
-        }
-        if (isDirectionOrderUncloak(caseData)) {
+        if (isDirectionOrder(caseData)) {
             return JUDGE_DIRECTION_ORDER;
         }
-        if (isDirectionOrderCloak(caseData)) {
-            return JUDGE_DIRECTION_ORDER_CLOAK;
-        }
-        if (isRequestForInformationUnCloak(caseData)) {
+        if (isRequestForInformation(caseData)) {
             return REQUEST_FOR_INFORMATION;
-        }
-        if (isRequestForInformationCloak(caseData)) {
-            return REQUEST_FOR_INFORMATION_CLOAK;
         }
         if (Objects.nonNull(caseData.getApproveConsentOrder())) {
             return JUDGE_APPROVED_THE_ORDER;
         }
         return NON_CRITERION;
-    }
-
-    private static boolean isRequestForInformationCloak(CaseData caseData) {
-        return isRequestForInformation(caseData)
-                && isApplicationCloaked(caseData);
-    }
-
-    private static boolean isRequestForInformationUnCloak(CaseData caseData) {
-        return isRequestForInformation(caseData)
-                && (!isApplicationCloaked(caseData) || isGeneralAppConsentOrder(caseData));
-    }
-
-    private static boolean isDirectionOrderCloak(CaseData caseData) {
-        return isDirectionOrder(caseData)
-                && isApplicationCloaked(caseData);
-    }
-
-    private static boolean isDirectionOrderUncloak(CaseData caseData) {
-        return isDirectionOrder(caseData)
-                && (!isApplicationCloaked(caseData) || isGeneralAppConsentOrder(caseData));
-    }
-
-    private static boolean isJudicialApprovalCloak(CaseData caseData) {
-        return isApplicationCloaked(caseData)
-                && isJudicialApproval(caseData);
-    }
-
-    private static boolean isJudicialApprovalUncloak(CaseData caseData) {
-        return isJudicialApproval(caseData)
-                && (!isApplicationCloaked(caseData) || isGeneralAppConsentOrder(caseData));
-    }
-
-    private static boolean isJudicialDismissalCloak(CaseData caseData) {
-        return isApplicationCloaked(caseData)
-                && isJudicialDismissal(caseData);
-    }
-
-    private static boolean isJudicialDismissalUncloak(CaseData caseData) {
-        return isJudicialDismissal(caseData)
-                && (!isApplicationCloaked(caseData) || isGeneralAppConsentOrder(caseData));
     }
 
     public static String requiredGAType(CaseData caseData) {

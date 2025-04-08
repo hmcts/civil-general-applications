@@ -871,15 +871,15 @@ public class JudicialDecisionHandler extends CallbackHandler {
             dataBuilder.applicationIsCloaked(isApplicationUncloaked);
         }
 
-        /*
-         * Assign case respondent solicitors if judge uncloak the application
-         * */
-
         if (isApplicationUncloaked != null
                 && isApplicationUncloaked.equals(NO)) {
             dataBuilder.applicationIsUncloakedOnce(YES);
+        }
+        /*
+         * Assign case respondent solicitors if LiP respondent so they can access application and order doc
+         * */
+        if (caseData.getIsGaRespondentOneLip() == YES) {
             assignCaseToResopondentSolHelper.assignCaseToRespondentSolicitor(caseData, caseId);
-
         }
 
         if (Objects.nonNull(caseData.getJudicialMakeOrderDocPreview())) {

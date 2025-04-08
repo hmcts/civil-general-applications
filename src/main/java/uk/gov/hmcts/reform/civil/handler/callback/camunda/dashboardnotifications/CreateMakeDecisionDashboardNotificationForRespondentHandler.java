@@ -45,11 +45,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
             }
         }
 
-        if (isWithNoticeOrConsent(caseData)) {
-            return getScenarioBasedOnDecision(caseData);
-        }
-
-        return "";
+        return getScenarioBasedOnDecision(caseData);
     }
 
     private String getScenarioBasedOnDecision(CaseData caseData) {
@@ -80,11 +76,6 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
     @Override
     public List<CaseEvent> handledEvents() {
         return EVENTS;
-    }
-
-    private boolean isWithNoticeOrConsent(CaseData caseData) {
-        return YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())
-            || caseData.getGeneralAppConsentOrder() == YesOrNo.YES;
     }
 
     private boolean isWithoutNotice(CaseData caseData) {

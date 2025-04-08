@@ -22,15 +22,12 @@ import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.JUDICIAL_FORMATTER;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.areRespondentSolicitorsPresent;
-import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isApplicationCloaked;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isGeneralAppConsentOrder;
-import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isWithNotice;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.notificationCriterion;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.requiredGAType;
 
@@ -80,26 +77,14 @@ public class JudicialNotificationService implements NotificationData {
             case JUDGE_APPROVED_THE_ORDER:
                 applicationApprovedNotification(caseData, solicitorType);
                 break;
-            case JUDGE_APPROVED_THE_ORDER_CLOAK:
-                judgeApprovedOrderApplicationCloak(caseData, solicitorType);
-                break;
             case JUDGE_DISMISSED_APPLICATION:
                 applicationDismissedByJudge(caseData, solicitorType);
-                break;
-            case JUDGE_DISMISSED_APPLICATION_CLOAK:
-                judgeDismissedOrderApplicationCloak(caseData, solicitorType);
                 break;
             case JUDGE_DIRECTION_ORDER:
                 applicationDirectionOrder(caseData, solicitorType);
                 break;
-            case JUDGE_DIRECTION_ORDER_CLOAK:
-                applicationDirectionOrderCloak(caseData, solicitorType);
-                break;
             case REQUEST_FOR_INFORMATION:
                 caseData = applicationRequestForInformation(caseData, solicitorType);
-                break;
-            case REQUEST_FOR_INFORMATION_CLOAK:
-                applicationRequestForInformationCloak(caseData, solicitorType);
                 break;
             default:
             case NON_CRITERION:
@@ -363,7 +348,7 @@ public class JudicialNotificationService implements NotificationData {
     private void applicationApprovedNotification(CaseData caseData, String solicitorType) {
 
         if (solicitorType.equals(RESPONDENT)) {
-            boolean sendEmailToDefendant = isSendEmailToDefendant(caseData);
+            boolean sendEmailToDefendant = areRespondentSolicitorsPresent(caseData);
 
             if (sendEmailToDefendant) {
                 if (useDamageTemplate(caseData)) {
@@ -422,18 +407,13 @@ public class JudicialNotificationService implements NotificationData {
 
     }
 
-    private boolean isSendEmailToDefendant(CaseData caseData) {
-        return areRespondentSolicitorsPresent(caseData)
-            && (!isApplicationCloaked(caseData) || isGeneralAppConsentOrder(caseData));
-    }
-
     private void applicationListForHearing(CaseData caseData, String solicitorType) {
 
         if (solicitorType.equals(RESPONDENT)) {
             /*
             * Respondent should receive notification only if it's with notice application
             *  */
-            if (isWithNotice(caseData) && areRespondentSolicitorsPresent(caseData)) {
+            if (areRespondentSolicitorsPresent(caseData)) {
 
                 sendEmailToRespondent(
                     caseData,
@@ -457,7 +437,7 @@ public class JudicialNotificationService implements NotificationData {
     private void applicationFreeFormOrder(CaseData caseData, String solicitorType) {
 
         if (solicitorType.equals(RESPONDENT)) {
-            if (isWithNoticeOrConsent(caseData) && areRespondentSolicitorsPresent(caseData)) {
+            if (areRespondentSolicitorsPresent(caseData)) {
                 sendEmailToRespondent(
                     caseData,
                     gaForLipService.isLipResp(caseData)
@@ -478,18 +458,10 @@ public class JudicialNotificationService implements NotificationData {
         }
     }
 
-    private boolean isWithNoticeOrConsent(CaseData caseData) {
-        return (caseData.getGeneralAppInformOtherParty() != null
-            && YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice()))
-            || (caseData.getGeneralAppRespondentAgreement() != null
-            && YES.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())
-            || caseData.getApplicationIsUncloakedOnce() == YES);
-    }
-
     private void applicationDismissedByJudge(CaseData caseData, String solicitorType) {
 
         if (solicitorType.equals(RESPONDENT)
-            && isSendEmailToDefendant(caseData)) {
+            && areRespondentSolicitorsPresent(caseData)) {
             String template  = notificationProperties.getJudgeDismissesOrderRespondentEmailTemplate();
             if (useGaForLipRespondentTemplate(caseData)) {
                 template = getLiPRespondentTemplate(caseData);
@@ -514,7 +486,7 @@ public class JudicialNotificationService implements NotificationData {
 
     private void applicationDirectionOrder(CaseData caseData, String solicitorType) {
         if (solicitorType.equals(RESPONDENT)
-            && isSendEmailToDefendant(caseData)) {
+            && areRespondentSolicitorsPresent(caseData)) {
             String template = notificationProperties.getJudgeForDirectionOrderRespondentEmailTemplate();
             if (useGaForLipRespondentTemplate(caseData)) {
                 template = getLiPRespondentTemplate(caseData);
