@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
@@ -48,8 +49,12 @@ public class EndJudgeMakesDecisionBusinessProcessCallbackHandler extends Callbac
         log.info("End judge makes decision business process for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
 
-        parentCaseUpdateHelper.updateParentApplicationVisibilityWithNewState(
+        if (isApplicationMakeVisibleToDefendant(data) || data.getIsGaRespondentOneLip() == YesOrNo.YES) {
+            parentCaseUpdateHelper.updateParentApplicationVisibilityWithNewState(
                 data, getNewStateDependingOn(data).getDisplayedValue());
+        } else {
+            parentCaseUpdateHelper.updateParentWithGAState(data, getNewStateDependingOn(data).getDisplayedValue());
+        }
 
         return evaluateReady(callbackParams, getNewStateDependingOn(data));
     }

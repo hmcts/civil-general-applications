@@ -121,7 +121,7 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
          * Generate Judge Request for Information order document with LIP Respondent Post Address
          * if GA is with notice
          * */
-        if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+        if (gaForLipService.isLipResp(caseData)) {
             postJudgeOrderToLipRespondent = hearingFormGenerator.generate(
                 civilCaseData,
                 caseData,
