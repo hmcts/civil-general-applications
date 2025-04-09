@@ -61,8 +61,7 @@ public class AdditionalPaymentsReferenceCallbackHandler extends CallbackHandler 
         var caseData = callbackParams.getCaseData();
         var authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         List<String> errors = new ArrayList<>();
-        if (judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(caseData)
-            && !judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
+        if (judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(caseData)) {
             try {
                 log.info("processing payment reference for case " + caseData.getCcdCaseReference());
                 paymentsService.validateRequest(caseData);
