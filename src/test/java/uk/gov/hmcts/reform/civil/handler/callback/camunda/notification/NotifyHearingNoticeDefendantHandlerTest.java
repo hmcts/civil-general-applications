@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
@@ -74,7 +75,7 @@ public class NotifyHearingNoticeDefendantHandlerTest extends BaseCallbackHandler
     }
 
     @Test
-    void shouldNotSendNotificationToDefendantSuccessfully() {
+    void shouldSendNotificationToDefendantSuccessfullyWhenWithoutNotice() {
         var caseData = CaseDataBuilder.builder().hearingScheduledApplication(YesOrNo.YES)
             .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(NO).build())
             .build();
@@ -82,6 +83,6 @@ public class NotifyHearingNoticeDefendantHandlerTest extends BaseCallbackHandler
         params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         assertThat(response).isNotNull();
-        verifyNoInteractions(hearingScheduledNotificationService);
+        verify(hearingScheduledNotificationService).sendNotificationForDefendant(any());
     }
 }
