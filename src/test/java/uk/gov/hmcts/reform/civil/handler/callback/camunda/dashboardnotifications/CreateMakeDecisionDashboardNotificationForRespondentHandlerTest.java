@@ -324,7 +324,12 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
             ).build();
 
             handler.handle(params);
-            verifyNoInteractions(dashboardApiClient);
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPLICATION_WRITTEN_REPRESENTATION_REQUIRED_RESPONDENT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
         }
 
         @Test
