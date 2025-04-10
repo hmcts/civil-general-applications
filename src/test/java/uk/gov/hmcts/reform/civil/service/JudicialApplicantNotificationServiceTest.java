@@ -496,7 +496,7 @@ class JudicialApplicantNotificationServiceTest {
         }
 
         @Test
-        void notificationShouldNotSendRespondentForFreeFormOrder_ifNotWithNoticeOrConsent() {
+        void notificationShouldSendRespondentForFreeFormOrder_ifNotWithNoticeOrConsent() {
             CaseData caseData = caseDataFreeFormOrder();
             caseData = caseData.toBuilder()
                 .generalAppInformOtherParty(GAInformOtherParty.builder().build())
@@ -506,7 +506,12 @@ class JudicialApplicantNotificationServiceTest {
             when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
             when(gaForLipService.isLipResp(any())).thenReturn(true);
             judicialNotificationService.sendNotification(caseData, RESPONDENT);
-            verifyNoInteractions(notificationService);
+            verify(notificationService).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-lip-id",
+                notificationPropertiesSummeryJudgement(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
         }
 
         @Test
@@ -906,7 +911,7 @@ class JudicialApplicantNotificationServiceTest {
             judicialNotificationService
                 .sendNotification(caseData, RESPONDENT);
 
-            verify(notificationService, times(1)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStrikeOut(),
@@ -995,7 +1000,7 @@ class JudicialApplicantNotificationServiceTest {
         }
 
         @Test
-        void notificationShouldSendSendTo_applicant_ifApplicationApproveOrEditFor_withoutConsentOrder() {
+        void notificationShouldSendSendTo_applicantAndRespondent_ifApplicationApproveOrEditFor_withoutConsentOrder() {
             CaseData caseData = caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(NO, NO, YES, NO, NO, NO);
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
@@ -1003,7 +1008,7 @@ class JudicialApplicantNotificationServiceTest {
             judicialNotificationService.sendNotification(caseData, APPLICANT);
             judicialNotificationService.sendNotification(caseData, RESPONDENT);
 
-            verify(notificationService, times(1)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStayTheClaim(),
@@ -1370,7 +1375,7 @@ class JudicialApplicantNotificationServiceTest {
         }
 
         @Test
-        void notificationShouldSend_Applicant_When_ApplicationIsDismissed_withOutConsentOrder() {
+        void notificationShouldSend_ApplicantAndRespondent_When_ApplicationIsDismissed_withOutConsentOrder() {
 
             CaseData caseData = caseDataForCaseDismissedByJudgeRespondentsAreInList(NO, NO, YES)
                 .toBuilder()
@@ -1382,7 +1387,7 @@ class JudicialApplicantNotificationServiceTest {
             judicialNotificationService.sendNotification(caseData, APPLICANT);
             judicialNotificationService.sendNotification(caseData, RESPONDENT);
 
-            verify(notificationService, times(1)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesSummeryJudgementConcurrent(),
@@ -2215,10 +2220,11 @@ class JudicialApplicantNotificationServiceTest {
         }
 
         @Test
-        void notificationShouldSend_Applicant_When_RequestForInformation_withOutConsentOrder() {
+        void notificationShouldSend_ApplicantAndRespondent_When_RequestForInformation_withOutConsentOrder() {
 
             CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, YES, NO, NO,
                                                                                       REQUEST_MORE_INFORMATION);
+            caseData = caseData.toBuilder().ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION).build();
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
@@ -2226,7 +2232,7 @@ class JudicialApplicantNotificationServiceTest {
             judicialNotificationService.sendNotification(caseData, APPLICANT);
             judicialNotificationService.sendNotification(caseData, RESPONDENT);
 
-            verify(notificationService, times(1)).sendMail(
+            verify(notificationService, times(3)).sendMail(
                 DUMMY_EMAIL,
                 "general-application-apps-judicial-notification-template-id",
                 notificationPropertiesToStayTheClaim(),

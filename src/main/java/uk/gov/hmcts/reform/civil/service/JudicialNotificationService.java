@@ -279,7 +279,8 @@ public class JudicialNotificationService implements NotificationData {
             customProps.remove(GA_NOTIFICATION_DEADLINE);
 
         } else if ((isSendUncloakAdditionalFeeEmailForWithoutNotice(caseData)
-            || isSendUncloakAdditionalFeeEmailConsentOrder(caseData))) {
+            || isSendUncloakAdditionalFeeEmailConsentOrder(caseData))
+            && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption() == SEND_APP_TO_OTHER_PARTY) {
             // Send notification to applicant only if it's without notice application
             if (solicitorType.equals(APPLICANT)
                     && !judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
