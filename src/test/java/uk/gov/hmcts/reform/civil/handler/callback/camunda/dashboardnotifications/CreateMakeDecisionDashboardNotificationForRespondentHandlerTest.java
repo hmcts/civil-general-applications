@@ -119,7 +119,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
         }
 
         @Test
-        void shouldNotRecordMoreInfoRequiredRespondentScenarioWhenAppIsWithoutNoticeInvoked() {
+        void shouldRecordMoreInfoRequiredRespondentScenarioWhenAppIsWithoutNoticeInvoked() {
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withoutNoticeCaseData();
             caseData = caseData.toBuilder()
                 .parentCaseReference(caseData.getCcdCaseReference().toString())
@@ -128,6 +128,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
                 .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
                     GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION).deadlineForMoreInfoSubmission(
                     LocalDateTime.now().plusDays(5)).build())
+                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .build();
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
@@ -140,7 +141,12 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
             ).build();
 
             handler.handle(params);
-            verifyNoInteractions(dashboardApiClient);
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPLICATION_REQUEST_MORE_INFO_RESPONDENT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
         }
 
         @Test
@@ -230,6 +236,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
                 .applicationIsUncloakedOnce(YesOrNo.NO)
                 .makeAppVisibleToRespondents(gaMakeApplicationAvailableCheck)
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
+                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .build();
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
@@ -304,6 +311,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
                 .judicialDecisionMakeAnOrderForWrittenRepresentations(GAJudicialWrittenRepresentations.builder().build())
                 .judicialDecision(GAJudicialDecision.builder().decision(GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS).build())
                 .generalAppInformOtherParty(GAInformOtherParty.builder().isWithNotice(YesOrNo.NO).build())
+                .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .build();
 
             HashMap<String, Object> scenarioParams = new HashMap<>();
@@ -408,7 +416,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
         }
 
         @Test
-        void shouldNotRecordMoreInfoRequiredRespondentScenarioWhenAppIsWithoutNoticeInvoked() {
+        void shouldRecordMoreInfoRequiredRespondentScenarioWhenAppIsWithoutNoticeInvoked() {
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
                 .parentCaseReference(caseData.getCcdCaseReference().toString())
@@ -431,7 +439,12 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandlerTest ext
             ).build();
 
             handler.handle(params);
-            verifyNoInteractions(dashboardApiClient);
+            verify(dashboardApiClient).recordScenario(
+                caseData.getCcdCaseReference().toString(),
+                SCENARIO_AAA6_GENERAL_APPLICATION_HEARING_SCHEDULED_RESPONDENT.getScenario(),
+                "BEARER_TOKEN",
+                ScenarioRequestParams.builder().params(scenarioParams).build()
+            );
         }
 
         @Test
