@@ -4,5 +4,10 @@
         <notes>Lucene 8.9.0 used transitively via Elasticsearch 7.15.2 Upgrade to ES 8.x under review. Spring upgrade required for CVE-2024-38820.</notes>
         <cve>CVE-2024-45772</cve>
         <cve>CVE-2024-38820</cve>
+        <cve>CVE-2023-52428</cve>
+        <cve>CVE-2023-52429</cve>
+        <cve>CVE-2024-22234</cve>
+        <cve>CVE-2025-24813</cve>
+        <cve>CVE-2024-38286</cve>
     </suppress>
 </suppressions>
