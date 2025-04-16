@@ -253,8 +253,7 @@ public class JudicialNotificationService implements NotificationData {
     private CaseData applicationRequestForInformation(CaseData caseData, String solicitorType) {
 
         if (solicitorType.equals(RESPONDENT)
-            && (caseData.getCcdState().equals(APPLICATION_ADD_PAYMENT)
-                || judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData))) {
+            && (caseData.getCcdState().equals(APPLICATION_ADD_PAYMENT))) {
 
             // Send notification to respondent if payment is made
             caseData = addDeadlineForMoreInformationUncloakedApplication(caseData);
@@ -282,8 +281,7 @@ public class JudicialNotificationService implements NotificationData {
             || isSendUncloakAdditionalFeeEmailConsentOrder(caseData))
             && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption() == SEND_APP_TO_OTHER_PARTY) {
             // Send notification to applicant only if it's without notice application
-            if (solicitorType.equals(APPLICANT)
-                    && !judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
+            if (solicitorType.equals(APPLICANT)) {
                 String appSolicitorEmail = caseData.getGeneralAppApplnSolicitor().getEmail();
 
                 String template = notificationProperties.getJudgeUncloakApplicationEmailTemplate();
