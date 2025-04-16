@@ -57,7 +57,6 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_D
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
-import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isWithNotice;
 
 @Slf4j
 @Service
@@ -165,9 +164,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
                 /*
                  * Generate Judge Request for Information order document with LIP Respondent Post Address
-                 * if GA is with notice
                  * */
-                if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+                if (gaForLipService.isLipResp(caseData)) {
 
                     postJudgeOrderToLipRespondent = generateFreeFormSendLetterDocForRespondent(
                         civilCaseData,
@@ -196,9 +194,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
                 /*
                  * Generate Judge Request for Information order document with LIP Respondent Post Address
-                 * if GA is with notice
                  * */
-                if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+                if (gaForLipService.isLipResp(caseData)) {
                     postJudgeOrderToLipRespondent = assistedOrderFormGenerator.generate(
                         civilCaseData,
                         caseData,
@@ -234,9 +231,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
             /*
              * Generate Judge Request for Information order document with LIP Respondent Post Address
-             * if GA is with notice
              * */
-            if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+            if (gaForLipService.isLipResp(caseData)) {
                 postJudgeOrderToLipRespondent = generalOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -271,7 +267,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
              * Generate Judge Request for Information order document with LIP Respondent Post Address
              * if GA is with notice
              * */
-            if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+            if (gaForLipService.isLipResp(caseData)) {
                 postJudgeOrderToLipRespondent = directionOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -311,9 +307,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
             /*
              * Generate Judge Request for Information order document with LIP Respondent Post Address
-             * if GA is with notice
              * */
-            if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+            if (gaForLipService.isLipResp(caseData)) {
                 postJudgeOrderToLipRespondent = dismissalOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -334,7 +329,6 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
             /*
              * Generate Judge Request for Information order document with LIP Applicant Post Address
-             * if GA is with notice
              * */
             if (gaForLipService.isLipApp(caseData)) {
                 postJudgeOrderToLipApplicant = hearingOrderGenerator
@@ -348,7 +342,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
              * Generate Judge Request for Information order document with LIP Respondent Post Address
              * if GA is with notice
              * */
-            if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+            if (gaForLipService.isLipResp(caseData)) {
                 postJudgeOrderToLipRespondent = hearingOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -382,9 +376,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
             /*
              * Generate Judge Request for Information order document with LIP Respondent Post Address
-             * if GA is with notice
              * */
-            if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+            if (gaForLipService.isLipResp(caseData)) {
                 postJudgeOrderToLipRespondent = writtenRepresentationSequentailOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -411,7 +404,6 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
             /*
              * Generate Judge Request for Information order document with LIP Applicant Post Address
-             * if GA is with notice
              * */
             if (gaForLipService.isLipApp(caseData)) {
                 postJudgeOrderToLipApplicant = writtenRepresentationConcurrentOrderGenerator
@@ -423,9 +415,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
             /*
              * Generate Judge Request for Information order document with LIP Respondent Post Address
-             * if GA is with notice
              * */
-            if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+            if (gaForLipService.isLipResp(caseData)) {
                 postJudgeOrderToLipRespondent = writtenRepresentationConcurrentOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -476,7 +467,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             /*
              * Generate Judge Request for Information order document with LIP Respondent Post Address
              * */
-            if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+            if (gaForLipService.isLipResp(caseData)) {
                 postJudgeOrderToLipRespondent = requestForInformationGenerator.generate(
                     civilCaseData,
                     caseData,
@@ -491,9 +482,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
                 /*
                  * Generate Judge Request for Information order document with LIP Respondent Post Address
-                 * if GA is with notice
                  * */
-                if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+                if (gaForLipService.isLipResp(caseData)) {
 
                     postJudgeOrderToLipRespondent = generateFreeFormSendLetterDocForRespondent(
                         civilCaseData,

@@ -3411,6 +3411,22 @@ public class JudicialDecisionHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldAssignToRespondent_WhenJudgeNotUncloaked_RequestMoreInformationApplicationLipRespondent() {
+            when(gaForLipService.isLipResp(any())).thenReturn(true);
+            CaseData caseData = CaseDataBuilder.builder()
+                .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, NO, YES)
+                .isMultiParty(NO)
+                .generalAppRespondentSolicitors(getRespondentSolicitors())
+                .isGaRespondentOneLip(YES).build();
+
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+            CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
+            assertThat(responseCaseData.getApplicationIsCloaked()).isEqualTo(YES);
+        }
+
+        @Test
         void shouldBeUncloaked_WhenRequestMoreInformation_WithNoticeApplication() {
             CaseData caseData = CaseDataBuilder.builder()
                 .judicialDecisionWithUncloakRequestForInformationApplication(REQUEST_MORE_INFORMATION, YES, null)

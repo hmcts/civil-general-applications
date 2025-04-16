@@ -19,7 +19,6 @@ import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.NOTIFY_HEARING_NOTICE_DEFENDANT;
-import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isWithNotice;
 
 @Slf4j
 @Service
@@ -49,9 +48,7 @@ public class NotifyHearingNoticeDefendantHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         log.info("Notify hearing notice to claimant for case: {}", caseData.getCcdCaseReference());
         try {
-            if (isWithNotice(caseData)) {
-                caseData = hearingScheduledNotificationService.sendNotificationForDefendant(caseData);
-            }
+            caseData = hearingScheduledNotificationService.sendNotificationForDefendant(caseData);
         } catch (NotificationException notificationException) {
             throw notificationException;
         }

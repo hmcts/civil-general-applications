@@ -5,7 +5,6 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.callback.DashboardCallbackHandler;
 import uk.gov.hmcts.reform.civil.client.DashboardApiClient;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
-import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
@@ -45,11 +44,7 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
             }
         }
 
-        if (isWithNoticeOrConsent(caseData)) {
-            return getScenarioBasedOnDecision(caseData);
-        }
-
-        return "";
+        return getScenarioBasedOnDecision(caseData);
     }
 
     private String getScenarioBasedOnDecision(CaseData caseData) {
@@ -80,11 +75,6 @@ public class CreateMakeDecisionDashboardNotificationForRespondentHandler extends
     @Override
     public List<CaseEvent> handledEvents() {
         return EVENTS;
-    }
-
-    private boolean isWithNoticeOrConsent(CaseData caseData) {
-        return YES.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())
-            || caseData.getGeneralAppConsentOrder() == YesOrNo.YES;
     }
 
     private boolean isWithoutNotice(CaseData caseData) {

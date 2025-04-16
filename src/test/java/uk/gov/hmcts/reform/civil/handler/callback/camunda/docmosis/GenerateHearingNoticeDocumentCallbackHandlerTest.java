@@ -112,7 +112,7 @@ class GenerateHearingNoticeDocumentCallbackHandlerTest extends BaseCallbackHandl
     }
 
     @Test
-    void shouldGenerateHearingNoticeDocumentWithCoverLetterOnce() {
+    void shouldGenerateHearingNoticeDocumentWithCoverLetterTwiceWhenWithoutNotice() {
         CaseDocument caseDocument = CaseDocument.builder()
             .documentLink(Document.builder().documentUrl("doc").build()).build();
 
@@ -132,7 +132,7 @@ class GenerateHearingNoticeDocumentCallbackHandlerTest extends BaseCallbackHandl
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
         assertThat(updatedData.getHearingNoticeDocument().size()).isEqualTo(1);
-        verify(hearingFormGenerator, times(1)).generate(any(), any(), any(), any());
-        verify(sendFinalOrderPrintService, times(1)).sendJudgeFinalOrderToPrintForLIP(any(), any(), any(), any(), any());
+        verify(hearingFormGenerator, times(2)).generate(any(), any(), any(), any());
+        verify(sendFinalOrderPrintService, times(2)).sendJudgeFinalOrderToPrintForLIP(any(), any(), any(), any(), any());
     }
 }

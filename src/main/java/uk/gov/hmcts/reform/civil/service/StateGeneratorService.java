@@ -46,7 +46,6 @@ public class StateGeneratorService {
         } else {
             decision = null;
         }
-
         if (isCaseDismissed(data)) {
             return APPLICATION_DISMISSED;
         } else if (decision == MAKE_AN_ORDER && data.getJudicialDecisionMakeOrder()
@@ -92,8 +91,7 @@ public class StateGeneratorService {
     private CaseState getNewStateForRequestMoreInfo(CaseData caseData) {
         log.info("Processing new state for 'Request More Info' for Case ID: {}", caseData.getCcdCaseReference());
         if (judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(caseData)) {
-            if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null
-                && !judicialDecisionHelper.containsTypesNeedNoAdditionalFee(caseData)) {
+            if (caseData.getGeneralAppPBADetails().getAdditionalPaymentDetails() == null) {
                 return APPLICATION_ADD_PAYMENT;
             } else if (hasPayment(caseData)
                 && (isConsentOrderRespondentSatisfied(caseData) || isUrgentWithoutNotice(caseData))) {

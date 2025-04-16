@@ -252,7 +252,6 @@ public class StateGeneratorServiceTest {
                     .build()).build();
 
         when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
-        when(judicialDecisionHelper.containsTypesNeedNoAdditionalFee(any())).thenReturn(false);
 
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
         assertThat(caseState).isEqualTo(APPLICATION_ADD_PAYMENT);
@@ -265,10 +264,9 @@ public class StateGeneratorServiceTest {
                                                                          NO, YesOrNo.NO).build();
 
         when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
-        when(judicialDecisionHelper.containsTypesNeedNoAdditionalFee(any())).thenReturn(true);
 
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
-        assertThat(caseState).isEqualTo(AWAITING_RESPONDENT_RESPONSE);
+        assertThat(caseState).isEqualTo(APPLICATION_ADD_PAYMENT);
     }
 
     @Test
@@ -284,7 +282,6 @@ public class StateGeneratorServiceTest {
             .build();
 
         when(judicialDecisionHelper.isApplicationUncloakedWithAdditionalFee(any())).thenReturn(true);
-        when(judicialDecisionHelper.containsTypesNeedNoAdditionalFee(any())).thenReturn(false);
         CaseState caseState = stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(caseData);
         assertThat(caseState).isEqualTo(AWAITING_RESPONDENT_RESPONSE);
     }
