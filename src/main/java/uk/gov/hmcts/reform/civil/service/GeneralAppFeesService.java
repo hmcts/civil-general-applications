@@ -65,9 +65,18 @@ public class GeneralAppFeesService {
             }
         }
         if (typeSize > 0
-            && CollectionUtils.containsAny(caseData.getGeneralAppType().getTypes(), SET_ASIDE)) {
+            && CollectionUtils.containsAny(caseData.getGeneralAppType().getTypes(), SET_ASIDE)
+            && caseData.getGeneralAppRespondentAgreement() != null
+            && NO.equals(caseData.getGeneralAppRespondentAgreement().getHasAgreed())) {
+            String feeKeyword;
+            if (caseData.getGeneralAppInformOtherParty() != null
+                && NO.equals(caseData.getGeneralAppInformOtherParty().getIsWithNotice())) {
+                feeKeyword = feesConfiguration.getConsentedOrWithoutNoticeKeyword();
+            } else {
+                feeKeyword = feesConfiguration.getWithNoticeKeyword();
+            }
             typeSize--;
-            Fee setAsideFeeForGA = getFeeForGA(feesConfiguration.getWithNoticeKeyword(), null, null);
+            Fee setAsideFeeForGA = getFeeForGA(feeKeyword, null, null);
             if (setAsideFeeForGA.getCalculatedAmountInPence()
                 .compareTo(result.getCalculatedAmountInPence()) < 0) {
                 result = setAsideFeeForGA;
