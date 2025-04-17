@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.JudicialDecisionHelper;
@@ -21,6 +22,7 @@ import java.util.Map;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.END_JUDGE_BUSINESS_PROCESS_GASPEC;
+import static uk.gov.hmcts.reform.civil.enums.CaseState.APPLICATION_ADD_PAYMENT;
 
 @Slf4j
 @Service
@@ -47,14 +49,16 @@ public class EndJudgeMakesDecisionBusinessProcessCallbackHandler extends Callbac
     private CallbackResponse endJudgeBusinessProcess(CallbackParams callbackParams) {
         log.info("End judge makes decision business process for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
-
-        if (isApplicationMakeVisibleToDefendant(data)) {
+        CaseState newState = getNewStateDependingOn(data);
+        if (isApplicationMakeVisibleToDefendant(data)
+            || (data.getIsGaRespondentOneLip() == YesOrNo.YES && newState != APPLICATION_ADD_PAYMENT)) {
             parentCaseUpdateHelper.updateParentApplicationVisibilityWithNewState(
-                data, getNewStateDependingOn(data).getDisplayedValue());
+                data, newState.getDisplayedValue());
         } else {
-            parentCaseUpdateHelper.updateParentWithGAState(data, getNewStateDependingOn(data).getDisplayedValue());
+            parentCaseUpdateHelper.updateParentWithGAState(data, newState.getDisplayedValue());
         }
-        return evaluateReady(callbackParams, getNewStateDependingOn(data));
+
+        return evaluateReady(callbackParams, newState);
     }
 
     private CaseState getNewStateDependingOn(CaseData data) {
