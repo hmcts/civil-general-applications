@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.civil.service.data.ExternalTaskInput;
 import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -45,7 +46,7 @@ import static uk.gov.hmcts.reform.civil.utils.OrgPolicyUtils.getRespondent2Solic
 public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
 
     private static final String GENERAL_APPLICATION_CASE_ID = "generalApplicationCaseId";
-    private static final String BOTH = "BOTH";
+    private static final List<String> BILINGUAL_TYPES = Arrays.asList("BOTH", "WELSH");
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final FeatureToggleService featureToggleService;
@@ -77,9 +78,9 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
 
                 GeneralApplication generalApplication = genApps.get().getValue();
 
-                boolean claimantBilingual = BOTH.equals(caseData.getClaimantBilingualLanguagePreference());
+                boolean claimantBilingual = BILINGUAL_TYPES.contains(caseData.getClaimantBilingualLanguagePreference());
                 boolean defendantBilingual = caseData.getRespondent1LiPResponse() != null
-                    && BOTH.equals(caseData.getRespondent1LiPResponse().getRespondent1ResponseLanguage());
+                    && BILINGUAL_TYPES.contains(caseData.getRespondent1LiPResponse().getRespondent1ResponseLanguage());
                 generalAppCaseData = createGeneralApplicationCase(caseId, generalApplication, claimantBilingual, defendantBilingual);
                 log.debug("General application case created with ID: {}", generalAppCaseData.getCcdCaseReference());
                 updateParentCaseGeneralApplication(variables, generalApplication, generalAppCaseData);
