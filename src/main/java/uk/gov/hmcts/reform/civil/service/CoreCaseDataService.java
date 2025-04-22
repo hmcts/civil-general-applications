@@ -232,6 +232,7 @@ public class CoreCaseDataService {
                                  "data.applicationIsUncloakedOnce",
                                  "state",
                                  "data.applicationIsCloaked",
+                                 "data.judicialDecision",
                                  "data.judicialDecisionRequestMoreInfo",
                                  "data.generalAppPBADetails"),
                          startIndex);
