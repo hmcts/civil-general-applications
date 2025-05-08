@@ -917,14 +917,19 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         }
 
         @Test
-        void notificationShouldNotSendForHearingWhenRespondents_WithoutNotice() {
+        void notificationShouldSendForHearingWhenRespondents_WithoutNotice() {
 
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForListForHearingRespondentsAreInList(NO, NO));
 
             judicialRespondentNotificationService
                 .sendNotification(caseDataForListForHearingRespondentsAreInList(NO, NO), RESPONDENT);
-            verifyNoInteractions(notificationService);
+            verify(notificationService, times(2)).sendMail(
+                DUMMY_EMAIL,
+                "general-application-apps-judicial-notification-template-id",
+                notificationPropertiesSummeryJudgementConcurrent(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
         }
 
         @Test
