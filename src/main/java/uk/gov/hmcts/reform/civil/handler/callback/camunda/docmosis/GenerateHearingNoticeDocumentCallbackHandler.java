@@ -32,7 +32,6 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TO
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_HEARING_NOTICE_DOCUMENT;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
-import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isWithNotice;
 
 @Slf4j
 @Service
@@ -121,7 +120,7 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
          * Generate Judge Request for Information order document with LIP Respondent Post Address
          * if GA is with notice
          * */
-        if (gaForLipService.isLipResp(caseData) && isWithNotice(caseData)) {
+        if (gaForLipService.isLipResp(caseData)) {
             postJudgeOrderToLipRespondent = hearingFormGenerator.generate(
                 civilCaseData,
                 caseData,

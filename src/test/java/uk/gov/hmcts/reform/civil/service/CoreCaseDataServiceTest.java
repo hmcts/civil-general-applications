@@ -350,6 +350,7 @@ class CoreCaseDataServiceTest {
                                             "data.applicationIsUncloakedOnce",
                                             "state",
                                             "data.applicationIsCloaked",
+                                            "data.judicialDecision",
                                             "data.judicialDecisionRequestMoreInfo",
                                             "data.generalAppPBADetails"),
                                     0);
@@ -401,6 +402,7 @@ class CoreCaseDataServiceTest {
                                                   "data.applicationIsUncloakedOnce",
                                                   "state",
                                                   "data.applicationIsCloaked",
+                                                  "data.judicialDecision",
                                                   "data.judicialDecisionRequestMoreInfo",
                                                   "data.generalAppPBADetails"),
                                           0);

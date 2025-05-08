@@ -1,25 +1,16 @@
 package uk.gov.hmcts.reform.civil.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
-import org.springframework.security.oauth2.core.OAuth2TokenValidator;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtDecoders;
-import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
-import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import uk.gov.hmcts.reform.civil.security.JwtGrantedAuthoritiesConverter;
-
-import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
+import uk.gov.hmcts.reform.auth.checker.core.RequestAuthorizer;
+import uk.gov.hmcts.reform.auth.checker.core.user.User;
+import uk.gov.hmcts.reform.auth.checker.spring.useronly.AuthCheckerUserOnlyFilter;
+import uk.gov.hmcts.reform.civil.security.CustomAuthCheckerUserOnlyFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -52,57 +43,41 @@ public class SecurityConfiguration {
         "/loggers/**"
     };
 
-    @Value("${spring.security.oauth2.client.provider.oidc.issuer-uri}")
-    private String issuerUri;
+    private final RequestAuthorizer<User> userRequestAuthorizer;
+    private final AuthenticationManager authenticationManager;
 
-    @Value("${oidc.issuer}")
-    private String issuerOverride;
-
-    private final JwtAuthenticationConverter jwtAuthenticationConverter;
-
-    @Autowired
-    public SecurityConfiguration(final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter) {
-        jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+    public SecurityConfiguration(
+        RequestAuthorizer<User> userRequestAuthorizer,
+        AuthenticationManager authenticationManager
+    ) {
+        this.userRequestAuthorizer = userRequestAuthorizer;
+        this.authenticationManager = authenticationManager;
     }
 
     @Bean
-    public WebSecurityCustomizer configure() {
-        return web -> web.ignoring().requestMatchers(AUTH_WHITELIST);
+    public AuthCheckerUserOnlyFilter<User> authCheckerUserOnlyFilter() {
+        CustomAuthCheckerUserOnlyFilter<User> filter = new CustomAuthCheckerUserOnlyFilter<>(userRequestAuthorizer);
+        filter.setAuthenticationManager(authenticationManager);
+        return filter;
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    @SuppressWarnings("java:S4502")
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthCheckerUserOnlyFilter<User> authCheckerUserOnlyFilter) throws Exception {
         http
-                .sessionManagement().sessionCreationPolicy(STATELESS).and()
-                .formLogin().disable()
-                .logout().disable()
-                .authorizeHttpRequests().requestMatchers(AUTH_WHITELIST).permitAll()
-                .and()
-                .authorizeHttpRequests().requestMatchers("/cases/callbacks/**")
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .csrf(csrf -> csrf.disable())
+            .formLogin(form -> form.disable())
+            .logout(logout -> logout.disable())
+            .addFilter(authCheckerUserOnlyFilter)
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(AUTH_WHITELIST).permitAll()
+                .requestMatchers("/cases/callbacks/**", "/case/document/generateAnyDoc", "/dashboard/**")
                 .hasAnyAuthority(AUTHORITIES)
-                .anyRequest()
-                .authenticated()
-                .and()
-                .oauth2ResourceServer()
-                .jwt()
-                .jwtAuthenticationConverter(jwtAuthenticationConverter)
-                .and()
-                .and()
-                .oauth2Client();
+                .anyRequest().authenticated()
+            )
+            .oauth2Client();
+
         return http.build();
-    }
-
-    @Bean
-    JwtDecoder jwtDecoder() {
-        NimbusJwtDecoder jwtDecoder = (NimbusJwtDecoder) JwtDecoders.fromOidcIssuerLocation(issuerUri);
-
-        // We are using issuerOverride instead of issuerUri as SIDAM has the wrong issuer at the moment
-        OAuth2TokenValidator<Jwt> withTimestamp = new JwtTimestampValidator();
-        OAuth2TokenValidator<Jwt> withIssuer = new JwtIssuerValidator(issuerOverride);
-        OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(withTimestamp, withIssuer);
-
-        jwtDecoder.setJwtValidator(validator);
-        return jwtDecoder;
     }
 }
