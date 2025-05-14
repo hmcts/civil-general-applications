@@ -64,16 +64,22 @@ public class DocUploadUtils {
                                  List<Element<CaseDocument>> tobeAdded, String role,
                                  boolean updateScheduler) {
         if (role.equals(DocUploadUtils.APPLICANT)) {
+            caseDataBuilder.isApplicantResponded(YES);
+            caseDataBuilder.isRespondentResponded(null);
             caseDataBuilder.gaAddlDocClaimant(addDocuments(tobeAdded, caseData.getGaAddlDocClaimant()));
             if (updateScheduler) {
                 caseDataBuilder.caseDocumentUploadDate(LocalDateTime.now());
             }
         } else if (role.equals(DocUploadUtils.RESPONDENT_ONE)) {
+            caseDataBuilder.isRespondentResponded(YES);
+            caseDataBuilder.isApplicantResponded(null);
             caseDataBuilder.gaAddlDocRespondentSol(addDocuments(tobeAdded, caseData.getGaAddlDocRespondentSol()));
             if (updateScheduler) {
                 caseDataBuilder.caseDocumentUploadDateRes(LocalDateTime.now());
             }
         } else {
+            caseDataBuilder.isRespondentResponded(YES);
+            caseDataBuilder.isApplicantResponded(null);
             caseDataBuilder.gaAddlDocRespondentSolTwo(addDocuments(tobeAdded, caseData.getGaAddlDocRespondentSolTwo()));
             if (updateScheduler) {
                 caseDataBuilder.caseDocumentUploadDateRes(LocalDateTime.now());
