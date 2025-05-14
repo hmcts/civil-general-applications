@@ -12,4 +12,5 @@
         <cve>CVE-2025-31651</cve>
         <cve>CVE-2025-31650</cve>
     </suppress>
+    <suppress>CVE-2023-51775</suppress>
 </suppressions>
