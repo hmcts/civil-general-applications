@@ -90,7 +90,7 @@ allprojects {
       // CVE-2020-26945 - Mishandles deserialization of object streams.
       dependency group: 'org.mybatis', name: 'mybatis', version: '3.5.11'
       // CVE-2018-10237 - Unbounded memory allocation
-      dependencySet(group: 'com.google.guava', version: '33.1.0-jre') {
+      dependencySet(group: 'com.google.guava', version: '33.4.8-jre') {
         entry 'guava'
       }
 
