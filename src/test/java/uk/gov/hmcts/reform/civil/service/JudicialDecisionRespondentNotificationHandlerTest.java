@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
+import uk.gov.hmcts.reform.civil.config.NotificationsSignatureConfiguration;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
@@ -94,6 +95,8 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
     @MockBean
     private FeatureToggleService featureToggleService;
     @MockBean
+    private NotificationsSignatureConfiguration configuration;
+    @MockBean
     private GaForLipService gaForLipService;
 
     private static final String RESPONDENT = "respondent";
@@ -164,6 +167,17 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         when(notificationsProperties.getLipGeneralAppRespondentEmailTemplateInWelsh())
             .thenReturn(LIP_RES_WELSH_TEMPLATE);
         when(gaForLipService.isLipApp(any())).thenReturn(false);
+        when(configuration.getHmctsSignature()).thenReturn("Online Civil Claims \n HM Courts & Tribunal Service");
+        when(configuration.getPhoneContact()).thenReturn("For anything related to hearings, call 0300 123 5577 "
+                                                             + "\n For all other matters, call 0300 123 7050");
+        when(configuration.getOpeningHours()).thenReturn("Monday to Friday, 8.30am to 5pm");
+        when(configuration.getSpecUnspecContact()).thenReturn("Email for Specified Claims: contactocmc@justice.gov.uk "
+                                                                  + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+        when(configuration.getWelshContact()).thenReturn("E-bost: ymholiadaucymraeg@justice.gov.uk");
+        when(configuration.getSpecContact()).thenReturn("Email: contactocmc@justice.gov.uk");
+        when(configuration.getWelshHmctsSignature()).thenReturn("Hawliadau am Arian yn y Llys Sifil Ar-lein \n Gwasanaeth Llysoedd a Thribiwnlysoedd EF");
+        when(configuration.getWelshPhoneContact()).thenReturn("Ffôn: 0300 303 5174");
+        when(configuration.getWelshOpeningHours()).thenReturn("Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
     }
 
     @Nested
@@ -512,7 +526,17 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                            GeneralApplicationTypes.SUMMARY_JUDGEMENT.getDisplayedValue());
             customProp.put(NotificationData.PARTY_REFERENCE, PARTY_REFERENCE.toString());
             customProp.put(NotificationData.GA_LIP_RESP_NAME, "DEF");
-
+            customProp.put(NotificationData.WELSH_CONTACT, "E-bost: ymholiadaucymraeg@justice.gov.uk");
+            customProp.put(NotificationData.WELSH_HMCTS_SIGNATURE, "Hawliadau am Arian yn y Llys Sifil Ar-lein \n Gwasanaeth Llysoedd a Thribiwnlysoedd EF");
+            customProp.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
+            customProp.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
+            customProp.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
+            customProp.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
+                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            customProp.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
+            customProp.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
+            customProp.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
+                + "\n For all other matters, call 0300 123 7050");
             return customProp;
         }
 
@@ -1372,23 +1396,47 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         }
 
         private Map<String, String> notificationPropertiesSummeryJudgementConcurrent() {
-            return Map.of(
+            HashMap<String, String> properties = new HashMap<>(Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GENAPP_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
                 GeneralApplicationTypes.SUMMARY_JUDGEMENT.getDisplayedValue(),
                 NotificationData.PARTY_REFERENCE, PARTY_REFERENCE
-            );
+            ));
+            properties.put(NotificationData.WELSH_CONTACT, "E-bost: ymholiadaucymraeg@justice.gov.uk");
+            properties.put(NotificationData.WELSH_HMCTS_SIGNATURE, "Hawliadau am Arian yn y Llys Sifil Ar-lein \n Gwasanaeth Llysoedd a Thribiwnlysoedd EF");
+            properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
+            properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
+            properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
+            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
+                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
+            properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
+            properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
+                + "\n For all other matters, call 0300 123 7050");
+            return properties;
         }
 
         private Map<String, String> notificationPropertiesToStrikeOut() {
-            return Map.of(
+            HashMap<String, String> properties = new HashMap<>(Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GENAPP_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
                 GeneralApplicationTypes.STRIKE_OUT.getDisplayedValue(),
                 NotificationData.PARTY_REFERENCE, PARTY_REFERENCE
-            );
+            ));
+            properties.put(NotificationData.WELSH_CONTACT, "E-bost: ymholiadaucymraeg@justice.gov.uk");
+            properties.put(NotificationData.WELSH_HMCTS_SIGNATURE, "Hawliadau am Arian yn y Llys Sifil Ar-lein \n Gwasanaeth Llysoedd a Thribiwnlysoedd EF");
+            properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
+            properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
+            properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
+            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
+                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
+            properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
+            properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
+                + "\n For all other matters, call 0300 123 7050");
+            return properties;
         }
 
         private List<GeneralApplicationTypes> applicationTypeToStrikeOut() {
@@ -1398,11 +1446,23 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         }
 
         private Map<String, String> notificationPropertiesToExtendTime() {
-            return Map.of(
+            HashMap<String, String> properties = new HashMap<>(Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
                 GeneralApplicationTypes.EXTEND_TIME.getDisplayedValue()
-            );
+            ));
+            properties.put(NotificationData.WELSH_CONTACT, "E-bost: ymholiadaucymraeg@justice.gov.uk");
+            properties.put(NotificationData.WELSH_HMCTS_SIGNATURE, "Hawliadau am Arian yn y Llys Sifil Ar-lein \n Gwasanaeth Llysoedd a Thribiwnlysoedd EF");
+            properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
+            properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
+            properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
+            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
+                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
+            properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
+            properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
+                + "\n For all other matters, call 0300 123 7050");
+            return properties;
         }
 
         private List<GeneralApplicationTypes> applicationTypeToExtendTheClaim() {
@@ -1412,13 +1472,25 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         }
 
         private Map<String, String> notificationPropertiesToAmendStatementOfCase() {
-            return Map.of(
+            HashMap<String, String> properties = new HashMap<>(Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GENAPP_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
                 GeneralApplicationTypes.AMEND_A_STMT_OF_CASE.getDisplayedValue(),
                 NotificationData.PARTY_REFERENCE, PARTY_REFERENCE
-            );
+            ));
+            properties.put(NotificationData.WELSH_CONTACT, "E-bost: ymholiadaucymraeg@justice.gov.uk");
+            properties.put(NotificationData.WELSH_HMCTS_SIGNATURE, "Hawliadau am Arian yn y Llys Sifil Ar-lein \n Gwasanaeth Llysoedd a Thribiwnlysoedd EF");
+            properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
+            properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
+            properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
+            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
+                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
+            properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
+            properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
+                + "\n For all other matters, call 0300 123 7050");
+            return properties;
         }
 
         private List<GeneralApplicationTypes> applicationTypeToAmendStatmentOfClaim() {
@@ -1428,13 +1500,25 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         }
 
         private Map<String, String> notificationPropertiesToGetReliefFromSanctions() {
-            return Map.of(
+            HashMap<String, String> properties = new HashMap<>(Map.of(
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GENAPP_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.GA_APPLICATION_TYPE,
                 GeneralApplicationTypes.RELIEF_FROM_SANCTIONS.getDisplayedValue(),
                 NotificationData.PARTY_REFERENCE, PARTY_REFERENCE
-            );
+            ));
+            properties.put(NotificationData.WELSH_CONTACT, "E-bost: ymholiadaucymraeg@justice.gov.uk");
+            properties.put(NotificationData.WELSH_HMCTS_SIGNATURE, "Hawliadau am Arian yn y Llys Sifil Ar-lein \n Gwasanaeth Llysoedd a Thribiwnlysoedd EF");
+            properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
+            properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
+            properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
+            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
+                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
+            properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
+            properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
+                + "\n For all other matters, call 0300 123 7050");
+            return properties;
         }
 
         private List<GeneralApplicationTypes> applicationTypeToGetReliefFromSanctions() {
@@ -1538,13 +1622,25 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
     }
 
     private Map<String, String> notificationPropertiesToStayTheClaim() {
-        return Map.of(
+        HashMap<String, String> properties = new HashMap<>(Map.of(
             NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
             NotificationData.GENAPP_REFERENCE, CASE_REFERENCE.toString(),
             NotificationData.GA_APPLICATION_TYPE,
             GeneralApplicationTypes.STAY_THE_CLAIM.getDisplayedValue(),
             NotificationData.PARTY_REFERENCE, PARTY_REFERENCE
-            );
+        ));
+        properties.put(NotificationData.WELSH_CONTACT, "E-bost: ymholiadaucymraeg@justice.gov.uk");
+        properties.put(NotificationData.WELSH_HMCTS_SIGNATURE, "Hawliadau am Arian yn y Llys Sifil Ar-lein \n Gwasanaeth Llysoedd a Thribiwnlysoedd EF");
+        properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
+        properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
+        properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
+        properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
+            + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+        properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
+        properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
+        properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
+            + "\n For all other matters, call 0300 123 7050");
+        return properties;
     }
 
     private List<Element<GASolicitorDetailsGAspec>> respondentSolicitors() {
