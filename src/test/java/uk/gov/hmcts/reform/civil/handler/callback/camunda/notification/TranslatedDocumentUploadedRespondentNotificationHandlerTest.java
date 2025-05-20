@@ -68,7 +68,6 @@ public class TranslatedDocumentUploadedRespondentNotificationHandlerTest extends
     @Mock
     private NotificationsSignatureConfiguration configuration;
 
-
     @Nested
     class AboutToSubmitCallback {
 
