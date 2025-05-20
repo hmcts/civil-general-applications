@@ -99,7 +99,6 @@ public class CaseData implements MappableObject {
     private final CaseState ccdState;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private final LocalDateTime createdDate;
-    private final LocalDateTime submittedDate;
     private final String detailsOfClaim;
     private Party applicant1;
     private Party respondent1;
@@ -247,6 +246,7 @@ public class CaseData implements MappableObject {
     private final FreeFormOrderValues orderOnCourtInitiative;
     private final FreeFormOrderValues orderWithoutNotice;
     private final Document gaFinalOrderDocPreview;
+    private final LocalDateTime mainCaseSubmittedDate;
 
     @JsonProperty("CaseAccessCategory")
     private final CaseCategory caseAccessCategory;

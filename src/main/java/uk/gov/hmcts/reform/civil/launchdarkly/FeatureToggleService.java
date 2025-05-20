@@ -64,7 +64,7 @@ public class FeatureToggleService {
 
     public boolean isLipQueryManagementEnabled(CaseData caseData) {
         ZoneId zoneId = ZoneId.systemDefault();
-        long epoch = caseData.getSubmittedDate().atZone(zoneId).toEpochSecond();
+        long epoch = caseData.getMainCaseSubmittedDate().atZone(zoneId).toEpochSecond();
         return isFeatureEnabledForDate("cui-query-management", epoch, false);
     }
 
