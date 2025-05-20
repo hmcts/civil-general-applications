@@ -84,9 +84,9 @@ public class TranslatedDocumentUploadedRespondentNotificationHandler extends Cal
                 GA_LIP_RESP_NAME, Objects.requireNonNull(isLipResName),
                 CASE_REFERENCE, caseData.getParentCaseReference()
             ));
-        addAllFooterItems(caseData, properties, configuration,
-                          featureToggleService.isQueryManagementLRsEnabled(),
-                          featureToggleService.isLipQueryManagementEnabled(caseData));
+            addAllFooterItems(caseData, properties, configuration,
+                              featureToggleService.isQueryManagementLRsEnabled(),
+                              featureToggleService.isLipQueryManagementEnabled(caseData));
             return properties;
         }
         HashMap<String, String> properties = new HashMap<>(Map.of(
