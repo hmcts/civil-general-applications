@@ -24,7 +24,9 @@ import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.No
 
 public class EmailFooterUtils {
 
-    private EmailFooterUtils() {}
+    private EmailFooterUtils() {
+        //NO-OP
+    }
 
     public static String RAISE_QUERY_LR = "Contact us about your claim by selecting "
         + "Raise a query from the next steps menu in case file view.";

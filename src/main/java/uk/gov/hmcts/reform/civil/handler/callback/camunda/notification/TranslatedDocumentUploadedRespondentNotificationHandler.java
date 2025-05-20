@@ -85,8 +85,8 @@ public class TranslatedDocumentUploadedRespondentNotificationHandler extends Cal
                 CASE_REFERENCE, caseData.getParentCaseReference()
             ));
         addAllFooterItems(caseData, properties, configuration,
-                           featureToggleService.isQueryManagementLRsEnabled(),
-                           featureToggleService.isLipQueryManagementEnabled(caseData));
+                          featureToggleService.isQueryManagementLRsEnabled(),
+                          featureToggleService.isLipQueryManagementEnabled(caseData));
             return properties;
         }
         HashMap<String, String> properties = new HashMap<>(Map.of(
