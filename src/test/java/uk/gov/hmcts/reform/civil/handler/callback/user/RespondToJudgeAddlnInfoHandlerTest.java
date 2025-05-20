@@ -170,6 +170,7 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
     void shouldPopulateDocListWithExitingDocElementWhenGaForWelshEnabled() {
 
         List<Element<Document>> generalAppAddlnInfoUpload = new ArrayList<>();
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
 
         Document document1 = Document.builder().documentFileName(TEST_STRING).documentUrl(TEST_STRING)
             .documentBinaryUrl(TEST_STRING)
