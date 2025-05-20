@@ -168,7 +168,7 @@ public class DocUploadUtils {
         return Objects.nonNull(caseData.getIsGaRespondentOneLip()) && caseData.getIsGaRespondentOneLip().equals(YES);
     }
 
-    public static void setRespondedValues(CaseData.CaseDataBuilder caseDataBuilder,String role) {
+    public static void setRespondedValues(CaseData.CaseDataBuilder caseDataBuilder, String role) {
         if (role.equals(DocUploadUtils.APPLICANT)) {
             caseDataBuilder.isApplicantResponded(YES);
             caseDataBuilder.isRespondentResponded(null);
