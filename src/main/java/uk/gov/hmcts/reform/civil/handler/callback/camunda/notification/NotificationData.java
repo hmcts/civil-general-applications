@@ -38,6 +38,17 @@ public interface NotificationData {
     String NO_REMISSION_REASONS = "reasons";
     String NO_REMISSION_REASONS_WELSH = "reasonsWelsh";
 
+    //footer
+    String HMCTS_SIGNATURE = "hmctsSignature";
+    String WELSH_HMCTS_SIGNATURE = "welshHmctsSignature";
+    String PHONE_CONTACT = "phoneContact";
+    String WELSH_PHONE_CONTACT = "welshPhoneContact";
+    String OPENING_HOURS = "openingHours";
+    String WELSH_OPENING_HOURS = "welshOpeningHours";
+    String SPEC_UNSPEC_CONTACT = "specAndUnspecContact";
+    String SPEC_CONTACT = "specContact";
+    String WELSH_CONTACT = "welshContact";
+
     Map<String, String> addProperties(CaseData caseData);
 
 }

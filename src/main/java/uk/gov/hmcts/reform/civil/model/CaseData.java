@@ -246,6 +246,7 @@ public class CaseData implements MappableObject {
     private final FreeFormOrderValues orderOnCourtInitiative;
     private final FreeFormOrderValues orderWithoutNotice;
     private final Document gaFinalOrderDocPreview;
+    private final LocalDateTime mainCaseSubmittedDate;
 
     @JsonProperty("CaseAccessCategory")
     private final CaseCategory caseAccessCategory;
@@ -574,5 +575,20 @@ public class CaseData implements MappableObject {
             )
             .filter(Objects::nonNull)
             .findFirst().orElse(null);
+    }
+
+    @JsonIgnore
+    public boolean isApplicant1NotRepresented() {
+        return NO.equals(getApplicant1Represented());
+    }
+
+    @JsonIgnore
+    public boolean isRespondent1LiP() {
+        return YesOrNo.NO == getRespondent1Represented();
+    }
+
+    @JsonIgnore
+    public boolean isLipCase() {
+        return this.isApplicant1NotRepresented() || this.isRespondent1LiP();
     }
 }

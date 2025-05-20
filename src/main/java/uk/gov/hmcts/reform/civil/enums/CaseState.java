@@ -24,6 +24,7 @@ public enum CaseState {
     All_FINAL_ORDERS_ISSUED("All final orders issued"),
     CASE_SETTLED("Case Settled"),
     CASE_DISCONTINUED("Case Discontinued"),
+    CLOSED("Closed"),
 
     //General Application states
     PENDING_APPLICATION_ISSUED("General Application Issue Pending"),
