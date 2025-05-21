@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -46,6 +47,7 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
     private final RespondToWrittenRepresentationGenerator respondToWrittenRepresentation;
     private final DocUploadDashboardNotificationService docUploadDashboardNotificationService;
     private final GaForLipService gaForLipService;
+    private final FeatureToggleService featureToggleService;
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION);
 
@@ -82,6 +84,9 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
                                          CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
                                          false
         );
+        if (featureToggleService.isGaForWelshEnabled()) {
+            DocUploadUtils.setRespondedValues(caseDataBuilder, role);
+        }
         caseDataBuilder.generalAppWrittenRepUpload(Collections.emptyList());
         caseDataBuilder.generalAppWrittenRepText(null);
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION)).build();

@@ -217,4 +217,22 @@ public class DocUploadUtilsTest {
         CaseData caseData = CaseDataBuilder.builder().withNoticeCaseData();
         assertThat(DocUploadUtils.isDocumentVisible(caseData)).isEqualTo(YesOrNo.YES);
     }
+
+    @Test
+    public void shouldSetApplicantRespondentWhenRoleIsApplicant() {
+        CaseData caseData = CaseData.builder().build();
+        CaseData.CaseDataBuilder builder = caseData.toBuilder();
+        DocUploadUtils.setRespondedValues(builder, DocUploadUtils.APPLICANT);
+        caseData = builder.build();
+        assertThat(caseData.getIsApplicantResponded()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    public void shouldSetApplicantRespondentWhenRoleIsRespondent() {
+        CaseData caseData = CaseData.builder().build();
+        CaseData.CaseDataBuilder builder = caseData.toBuilder();
+        DocUploadUtils.setRespondedValues(builder, DocUploadUtils.RESPONDENT_ONE);
+        caseData = builder.build();
+        assertThat(caseData.getIsRespondentResponded()).isEqualTo(YesOrNo.YES);
+    }
 }
