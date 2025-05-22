@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
@@ -70,6 +71,8 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
     DocUploadDashboardNotificationService docUploadDashboardNotificationService;
 
     @MockBean
+    FeatureToggleService featureToggleService;
+    @MockBean
     GaForLipService gaForLipService;
 
     private static final String CAMUNDA_EVENT = "INITIATE_GENERAL_APPLICATION";
@@ -81,6 +84,7 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
 
     @BeforeEach
     public void setUp() throws IOException {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(false);
         when(idamClient.getUserInfo(anyString())).thenReturn(UserInfo.builder()
                 .sub(DUMMY_EMAIL)
                 .uid(APP_UID)
@@ -156,6 +160,46 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         var responseCaseData = getCaseData(response);
         assertThat(response).isNotNull();
+        assertThat(responseCaseData.getGeneralAppAddlnInfoUpload()).isEqualTo(null);
+        assertThat(responseCaseData.getGaAddlDoc().size()).isEqualTo(4);
+        assertThat(responseCaseData.getGaAddlDocStaff().size()).isEqualTo(2);
+        assertThat(responseCaseData.getGaAddlDocClaimant().size()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldPopulateDocListWithExitingDocElementWhenGaForWelshEnabled() {
+
+        List<Element<Document>> generalAppAddlnInfoUpload = new ArrayList<>();
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+
+        Document document1 = Document.builder().documentFileName(TEST_STRING).documentUrl(TEST_STRING)
+            .documentBinaryUrl(TEST_STRING)
+            .documentHash(TEST_STRING).build();
+
+        Document document2 = Document.builder().documentFileName(TEST_STRING).documentUrl(TEST_STRING)
+            .documentBinaryUrl(TEST_STRING)
+            .documentHash(TEST_STRING).build();
+
+        generalAppAddlnInfoUpload.add(element(document1));
+        generalAppAddlnInfoUpload.add(element(document2));
+
+        List<Element<Document>> gaAddlnInfoList = new ArrayList<>();
+
+        gaAddlnInfoList.add(element(document1));
+        gaAddlnInfoList.add(element(document2));
+
+        CaseData caseData = getCase(generalAppAddlnInfoUpload,
+                                    DocUploadUtils.prepareDocuments(gaAddlnInfoList, DocUploadUtils.APPLICANT, RESPOND_TO_JUDGE_ADDITIONAL_INFO), null);
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        var responseCaseData = getCaseData(response);
+        assertThat(response).isNotNull();
+        assertThat(responseCaseData.getIsApplicantResponded()).isEqualTo(YES);
+        assertThat(responseCaseData.getIsRespondentResponded()).isEqualTo(null);
         assertThat(responseCaseData.getGeneralAppAddlnInfoUpload()).isEqualTo(null);
         assertThat(responseCaseData.getGaAddlDoc().size()).isEqualTo(4);
         assertThat(responseCaseData.getGaAddlDocStaff().size()).isEqualTo(2);

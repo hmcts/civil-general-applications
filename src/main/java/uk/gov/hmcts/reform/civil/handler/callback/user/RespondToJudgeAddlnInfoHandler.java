@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -44,6 +45,7 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
     private final RespondForInformationGenerator respondForInformationGenerator;
     private final DocUploadDashboardNotificationService docUploadDashboardNotificationService;
     private final GaForLipService gaForLipService;
+    private final FeatureToggleService featureToggleService;
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(RESPOND_TO_JUDGE_ADDITIONAL_INFO);
 
@@ -76,6 +78,9 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
         DocUploadUtils.addDocumentToAddl(caseData, caseDataBuilder,
                                          tobeAdded, role, CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO, false
         );
+        if (featureToggleService.isGaForWelshEnabled()) {
+            DocUploadUtils.setRespondedValues(caseDataBuilder, role);
+        }
         caseDataBuilder.generalAppAddlnInfoUpload(Collections.emptyList());
         caseDataBuilder.businessProcess(BusinessProcess.ready(RESPOND_TO_JUDGE_ADDITIONAL_INFO)).build();
         caseDataBuilder.generalAppAddlnInfoText(null);

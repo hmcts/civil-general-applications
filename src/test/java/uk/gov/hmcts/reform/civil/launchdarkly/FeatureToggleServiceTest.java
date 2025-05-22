@@ -99,6 +99,15 @@ class FeatureToggleServiceTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
+    void shouldCallBoolVariation_whenGaForLipWelshInvoked(Boolean toggleStat) {
+        var gaForLipsFeatureKey = "generalApplicationsForWelshParty";
+        givenToggle(gaForLipsFeatureKey, toggleStat);
+
+        assertThat(featureToggleService.isGaForWelshEnabled()).isEqualTo(toggleStat);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
     void shouldCallBoolVariation_whenCoscIsInvoked(Boolean toggleStat) {
         var isCoscEnabed = "isCoSCEnabled";
         givenToggle(isCoscEnabed, toggleStat);

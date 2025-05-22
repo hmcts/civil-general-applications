@@ -56,6 +56,10 @@ public class FeatureToggleService {
         return internalClient.boolVariation("isCoSCEnabled", createLDUser().build(), false);
     }
 
+    public boolean isGaForWelshEnabled() {
+        return internalClient.boolVariation("generalApplicationsForWelshParty", createLDUser().build(), false);
+    }
+
     public LDUser.Builder createLDUser() {
         return new LDUser.Builder("civil-service")
             .custom("timestamp", String.valueOf(System.currentTimeMillis()))
