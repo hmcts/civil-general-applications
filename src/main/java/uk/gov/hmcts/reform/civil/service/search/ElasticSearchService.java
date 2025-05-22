@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.civil.service.search;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
@@ -10,7 +12,6 @@ import uk.gov.hmcts.reform.civil.model.search.Query;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -18,6 +19,7 @@ import java.util.Set;
 import static java.math.RoundingMode.UP;
 
 @RequiredArgsConstructor
+@Slf4j
 public abstract class ElasticSearchService {
 
     protected final CoreCaseDataService coreCaseDataService;
@@ -28,7 +30,7 @@ public abstract class ElasticSearchService {
     public Set<CaseDetails> getGeneralApplications(CaseState caseState) {
         SearchResult searchResult = coreCaseDataService.searchGeneralApplication(query(START_INDEX, caseState));
         int pages = calculatePages(searchResult);
-        List<CaseDetails> caseDetails = new ArrayList<>(searchResult.getCases());
+        Set<CaseDetails> caseDetails = new HashSet<>(searchResult.getCases());
 
         for (int i = 1; i < pages; i++) {
             SearchResult result = coreCaseDataService
@@ -36,7 +38,10 @@ public abstract class ElasticSearchService {
             caseDetails.addAll(result.getCases());
         }
 
-        return new HashSet<>(caseDetails);
+        List<Long> ids = caseDetails.stream().map(CaseDetails::getId).sorted().toList();
+        log.info("Found {} case(s) with ids {}", ids.size(), ids);
+
+        return caseDetails;
     }
 
     public Set<CaseDetails> getOrderMadeGeneralApplications(CaseState caseState, GeneralApplicationTypes gaType) {
@@ -45,7 +50,7 @@ public abstract class ElasticSearchService {
             .searchGeneralApplication(queryForOrderMade(START_INDEX, caseState, gaType));
 
         int pages = calculatePages(searchResult);
-        List<CaseDetails> caseDetails = new ArrayList<>(searchResult.getCases());
+        Set<CaseDetails> caseDetails = new HashSet<>(searchResult.getCases());
 
         for (int i = 1; i < pages; i++) {
             SearchResult result = coreCaseDataService
@@ -53,14 +58,17 @@ public abstract class ElasticSearchService {
             caseDetails.addAll(result.getCases());
         }
 
-        return new HashSet<>(caseDetails);
+        List<Long> ids = caseDetails.stream().map(CaseDetails::getId).sorted().toList();
+        log.info("Found {} case(s) with ids {}", ids.size(), ids);
+
+        return caseDetails;
     }
 
     public Set<CaseDetails> getGeneralApplicationsWithBusinessProcess(BusinessProcessStatus processStatus) {
         SearchResult searchResult = coreCaseDataService
             .searchGeneralApplication(queryForBusinessProcessStatus(START_INDEX, processStatus));
         int pages = calculatePages(searchResult);
-        List<CaseDetails> caseDetails = new ArrayList<>(searchResult.getCases());
+        Set<CaseDetails> caseDetails = new HashSet<>(searchResult.getCases());
 
         for (int i = 1; i < pages; i++) {
             SearchResult result = coreCaseDataService
@@ -68,7 +76,10 @@ public abstract class ElasticSearchService {
             caseDetails.addAll(result.getCases());
         }
 
-        return new HashSet<>(caseDetails);
+        List<Long> ids = caseDetails.stream().map(CaseDetails::getId).sorted().toList();
+        log.info("Found {} case(s) with ids {}", ids.size(), ids);
+
+        return caseDetails;
     }
 
     abstract Query query(int startIndex, CaseState caseState);
