@@ -9,18 +9,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
-import uk.gov.hmcts.reform.civil.enums.dq.Language;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.RespondentLiPResponse;
+import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class GaForLipServiceTest {
+class GaForLipServiceTest {
 
     @Mock
     FeatureToggleService featureToggleService;
@@ -33,10 +34,56 @@ public class GaForLipServiceTest {
     }
 
     @Test
-    void shouldReturnAnyTrue_app_is_welsh() {
+    void shouldReturnApplicantEmailWhenUserDetailsIsNotPresent() {
         CaseData civilCaseData = CaseData.builder()
-            .claimantBilingualLanguagePreference(Language.WELSH.name())
-            .applicantBilingualLanguagePreference(YesOrNo.YES).build();
+            .applicantSolicitor1UserDetails(IdamUserDetails.builder()
+                                                .id("123")
+                                                .email("applicantEmail@test.com")
+                                                .build()).build();
+        assertEquals("applicantEmail@test.com", gaForLipService.getApplicant1Email(civilCaseData));
+    }
+
+    @Test
+    void shouldReturnApplicantEmailWhenUserDetailsIsPresent() {
+        CaseData civilCaseData = CaseData.builder()
+            .claimantUserDetails(IdamUserDetails.builder()
+                                                .id("123")
+                                                .email("applicantEmail@test.com")
+                                                .build()).build();
+        assertEquals("applicantEmail@test.com", gaForLipService.getApplicant1Email(civilCaseData));
+    }
+
+    @Test
+    void shouldReturnNullApplicantEmailWhenUserDetailsAndSolicitor1UserDetailsAreNotPresent() {
+        CaseData civilCaseData = CaseData.builder().build();
+        assertNull(gaForLipService.getApplicant1Email(civilCaseData));
+    }
+
+    @Test
+    void shouldReturnDefendantEmailWhenUserDetailsIsNotPresent() {
+        CaseData civilCaseData = CaseData.builder()
+            .respondentSolicitor1EmailAddress("defendantEmail@test.com").build();
+        assertEquals("defendantEmail@test.com", gaForLipService.getDefendant1Email(civilCaseData));
+    }
+
+    @Test
+    void shouldReturnDefendantEmailWhenUserDetailsIsPresent() {
+        CaseData civilCaseData = CaseData.builder()
+            .defendantUserDetails(IdamUserDetails.builder()
+                                     .id("123")
+                                     .email("defendantEmail@test.com")
+                                     .build()).build();
+        assertEquals("defendantEmail@test.com", gaForLipService.getDefendant1Email(civilCaseData));
+    }
+
+    @Test
+    void shouldReturnNullForDefendantEmailWhenUserDetailsAndSolicitor1UserDetailsAreNotPresent() {
+        CaseData civilCaseData = CaseData.builder().build();
+        assertNull(gaForLipService.getDefendant1Email(civilCaseData));
+    }
+
+    @Test
+    void shouldReturnAnyTrue_app_is_welsh() {
         CaseData caseData =
             CaseData.builder().parentClaimantIsApplicant(YesOrNo.YES).applicantBilingualLanguagePreference(YesOrNo.YES)
                 .build();
@@ -45,10 +92,6 @@ public class GaForLipServiceTest {
 
     @Test
     void shouldReturnAnyTrue_resp_is_welsh() {
-        CaseData civilCaseData = CaseData.builder()
-            .respondent1LiPResponse(RespondentLiPResponse.builder()
-                                        .respondent1ResponseLanguage(Language.WELSH.name()).build())
-            .respondentBilingualLanguagePreference(YesOrNo.YES).build();
         CaseData caseData =
             CaseData.builder().parentClaimantIsApplicant(YesOrNo.YES).respondentBilingualLanguagePreference(YesOrNo.YES)
                 .build();
@@ -57,16 +100,12 @@ public class GaForLipServiceTest {
 
     @Test
     void shouldReturnAnyFalse_nobody_is_welsh() {
-        CaseData civilCaseData = CaseData.builder()
-            .build();
         CaseData caseData = CaseData.builder().parentClaimantIsApplicant(YesOrNo.YES).build();
         assertThat(gaForLipService.anyWelsh(caseData)).isFalse();
     }
 
     @Test
     void shouldReturnNoticeTrue_app_is_welsh() {
-        CaseData civilCaseData = CaseData.builder()
-            .claimantBilingualLanguagePreference(Language.WELSH.name()).build();
         CaseData caseData = CaseData.builder()
             .applicantBilingualLanguagePreference(YesOrNo.YES)
             .parentClaimantIsApplicant(YesOrNo.YES)
@@ -78,10 +117,6 @@ public class GaForLipServiceTest {
 
     @Test
     void shouldReturnNoticeTrue_resp_is_welsh() {
-        CaseData civilCaseData = CaseData.builder()
-            .respondent1LiPResponse(RespondentLiPResponse.builder()
-                                        .respondent1ResponseLanguage(Language.WELSH.name()).build())
-            .build();
         CaseData caseData = CaseData.builder()
             .parentClaimantIsApplicant(YesOrNo.YES)
             .respondentBilingualLanguagePreference(YesOrNo.YES)
@@ -93,8 +128,6 @@ public class GaForLipServiceTest {
 
     @Test
     void shouldReturnNoticeFalse_nobody_is_welsh() {
-        CaseData civilCaseData = CaseData.builder()
-            .build();
         CaseData caseData = CaseData.builder()
             .parentClaimantIsApplicant(YesOrNo.YES)
             .generalAppInformOtherParty(GAInformOtherParty.builder()
@@ -105,10 +138,6 @@ public class GaForLipServiceTest {
 
     @Test
     void shouldReturnWithoutNoticeFalse_resp_is_welsh() {
-        CaseData civilCaseData = CaseData.builder()
-            .respondent1LiPResponse(RespondentLiPResponse.builder()
-                                        .respondent1ResponseLanguage(Language.WELSH.name()).build())
-            .build();
         CaseData caseData = CaseData.builder()
             .parentClaimantIsApplicant(YesOrNo.YES)
             .generalAppInformOtherParty(GAInformOtherParty.builder()

@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
 import uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil;
 
 import java.util.Objects;
 
+import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 
 @RequiredArgsConstructor
@@ -55,5 +57,20 @@ public class GaForLipService {
                 || caseData.isRespondentBilingual();
         }
         return false;
+    }
+
+    public String getApplicant1Email(CaseData civilCaseData) {
+        return ofNullable(civilCaseData.getClaimantUserDetails())
+            .map(IdamUserDetails::getEmail)
+            .or(() -> ofNullable(civilCaseData.getApplicantSolicitor1UserDetails())
+                .map(IdamUserDetails::getEmail))
+            .orElse(null);
+    }
+
+    public String getDefendant1Email(CaseData civilCaseData) {
+        return ofNullable(civilCaseData.getDefendantUserDetails())
+            .map(IdamUserDetails::getEmail)
+            .or(() -> ofNullable(civilCaseData.getRespondentSolicitor1EmailAddress())
+                .map(String::toString)).orElse(null);
     }
 }
