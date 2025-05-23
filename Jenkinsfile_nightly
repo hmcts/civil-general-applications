@@ -35,7 +35,7 @@ def type = "java"
 def product = "civil"
 def component = "general-applications"
 def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
-def generalappCCDBranch = "master"
+def generalappCCDBranch = "nightly-dev"
 
 static Map<String, Object> secret(String secretName, String envVariable) {
   [$class     : 'AzureKeyVaultSecret',
