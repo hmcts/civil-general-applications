@@ -40,7 +40,8 @@ public class SecurityConfiguration {
         "/status/health",
         "/service-request-update",
         "/",
-        "/loggers/**"
+        "/loggers/**",
+        "/testing-support/flowstate"
     };
 
     private final RequestAuthorizer<User> userRequestAuthorizer;
