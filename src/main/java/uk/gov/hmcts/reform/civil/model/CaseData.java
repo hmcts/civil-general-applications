@@ -576,19 +576,4 @@ public class CaseData implements MappableObject {
             .filter(Objects::nonNull)
             .findFirst().orElse(null);
     }
-
-    @JsonIgnore
-    public boolean isApplicant1NotRepresented() {
-        return NO.equals(getApplicant1Represented());
-    }
-
-    @JsonIgnore
-    public boolean isRespondent1LiP() {
-        return YesOrNo.NO == getRespondent1Represented();
-    }
-
-    @JsonIgnore
-    public boolean isLipCase() {
-        return this.isApplicant1NotRepresented() || this.isRespondent1LiP();
-    }
 }

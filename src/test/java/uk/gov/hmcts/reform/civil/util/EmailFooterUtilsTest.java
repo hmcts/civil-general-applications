@@ -15,7 +15,6 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.HMCTS_SIGNATURE;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.OPENING_HOURS;
@@ -99,7 +98,7 @@ public class EmailFooterUtilsTest {
     void shouldAddQueryStringToFooterWhenLRQmAndLipQmEnabledApplicantLip() {
         CaseData caseData = CaseDataBuilder.builder()
             .ccdState(CaseState.AWAITING_APPLICANT_INTENTION)
-            .build().toBuilder().respondent1Represented(YES).applicant1Represented(NO).build();
+            .build().toBuilder().respondent1Represented(YES).isGaApplicantLip(YES).build();
         Map<String, String> actual = addAllFooterItems(
             caseData,
             new HashMap<>(),
@@ -114,7 +113,7 @@ public class EmailFooterUtilsTest {
     void shouldAddQueryStringToFooterWhenLRQmAndLipQmEnabledRespondentLip() {
         CaseData caseData = CaseDataBuilder.builder()
             .ccdState(CaseState.AWAITING_APPLICANT_INTENTION)
-            .build().toBuilder().respondent1Represented(NO).applicant1Represented(YES).build();
+            .build().toBuilder().isGaRespondentOneLip(YES).applicant1Represented(YES).build();
         Map<String, String> actual = addAllFooterItems(
             caseData,
             new HashMap<>(),

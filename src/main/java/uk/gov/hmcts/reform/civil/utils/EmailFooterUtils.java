@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.civil.utils;
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.reform.civil.config.NotificationsSignatureConfiguration;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
 import java.util.EnumSet;
@@ -81,11 +82,11 @@ public class EmailFooterUtils {
                                                boolean isLRQmEnabled) {
         log.info("add LR contact");
         log.info("isLRQmEnabled " + isLRQmEnabled);
-        log.info("!caseData.isLipCase() " + !caseData.isLipCase());
+        log.info("!isLipCase(caseData) " + !isLipCase(caseData));
         log.info("!queryNotAllowedCaseStates(caseData) " + !queryNotAllowedCaseStates(caseData));
         log.info("app rep " + caseData.getApplicant1Represented());
         log.info("res rep " + caseData.getRespondent1Represented());
-        if (isLRQmEnabled && !queryNotAllowedCaseStates(caseData) && !caseData.isLipCase()) {
+        if (isLRQmEnabled && !queryNotAllowedCaseStates(caseData) && !isLipCase(caseData)) {
             properties.put(SPEC_UNSPEC_CONTACT, RAISE_QUERY_LR);
         } else {
             properties.put(SPEC_UNSPEC_CONTACT, configuration.getSpecUnspecContact());
@@ -98,13 +99,13 @@ public class EmailFooterUtils {
         log.info("add lip contact");
         log.info("isLRQmEnabled " + isLRQmEnabled);
         log.info("!queryNotAllowedCaseStates(caseData) " + !queryNotAllowedCaseStates(caseData));
-        log.info("!caseData.isLipCase() " + !caseData.isLipCase());
+        log.info("!isLipCase(caseData) " + !isLipCase(caseData));
         log.info("res rep " + caseData.getRespondent1Represented());
         log.info("app rep " + caseData.getApplicant1Represented());
         log.info("isLipQMEnabled " + isLipQMEnabled);
         if (isLRQmEnabled
             && !queryNotAllowedCaseStates(caseData)
-            && caseData.isLipCase() && isLipQMEnabled) {
+            && isLipCase(caseData) && isLipQMEnabled) {
             properties.put(SPEC_CONTACT, RAISE_QUERY_LIP);
         } else {
             properties.put(SPEC_CONTACT, configuration.getSpecContact());
@@ -118,15 +119,22 @@ public class EmailFooterUtils {
         log.info("!queryNotAllowedCaseStates(caseData) " + !queryNotAllowedCaseStates(caseData));
         log.info("isLRQmEnabled " + isLRQmEnabled);
         log.info("res rep " + caseData.getRespondent1Represented());
-        log.info("!caseData.isLipCase() " + !caseData.isLipCase());
+        log.info("isLipCase(caseData) " + isLipCase(caseData));
         log.info("app rep " + caseData.getApplicant1Represented());
         log.info("isLipQMEnabled " + isLipQMEnabled);
         if (isLRQmEnabled
             && !queryNotAllowedCaseStates(caseData)
-            && caseData.isLipCase() && isLipQMEnabled) {
+            && isLipCase(caseData) && isLipQMEnabled) {
             properties.put(WELSH_CONTACT, RAISE_QUERY_LIP_WELSH);
         } else {
             properties.put(WELSH_CONTACT, configuration.getWelshContact());
         }
+    }
+
+    private static boolean isLipCase(CaseData caseData) {
+        log.info("getIsGaApplicantLip " + caseData.getIsGaApplicantLip());
+        log.info("getIsGaRespondentOneLip " + caseData.getIsGaRespondentOneLip());
+        return YesOrNo.YES.equals(caseData.getIsGaApplicantLip())
+            || YesOrNo.YES.equals(caseData.getIsGaRespondentOneLip());
     }
 }
