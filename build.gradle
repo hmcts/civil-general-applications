@@ -263,7 +263,7 @@ task runNightlyAPITests(type: Exec, description: 'Runs Full API tests.') {
   onlyIf {
     return System.env.NIGHTLY_BUILD == 'true'
   }
-  commandLine '/usr/bin/yarn', '--silent', 'run', 'test:nightly-api-tests'
+  commandLine './bin/run-nightly-api-tests.sh'
 }
 
 task smoke(description: 'Runs the smoke tests.') {
