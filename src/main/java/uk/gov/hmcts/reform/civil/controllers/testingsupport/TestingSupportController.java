@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResource;
@@ -30,6 +31,8 @@ import uk.gov.hmcts.reform.civil.service.CoreCaseUserService;
 import uk.gov.hmcts.reform.civil.service.OrganisationService;
 import uk.gov.hmcts.reform.civil.service.UserService;
 import uk.gov.hmcts.reform.civil.model.OrganisationResponse;
+import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
+import uk.gov.hmcts.reform.civil.stateflow.StateFlow;
 
 import java.util.Objects;
 
@@ -52,6 +55,7 @@ public class TestingSupportController {
     private final CheckStayOrderDeadlineEndTaskHandler checkStayOrderDeadlineEndTaskHandler;
     private final CheckUnlessOrderDeadlineEndTaskHandler checkUnlessOrderDeadlineEndTaskHandler;
     private final GAJudgeRevisitTaskHandler gaJudgeRevisitTaskHandler;
+    private final StateFlowEngine stateFlowEngine;
 
     @GetMapping("/testing-support/case/{caseId}/business-process")
     public ResponseEntity<BusinessProcessInfo> getBusinessProcess(@PathVariable("caseId") Long caseId) {
@@ -193,4 +197,11 @@ public class TestingSupportController {
 
     }
 
+    @PostMapping(
+        value = "/testing-support/flowstate",
+        produces = "application/json")
+    public StateFlow getFlowStateInformationForCaseData(
+        @RequestBody CaseData caseData) {
+        return stateFlowEngine.evaluate(caseData);
+    }
 }
