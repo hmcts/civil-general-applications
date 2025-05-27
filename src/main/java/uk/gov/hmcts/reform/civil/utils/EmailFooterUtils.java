@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.reform.civil.config.NotificationsSignatureConfiguration;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -22,6 +23,7 @@ import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.No
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.WELSH_OPENING_HOURS;
 import static uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData.WELSH_PHONE_CONTACT;
 
+@Slf4j
 public class EmailFooterUtils {
 
     private EmailFooterUtils() {
@@ -77,6 +79,12 @@ public class EmailFooterUtils {
     public static void addSpecAndUnspecContact(CaseData caseData, Map<String, String> properties,
                                                NotificationsSignatureConfiguration configuration,
                                                boolean isLRQmEnabled) {
+        log.info("add LR contact");
+        log.info("isLRQmEnabled " + isLRQmEnabled);
+        log.info("!caseData.isLipCase() " + !caseData.isLipCase());
+        log.info("!queryNotAllowedCaseStates(caseData) " + !queryNotAllowedCaseStates(caseData));
+        log.info("app rep " + caseData.getApplicant1Represented());
+        log.info("res rep " + caseData.getRespondent1Represented());
         if (isLRQmEnabled && !queryNotAllowedCaseStates(caseData) && !caseData.isLipCase()) {
             properties.put(SPEC_UNSPEC_CONTACT, RAISE_QUERY_LR);
         } else {
@@ -87,6 +95,13 @@ public class EmailFooterUtils {
     public static void addLipContact(CaseData caseData, Map<String, String> properties,
                                      NotificationsSignatureConfiguration configuration,
                                      boolean isLRQmEnabled, boolean isLipQMEnabled) {
+        log.info("add lip contact");
+        log.info("isLRQmEnabled " + isLRQmEnabled);
+        log.info("!queryNotAllowedCaseStates(caseData) " + !queryNotAllowedCaseStates(caseData));
+        log.info("!caseData.isLipCase() " + !caseData.isLipCase());
+        log.info("res rep " + caseData.getRespondent1Represented());
+        log.info("app rep " + caseData.getApplicant1Represented());
+        log.info("isLipQMEnabled " + isLipQMEnabled);
         if (isLRQmEnabled
             && !queryNotAllowedCaseStates(caseData)
             && caseData.isLipCase() && isLipQMEnabled) {
@@ -99,6 +114,13 @@ public class EmailFooterUtils {
     public static void addWelshLipContact(CaseData caseData, Map<String, String> properties,
                                           NotificationsSignatureConfiguration configuration,
                                           boolean isLRQmEnabled, boolean isLipQMEnabled) {
+        log.info("add welsh lip contact");
+        log.info("!queryNotAllowedCaseStates(caseData) " + !queryNotAllowedCaseStates(caseData));
+        log.info("isLRQmEnabled " + isLRQmEnabled);
+        log.info("res rep " + caseData.getRespondent1Represented());
+        log.info("!caseData.isLipCase() " + !caseData.isLipCase());
+        log.info("app rep " + caseData.getApplicant1Represented());
+        log.info("isLipQMEnabled " + isLipQMEnabled);
         if (isLRQmEnabled
             && !queryNotAllowedCaseStates(caseData)
             && caseData.isLipCase() && isLipQMEnabled) {
