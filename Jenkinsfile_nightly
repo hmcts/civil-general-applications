@@ -113,11 +113,11 @@ withNightlyPipeline(type, product, component) {
     // }
 
     before('fullFunctionalTest') {
-      yarnBuilder.yarn('yarn-update')
-      yarnBuilder.yarn('install-dependencies')
       sh """
         ./bin/pull-latest-general-app-ccd-files.sh ${generalappCCDBranch}
       """
+      yarnBuilder.yarn('yarn-update')
+      yarnBuilder.yarn('install-dependencies')
       if(runPrevFailedAndNotExecutedTestFiles) {
         copyPrevFailedAndNotExecutedTestFilesJson()
       }
