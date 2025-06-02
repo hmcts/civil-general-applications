@@ -259,7 +259,7 @@ task runNonProdApiTests(type: Exec, description: 'Runs non prod features in func
   commandLine './bin/run-api-tests.sh'
 }
 
-task runNightlyAPITests(type: Exec, description: 'Runs Full API tests.') {
+task runNightlyAPITests(type: Exec, description: 'Runs nightly tests.') {
   onlyIf {
     return System.env.NIGHTLY_BUILD == 'true'
   }
