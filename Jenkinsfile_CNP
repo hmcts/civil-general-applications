@@ -1,4 +1,7 @@
 #!groovy
+properties([
+  copyArtifactPermission('/HMCTS_a_to_c/civil-general-applications/*'),
+]);
 
 @Library("Infrastructure")
 import uk.gov.hmcts.contino.AppPipelineConfig
@@ -21,6 +24,30 @@ static Map<String, Object> secret(String secretName, String envVariable) {
    name       : secretName,
    envVariable: envVariable
   ]
+}
+
+def copyPrevFailedAndNotExecutedTestFilesJson() {
+  def buildFound = false
+  def buildNumber = currentBuild.previousBuild ? currentBuild.previousBuild.number : 0
+  def minBuildNumber = ((buildNumber - 8) > 0) ? buildNumber - 8 : 0
+  while (!buildFound && buildNumber > minBuildNumber) {
+    try {
+      copyArtifacts projectName: env.JOB_NAME, selector: specific("${buildNumber}"), filter: "test-results/functional/testFilesReport.json"
+      buildFound = true
+    } catch (Exception error) {
+      echo "artifact not found: " + error.toString()
+      buildNumber--
+    }
+  }
+}
+
+def getFunctionalTestsGroups() {
+  def githubApi = new GithubAPI(this)
+  def functionalTestGroups = []
+  for (label in githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr_ft_")) {
+    functionalTestGroups.add(label.substring(6, label.length()))
+  }
+  return functionalTestGroups.join(",")
 }
 
 def secrets = [
@@ -58,6 +85,10 @@ env.EM_CCD_ORCHESTRATOR_URL = 'http://em-ccd-orchestrator-aat.service.core-compu
 
 def checkForEnableHelmLabel(branch_name) {
   return new GithubAPI(this).getLabelsbyPattern(branch_name, "enableHelm").contains("enableHelm")
+}
+
+def checkForRunFailedTestFiles(branch_name) {
+  return new GithubAPI(this).getLabelsbyPattern(branch_name, "runFailedTestFiles").contains("runFailedTestFiles")
 }
 
 withPipeline(type, product, component) {
@@ -120,6 +151,12 @@ withPipeline(type, product, component) {
     env.SERVICE_AUTH_PROVIDER_API_BASE_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
     env.CCD_DATA_STORE_URL = "https://ccd-data-store-api-civil-general-applications-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     env.DM_STORE_URL = "http://dm-store-aat.service.core-compute-aat.internal"
+    
+    if(checkForRunFailedTestFiles(env.BRANCH_NAME)) {
+      echo "GitHub label: 'runFailedTestFiles' currently on PR"
+      copyPrevFailedAndNotExecutedTestFilesJson();
+      env.RUN_PREV_FAILED_AND_NOT_EXECUTED_TEST_FILES = true
+    }
   }
 
   afterAlways('functionalTest:preview') {

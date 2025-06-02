@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.IdamUserDetails;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 
@@ -120,45 +119,51 @@ public class SolicitorEmailValidation {
 
     private void validateLipEmail(CaseData civilCaseData, CaseData gaCaseData,
                                   CaseData.CaseDataBuilder caseDataBuilder) {
+
+        String applicant1Email = gaForLipService.getApplicant1Email(civilCaseData);
+        String defendant1Email = gaForLipService.getDefendant1Email(civilCaseData);
+
         if (gaForLipService.isLipApp(gaCaseData)) {
             if (gaCaseData.getParentClaimantIsApplicant().equals(YES)) {
-                checkApplicantLip(gaCaseData, caseDataBuilder,
-                        civilCaseData.getClaimantUserDetails());
+                checkApplicantLip(gaCaseData, caseDataBuilder, applicant1Email);
             } else {
-                checkApplicantLip(gaCaseData, caseDataBuilder,
-                        civilCaseData.getDefendantUserDetails());
+                checkApplicantLip(gaCaseData, caseDataBuilder, defendant1Email);
             }
         }
         if (gaForLipService.isLipResp(gaCaseData)) {
             if (gaCaseData.getParentClaimantIsApplicant().equals(YES)) {
-                checkRespondentsLip(gaCaseData, caseDataBuilder, civilCaseData.getDefendantUserDetails());
+                checkRespondentsLip(gaCaseData, caseDataBuilder, defendant1Email);
             } else {
-                checkRespondentsLip(gaCaseData, caseDataBuilder, civilCaseData.getClaimantUserDetails());
+                checkRespondentsLip(gaCaseData, caseDataBuilder, applicant1Email);
             }
         }
     }
 
     private void checkApplicantLip(CaseData gaCaseData,
                                    CaseData.CaseDataBuilder caseDataBuilder,
-                                   IdamUserDetails userDetails) {
-        if (!userDetails.getEmail()
-                .equals(gaCaseData.getGeneralAppApplnSolicitor().getEmail())) {
+                                   String userEmail) {
+        if (userEmail != null
+            && gaCaseData.getGeneralAppApplnSolicitor() != null
+            && gaCaseData.getGeneralAppApplnSolicitor().getEmail() != null
+            && !userEmail.equals(gaCaseData.getGeneralAppApplnSolicitor().getEmail())) {
             caseDataBuilder.generalAppApplnSolicitor(updateSolDetails(
-                    userDetails.getEmail(),
-                    gaCaseData.getGeneralAppApplnSolicitor()));
+                userEmail, gaCaseData.getGeneralAppApplnSolicitor()));
         }
     }
 
     private void checkRespondentsLip(CaseData gaCaseData,
                                      CaseData.CaseDataBuilder caseDataBuilder,
-                                     IdamUserDetails userDetails) {
+                                     String userEmail) {
         List<Element<GASolicitorDetailsGAspec>> generalAppRespondentSolicitors = newArrayList();
         /*GA for Lip is 1v1*/
-        if (!userDetails.getEmail()
-                .equals(gaCaseData.getGeneralAppRespondentSolicitors().get(0).getValue().getEmail())) {
+        if (userEmail != null
+            && gaCaseData.getGeneralAppRespondentSolicitors() != null
+            && !gaCaseData.getGeneralAppRespondentSolicitors().isEmpty()
+            && !userEmail.equals(gaCaseData.getGeneralAppRespondentSolicitors().get(0).getValue().getEmail())) {
+
             generalAppRespondentSolicitors.add(element(updateSolDetails(
-                    userDetails.getEmail(),
-                    gaCaseData.getGeneralAppRespondentSolicitors().get(0).getValue())));
+                userEmail, gaCaseData.getGeneralAppRespondentSolicitors().get(0).getValue())));
+
             caseDataBuilder.generalAppRespondentSolicitors(generalAppRespondentSolicitors);
         }
     }

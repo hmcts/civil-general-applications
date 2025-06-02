@@ -47,12 +47,11 @@ static Map<String, Object> secret(String secretName, String envVariable) {
 
 def copyPrevFailedAndNotExecutedTestFilesJson() {
   def buildFound = false
-  def buildNumber = currentBuild.previousBuild.number
+  def buildNumber = currentBuild.previousBuild ? currentBuild.previousBuild.number : 0
   def minBuildNumber = ((buildNumber - 8) > 0) ? buildNumber - 8 : 0
   while (!buildFound && buildNumber > minBuildNumber) {
     try {
       copyArtifacts projectName: env.JOB_NAME, selector: specific("${buildNumber}"), filter: "test-results/functional/testFilesReport.json"
-      sh "mv 'test-results/functional/testFilesReport.json' 'test-results/functional/prevTestFilesReport.json'"
       buildFound = true
     } catch (Exception error) {
       echo "artifact not found: " + error.toString()
@@ -100,31 +99,26 @@ withNightlyPipeline(type, product, component) {
   // enableCrossBrowserTest()
 
   if(!forceGreenBuild) {
-    afterAlways('fortify-scan') {
-      steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
-    }
+    // afterAlways('fortify-scan') {
+    //   steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
+    // }
 
-    before('crossBrowserTest') {
-      // sh """
-      //   ./bin/pull-latest-general-app-ccd-files.sh ${generalappCCDBranch}
-      // """
-      // yarnBuilder.yarn('yarn-update')
-      // yarnBuilder.yarn('install-dependencies')
-    }
+    // before('crossBrowserTest') {
+    //   yarnBuilder.yarn('yarn-update')
+    //   yarnBuilder.yarn('install-dependencies')
+    // }
 
-    afterAlways('crossBrowserTest') {
-      steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/functional/**/*'
-    }
+    // afterAlways('crossBrowserTest') {
+    //   steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/functional/**/*'
+    // }
 
     before('fullFunctionalTest') {
-      if(runPrevFailedAndNotExecutedTestFiles) {
-        copyPrevFailedAndNotExecutedTestFilesJson()
-      }
       sh """
         ./bin/pull-latest-general-app-ccd-files.sh ${generalappCCDBranch}
       """
-      yarnBuilder.yarn('yarn-update')
-      yarnBuilder.yarn('install-dependencies')
+      if(runPrevFailedAndNotExecutedTestFiles) {
+        copyPrevFailedAndNotExecutedTestFilesJson()
+      }
     }
 
     afterAlways('fullFunctionalTest') {
