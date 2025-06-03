@@ -247,19 +247,19 @@ def inStrictOrder(Task... tasks) {
 
 task runApiTests(type: Exec, description: 'Runs Api tests.') {
   onlyIf {
-    return System.env.ENVIRONMENT == 'aat'
+    return System.env.ENVIRONMENT == 'aat' && System.env.NIGHTLY_BUILD != 'true'
   }
   commandLine '/usr/bin/yarn', '--silent', 'run', 'test:api'
 }
 
 task runNonProdApiTests(type: Exec, description: 'Runs non prod features in functional tests.') {
   onlyIf {
-    return System.env.ENVIRONMENT == 'preview'
+    return System.env.ENVIRONMENT == 'preview' && System.env.NIGHTLY_BUILD != 'true'
   }
   commandLine './bin/run-api-tests.sh'
 }
 
-task runNightlyAPITests(type: Exec, description: 'Runs Full API tests.') {
+task runNightlyAPITests(type: Exec, description: 'Runs nightly tests.') {
   onlyIf {
     return System.env.NIGHTLY_BUILD == 'true'
   }
