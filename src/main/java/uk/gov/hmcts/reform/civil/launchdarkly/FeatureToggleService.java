@@ -58,6 +58,10 @@ public class FeatureToggleService {
         return internalClient.boolVariation("isCoSCEnabled", createLDUser().build(), false);
     }
 
+    public boolean isGaForWelshEnabled() {
+        return internalClient.boolVariation("generalApplicationsForWelshParty", createLDUser().build(), false);
+    }
+
     public boolean isQueryManagementLRsEnabled() {
         return internalClient.boolVariation("query-management", createLDUser().build(), false);
     }

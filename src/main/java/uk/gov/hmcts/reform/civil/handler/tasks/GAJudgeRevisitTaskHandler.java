@@ -52,15 +52,15 @@ public class GAJudgeRevisitTaskHandler extends BaseExternalTaskHandler {
         Set<CaseDetails> writtenRepresentationCases = caseStateSearchService
             .getGeneralApplications(AWAITING_WRITTEN_REPRESENTATIONS);
         List<CaseDetails> claimantNotificationCases = filterForClaimantWrittenRepExpired(writtenRepresentationCases);
-        log.info("Job '{}' found {} written representation case(s) with claimant deadline expired",
-                 externalTask.getTopicName(), claimantNotificationCases.size());
+        log.info("Job '{}' found {} written representation case(s) with claimant deadline expired {}",
+                 externalTask.getTopicName(), claimantNotificationCases.size(), claimantNotificationCases.stream().map(CaseDetails::getId).sorted().toList());
         if (featureToggleService.isGaForLipsEnabled()) {
             claimantNotificationCases.forEach(this::fireEventForDeleteClaimantNotification);
         }
 
         List<CaseDetails> defendantNotificationCases = filterForDefendantWrittenRepExpired(writtenRepresentationCases);
-        log.info("Job '{}' found {} written representation case(s) with defendant deadline expired",
-                 externalTask.getTopicName(), defendantNotificationCases.size());
+        log.info("Job '{}' found {} written representation case(s) with defendant deadline expired {}",
+                 externalTask.getTopicName(), defendantNotificationCases.size(), defendantNotificationCases.stream().map(CaseDetails::getId).sorted().toList());
         if (featureToggleService.isGaForLipsEnabled()) {
             defendantNotificationCases.forEach(this::fireEventForDeleteDefendantNotification);
         }
@@ -73,16 +73,16 @@ public class GAJudgeRevisitTaskHandler extends BaseExternalTaskHandler {
 
             });
         List<CaseDetails> directionOrderCases = getDirectionOrderCaseReadyToJudgeRevisit();
-        log.info("Job '{}' found {} direction order case(s)",
-                 externalTask.getTopicName(), directionOrderCases.size());
+        log.info("Job '{}' found {} direction order case(s) {}",
+                 externalTask.getTopicName(), directionOrderCases.size(), directionOrderCases.stream().map(CaseDetails::getId).sorted().toList());
         directionOrderCases.forEach(this::fireEventForStateChange);
 
         if (featureToggleService.isGaForLipsEnabled()) {
             directionOrderCases.forEach(this::fireEventForUpdatingTaskList);
         }
         List<CaseDetails> requestForInformationCases = getRequestForInformationCaseReadyToJudgeRevisit();
-        log.info("Job '{}' found {} request for information case(s)",
-                 externalTask.getTopicName(), requestForInformationCases.size());
+        log.info("Job '{}' found {} request for information case(s) {}",
+                 externalTask.getTopicName(), requestForInformationCases.size(), requestForInformationCases.stream().map(CaseDetails::getId).sorted().toList());
         requestForInformationCases.forEach(this::fireEventForStateChange);
         if (featureToggleService.isGaForLipsEnabled()) {
             requestForInformationCases.forEach(this::fireEventForUpdatingTaskList);
@@ -92,8 +92,7 @@ public class GAJudgeRevisitTaskHandler extends BaseExternalTaskHandler {
 
     protected void fireEventForStateChange(CaseDetails caseDetails) {
         Long caseId = caseDetails.getId();
-        log.info("Firing event CHANGE_STATE_TO_AWAITING_JUDICIAL_DECISION to change the state "
-                     + "to APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION "
+        log.info("Firing event CHANGE_STATE_TO_ADDITIONAL_RESPONSE_TIME_EXPIRED "
                      + "for caseId: {}", caseId);
         CaseData caseData = caseDetailsConverter.toCaseData(caseDetails);
         try {
