@@ -300,7 +300,6 @@ public class StateFlowEngineTest {
         assertThat(stateFlow.getStateHistory()).hasSize(3)
             .extracting(State::getName)
             .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
-                             PROCEED_GENERAL_APPLICATION.fullName()
-            );
+                             PROCEED_GENERAL_APPLICATION.fullName());
     }
 }
