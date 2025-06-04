@@ -10,6 +10,8 @@ import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
+import uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -46,6 +48,7 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
 
     private final GeneralAppFeesService generalAppFeesService;
     private final GaForLipService gaForLipService;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     public String camundaActivityId() {
@@ -105,17 +108,35 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
                 if (Objects.isNull(draftApplicationList)) {
                     draftApplicationList = newArrayList();
                 }
+                List<Element<CaseDocument>> preTranslatedDocuments = caseData.getPreTranslationGaDocuments();
+                if (Objects.isNull(preTranslatedDocuments)) {
+                    preTranslatedDocuments = newArrayList();
+                }
+
                 gaDraftDocument = gaDraftGenerator.generate(
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
 
-                draftApplicationList.add(element(gaDraftDocument));
 
-                assignCategoryId.assignCategoryIdToCollection(draftApplicationList,
-                                                              document -> document.getValue().getDocumentLink(),
-                                                              AssignCategoryId.APPLICATIONS);
-                caseDataBuilder.gaDraftDocument(draftApplicationList);
+                if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicantBilingual()) {
+                    preTranslatedDocuments.add(element(gaDraftDocument));
+                    assignCategoryId.assignCategoryIdToCollection(
+                        preTranslatedDocuments,
+                        document -> document.getValue().getDocumentLink(),
+                        AssignCategoryId.APPLICATIONS
+                    );
+                    caseDataBuilder.preTranslationGaDocumentType(PreTranslationGaDocumentType.APPLICATION_SUMMARY_DOC);
+                    caseDataBuilder.preTranslationGaDocuments(preTranslatedDocuments);
+                } else {
+                    draftApplicationList.add(element(gaDraftDocument));
+                    assignCategoryId.assignCategoryIdToCollection(
+                        draftApplicationList,
+                        document -> document.getValue().getDocumentLink(),
+                        AssignCategoryId.APPLICATIONS
+                    );
+                    caseDataBuilder.gaDraftDocument(draftApplicationList);
+                }
             }
         } else {
             /*
