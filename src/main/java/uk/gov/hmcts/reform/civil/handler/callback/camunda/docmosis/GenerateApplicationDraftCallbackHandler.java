@@ -118,7 +118,6 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
 
-
                 if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicantBilingual()) {
                     preTranslatedDocuments.add(element(gaDraftDocument));
                     assignCategoryId.assignCategoryIdToCollection(
