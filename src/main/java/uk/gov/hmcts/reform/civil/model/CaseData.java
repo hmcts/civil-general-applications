@@ -246,6 +246,7 @@ public class CaseData implements MappableObject {
     private final FreeFormOrderValues orderOnCourtInitiative;
     private final FreeFormOrderValues orderWithoutNotice;
     private final Document gaFinalOrderDocPreview;
+    private final LocalDateTime mainCaseSubmittedDate;
 
     @JsonProperty("CaseAccessCategory")
     private final CaseCategory caseAccessCategory;
