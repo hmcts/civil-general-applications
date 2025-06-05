@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.stateflow.StateFlow;
 import uk.gov.hmcts.reform.civil.stateflow.StateFlowBuilder;
@@ -12,6 +13,7 @@ import uk.gov.hmcts.reform.civil.stateflow.model.State;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isLipApplication;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isLipRespondent;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isVaryJudgementAppByResp;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isWelshApplicant;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeDecision;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeDirections;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeListingForHearing;
@@ -37,6 +39,7 @@ import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.ORDER_M
 public class StateFlowEngine {
 
     private final CaseDetailsConverter caseDetailsConverter;
+    private final FeatureToggleService featureToggleService;
 
     public StateFlow build() {
         return StateFlowBuilder.<FlowState.Main>flow(FLOW_NAME)
@@ -55,6 +58,10 @@ public class StateFlowEngine {
                         flags.put(FlowFlag.LIP_APPLICANT.name(), isLipApplication.test(c));
                         flags.put(FlowFlag.LIP_RESPONDENT.name(), isLipRespondent.test(c));
                         flags.put(FlowFlag.VARY_JUDGE_GA_BY_RESP.name(), isVaryJudgementAppByResp.test(c));
+                        flags.put(
+                            FlowFlag.WELSH_ENABLED.name(),
+                            featureToggleService.isGaForWelshEnabled() && isWelshApplicant.test(c)
+                        );
                     })
             .state(PROCEED_GENERAL_APPLICATION)
                 .transitionTo(APPLICATION_SUBMITTED_JUDICIAL_DECISION)
