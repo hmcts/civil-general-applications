@@ -4,22 +4,26 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.config.NotificationsSignatureConfiguration;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.handler.callback.user.JudicialFinalDecisionHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
+import static uk.gov.hmcts.reform.civil.utils.EmailFooterUtils.addAllFooterItems;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isNotificationCriteriaSatisfied;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isUrgentApplnNotificationCriteriaSatisfied;
 
@@ -42,6 +46,9 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
 
     private final SolicitorEmailValidation solicitorEmailValidation;
     private final NotificationsProperties notificationsProperties;
+
+    private final FeatureToggleService featureToggleService;
+    private final NotificationsSignatureConfiguration configuration;
 
     public  CaseData sendNotification(CaseData caseData) throws NotificationException {
 
@@ -155,7 +162,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
             caseTitle = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
 
         }
-        return Map.of(
+        HashMap<String, String> properties = new HashMap<>(Map.of(
             APPLICANT_REFERENCE, YES.equals(caseData.getParentClaimantIsApplicant()) ? "claimant" : "respondent",
             CASE_REFERENCE, caseData.getGeneralAppParentCaseLink().getCaseReference(),
             GENAPP_REFERENCE, String.valueOf(Objects.requireNonNull(caseData.getCcdCaseReference())),
@@ -167,7 +174,11 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
             GA_LIP_RESP_NAME, lipRespName,
 
             CASE_TITLE, Objects.requireNonNull(caseTitle)
-        );
+        ));
+        addAllFooterItems(caseData, properties, configuration,
+                           featureToggleService.isQueryManagementLRsEnabled(),
+                           featureToggleService.isLipQueryManagementEnabled(caseData));
+        return properties;
     }
 
 }
