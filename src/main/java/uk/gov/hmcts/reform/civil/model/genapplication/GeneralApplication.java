@@ -82,6 +82,8 @@ public class GeneralApplication implements MappableObject {
     //WA claim track description
     private final String gaWaTrackLabel;
     private final String emailPartyReference;
+    //dates
+    private final LocalDateTime mainCaseSubmittedDate;
 
     @JsonCreator
     GeneralApplication(@JsonProperty("generalAppType") GAApplicationType generalAppType,
@@ -140,7 +142,8 @@ public class GeneralApplication implements MappableObject {
                        @JsonProperty("certOfSC") CertOfSC certOfSC,
                        @JsonProperty("caseNameGaInternal") String caseNameGaInternal,
                        @JsonProperty("gaWaTrackLabel") String gaWaTrackLabel,
-                       @JsonProperty("emailPartyReference")  String emailPartyReference) {
+                       @JsonProperty("emailPartyReference") String emailPartyReference,
+                       @JsonProperty("mainCaseSubmittedDate") LocalDateTime mainCaseSubmittedDate) {
         this.generalAppType = generalAppType;
         this.generalAppRespondentAgreement = generalAppRespondentAgreement;
         this.generalAppConsentOrder = generalAppConsentOrder;
@@ -194,6 +197,7 @@ public class GeneralApplication implements MappableObject {
         this.caseNameGaInternal = caseNameGaInternal;
         this.gaWaTrackLabel = gaWaTrackLabel;
         this.emailPartyReference = emailPartyReference;
+        this.mainCaseSubmittedDate = mainCaseSubmittedDate;
     }
 
     @JsonIgnore

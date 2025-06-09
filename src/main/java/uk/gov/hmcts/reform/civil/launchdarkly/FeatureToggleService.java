@@ -6,8 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.model.CaseData;
 
 import java.io.IOException;
+import java.time.ZoneId;
 
 @Slf4j
 @Service
@@ -58,6 +60,16 @@ public class FeatureToggleService {
 
     public boolean isGaForWelshEnabled() {
         return internalClient.boolVariation("generalApplicationsForWelshParty", createLDUser().build(), false);
+    }
+
+    public boolean isQueryManagementLRsEnabled() {
+        return internalClient.boolVariation("query-management", createLDUser().build(), false);
+    }
+
+    public boolean isLipQueryManagementEnabled(CaseData caseData) {
+        ZoneId zoneId = ZoneId.systemDefault();
+        long epoch = caseData.getMainCaseSubmittedDate().atZone(zoneId).toEpochSecond();
+        return isFeatureEnabledForDate("cui-query-management", epoch, false);
     }
 
     public LDUser.Builder createLDUser() {

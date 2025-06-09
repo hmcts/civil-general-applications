@@ -12,6 +12,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import uk.gov.hmcts.reform.ccd.model.Organisation;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
+import uk.gov.hmcts.reform.civil.config.NotificationsSignatureConfiguration;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.dq.Language;
@@ -35,6 +36,7 @@ import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -75,6 +77,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
     private NotificationsProperties notificationsProperties;
     @MockBean
     private FeatureToggleService featureToggleService;
+    @MockBean
+    private NotificationsSignatureConfiguration configuration;
     @Captor
     ArgumentCaptor<Map<String, String>> argumentCaptor;
 
@@ -99,6 +103,17 @@ public class GeneralApplicationCreationNotificationServiceTest {
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             when(notificationsProperties.getLipGeneralAppRespondentEmailTemplateInWelsh())
                 .thenReturn("general-application-respondent-welsh-template-lip-id");
+            when(configuration.getHmctsSignature()).thenReturn("Online Civil Claims \n HM Courts & Tribunal Service");
+            when(configuration.getPhoneContact()).thenReturn("For anything related to hearings, call 0300 123 5577 "
+                                                                 + "\n For all other matters, call 0300 123 7050");
+            when(configuration.getOpeningHours()).thenReturn("Monday to Friday, 8.30am to 5pm");
+            when(configuration.getSpecUnspecContact()).thenReturn("Email for Specified Claims: contactocmc@justice.gov.uk "
+                                                                      + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            when(configuration.getWelshContact()).thenReturn("E-bost: ymholiadaucymraeg@justice.gov.uk");
+            when(configuration.getSpecContact()).thenReturn("Email: contactocmc@justice.gov.uk");
+            when(configuration.getWelshHmctsSignature()).thenReturn("Hawliadau am Arian yn y Llys Sifil Ar-lein \n Gwasanaeth Llysoedd a Thribiwnlysoedd EF");
+            when(configuration.getWelshPhoneContact()).thenReturn("Ffôn: 0300 303 5174");
+            when(configuration.getWelshOpeningHours()).thenReturn("Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
         }
 
         @Test
@@ -288,7 +303,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
         }
 
         private Map<String, String> getNotificationDataMap(boolean isLip) {
-            return Map.of(
+            HashMap<String, String> properties = new HashMap<>(Map.of(
                 NotificationData.APPLICANT_REFERENCE, "claimant",
                 NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString(),
                 NotificationData.PARTY_REFERENCE, PARTY_REFERENCE,
@@ -297,7 +312,19 @@ public class GeneralApplicationCreationNotificationServiceTest {
                 NOTIFICATION_DEADLINE.format(DateTimeFormatter.ofPattern("dd MMMM yyyy")),
                 NotificationData.GA_LIP_RESP_NAME, isLip ? "Lip Resp" : "",
                 NotificationData.CASE_TITLE, isLip ? "CL v DEF" : ""
-            );
+            ));
+            properties.put(NotificationData.WELSH_CONTACT, "E-bost: ymholiadaucymraeg@justice.gov.uk");
+            properties.put(NotificationData.WELSH_HMCTS_SIGNATURE, "Hawliadau am Arian yn y Llys Sifil Ar-lein \n Gwasanaeth Llysoedd a Thribiwnlysoedd EF");
+            properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
+            properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
+            properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
+            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
+                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
+            properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
+            properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
+                + "\n For all other matters, call 0300 123 7050");
+            return properties;
         }
 
         private CaseData getCaseData(boolean isMet) {
