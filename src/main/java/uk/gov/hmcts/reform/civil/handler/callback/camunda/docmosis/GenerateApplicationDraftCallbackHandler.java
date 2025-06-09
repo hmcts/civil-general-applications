@@ -108,10 +108,6 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
                 if (Objects.isNull(draftApplicationList)) {
                     draftApplicationList = newArrayList();
                 }
-                List<Element<CaseDocument>> preTranslatedDocuments = caseData.getPreTranslationGaDocuments();
-                if (Objects.isNull(preTranslatedDocuments)) {
-                    preTranslatedDocuments = newArrayList();
-                }
 
                 gaDraftDocument = gaDraftGenerator.generate(
                     caseDataBuilder.build(),
@@ -119,6 +115,8 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
                 );
 
                 if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicantBilingual()) {
+                    List<Element<CaseDocument>> preTranslatedDocuments =
+                        Optional.ofNullable(caseData.getPreTranslationGaDocuments()).orElseGet(ArrayList::new);
                     preTranslatedDocuments.add(element(gaDraftDocument));
                     assignCategoryId.assignCategoryIdToCollection(
                         preTranslatedDocuments,
