@@ -20,10 +20,12 @@ import uk.gov.hmcts.reform.civil.service.GeneralAppFeesService;
 import uk.gov.hmcts.reform.civil.service.docmosis.applicationdraft.GeneralApplicationDraftGenerator;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Objects.isNull;
@@ -116,7 +118,8 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
 
                 if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicantBilingual()) {
                     List<Element<CaseDocument>> preTranslatedDocuments =
-                        Optional.ofNullable(caseData.getPreTranslationGaDocuments()).orElseGet(ArrayList::new);
+                        Optional.ofNullable(caseData.getPreTranslationGaDocuments())
+                            .orElseGet(ArrayList::new);
                     preTranslatedDocuments.add(element(gaDraftDocument));
                     assignCategoryId.assignCategoryIdToCollection(
                         preTranslatedDocuments,
