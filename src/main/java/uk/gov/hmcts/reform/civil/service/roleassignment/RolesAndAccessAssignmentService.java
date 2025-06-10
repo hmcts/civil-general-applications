@@ -71,7 +71,7 @@ public class RolesAndAccessAssignmentService {
                                  .replaceExisting(false)
                                  .build())
                 .requestedRoles(buildRoleAssignments(gaCaseId, rolesToAssign, existingGaRoleAssignments)).build());
-        log.info("Assigned roles  successfully");
+        log.info("Assigned roles from main case, to GA successfully");
     }
 
     private static List<RoleAssignment> buildRoleAssignments(String gaCaseId, RoleAssignmentServiceResponse roleToAssign,
