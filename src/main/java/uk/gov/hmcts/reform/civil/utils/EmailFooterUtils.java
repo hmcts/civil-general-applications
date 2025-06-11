@@ -32,7 +32,7 @@ public class EmailFooterUtils {
     }
 
     public static String RAISE_QUERY_LR = "Contact us about your claim by selecting "
-        + "Raise a query from the next steps menu in case file view.";
+        + "Raise a query from the next steps menu.";
 
     public static String RAISE_QUERY_LIP = "To contact the court, select contact or "
         + "apply to the court on your dashboard.";
