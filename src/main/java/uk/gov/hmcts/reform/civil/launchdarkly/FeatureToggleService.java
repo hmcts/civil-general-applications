@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 @Slf4j
@@ -68,7 +69,11 @@ public class FeatureToggleService {
 
     public boolean isLipQueryManagementEnabled(CaseData caseData) {
         ZoneId zoneId = ZoneId.systemDefault();
-        long epoch = caseData.getMainCaseSubmittedDate().atZone(zoneId).toEpochSecond();
+        LocalDateTime mainCaseSubmittedDate = caseData.getMainCaseSubmittedDate();
+        if (mainCaseSubmittedDate == null) {
+            return false;
+        }
+        long epoch = mainCaseSubmittedDate.atZone(zoneId).toEpochSecond();
         return isFeatureEnabledForDate("cui-query-management", epoch, false);
     }
 
