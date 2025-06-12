@@ -230,6 +230,30 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
     }
 
     @Test
+    void shouldSetTranslationDocumentsForWlu_LipRespondent() {
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData caseData = getSampleGeneralApplicationCaseDataLip(YES, YES, YES);
+        caseData = caseData.toBuilder()
+            .respondentBilingualLanguagePreference(YES)
+            .isGaRespondentOneLip(YES)
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .paymentDetails(PaymentDetails.builder()
+                                                          .status(PaymentStatus.SUCCESS).build())
+                                      .fee(Fee.builder().code("NotFree").build()).build()).build();
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        when(generalApplicationDraftGenerator.generate(any(CaseData.class), anyString()))
+            .thenReturn(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+        when(time.now()).thenReturn(submittedOn.atStartOfDay());
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        verify(generalApplicationDraftGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+        CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+        assertThat(updatedData.getPreTranslationGaDocuments().get(0).getValue())
+            .isEqualTo(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+        assertThat(updatedData.getPreTranslationGaDocumentType()).isEqualTo(PreTranslationGaDocumentType.APPLICATION_SUMMARY_DOC);
+    }
+
+    @Test
     void shouldGenerateDraftDocument_FreeFeeCode_ConsentApp_LR() {
         CaseData caseData = getSampleGeneralApplicationCaseData(YES, NO, YES);
         when(gaForLipService.isGaForLip(any())).thenReturn(false);
