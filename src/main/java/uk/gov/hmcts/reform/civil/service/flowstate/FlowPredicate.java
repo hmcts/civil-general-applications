@@ -73,6 +73,7 @@ public class FlowPredicate {
             && caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT);
 
     public static final Predicate<CaseData> isWelshApplicant =
-        caseData -> caseData.getIsGaApplicantLip() == YES
-            && (caseData.isApplicantBilingual() || caseData.isRespondentBilingual());
+        caseData -> ((caseData.getIsGaApplicantLip() == YES
+            && caseData.isApplicantBilingual())
+            || (caseData.isRespondentBilingual() && caseData.getIsGaRespondentOneLip() == YES));
 }
