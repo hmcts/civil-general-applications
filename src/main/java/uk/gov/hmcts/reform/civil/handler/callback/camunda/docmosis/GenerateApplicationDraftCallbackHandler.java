@@ -116,8 +116,8 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
 
-                if (featureToggleService.isGaForWelshEnabled() &&
-                    (caseData.isApplicantBilingual() || caseData.isRespondentBilingual())) {
+                if (featureToggleService.isGaForWelshEnabled()
+                    && (caseData.isApplicantBilingual() || caseData.isRespondentBilingual())) {
                     List<Element<CaseDocument>> preTranslatedDocuments =
                         Optional.ofNullable(caseData.getPreTranslationGaDocuments())
                             .orElseGet(ArrayList::new);
