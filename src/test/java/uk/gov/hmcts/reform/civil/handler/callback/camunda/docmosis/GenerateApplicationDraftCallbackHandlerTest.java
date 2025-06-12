@@ -212,6 +212,7 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
         CaseData caseData = getSampleGeneralApplicationCaseDataLip(YES, YES, YES);
         caseData = caseData.toBuilder()
             .applicantBilingualLanguagePreference(YES)
+            .isGaApplicantLip(YES)
             .generalAppPBADetails(GAPbaDetails.builder()
                                       .paymentDetails(PaymentDetails.builder()
                                                           .status(PaymentStatus.SUCCESS).build())
