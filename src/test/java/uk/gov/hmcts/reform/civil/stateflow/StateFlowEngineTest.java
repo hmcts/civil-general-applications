@@ -314,6 +314,7 @@ public class StateFlowEngineTest {
                 .parentClaimantIsApplicant(NO)
                 .respondentBilingualLanguagePreference(YES)
                 .build();
+
         StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
 
         assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
