@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.civil.service.flowstate.StateFlowEngine;
 import uk.gov.hmcts.reform.civil.stateflow.model.State;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
@@ -281,5 +282,24 @@ public class StateFlowEngineTest {
                              PROCEED_GENERAL_APPLICATION.fullName(),
                              APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
                              JUDGE_DIRECTIONS.fullName());
+    }
+
+    @Test
+    void shouldReturnApplicationSubmittedWhenPBAPaymentIsSuccess_SetWelshFlowFlag() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData caseData =
+            CaseDataBuilder.builder().withNoticeCaseData().toBuilder()
+                .isGaApplicantLip(YES)
+                .applicantBilingualLanguagePreference(YES)
+                .parentClaimantIsApplicant(NO).build();
+        StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
+
+        assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
+            .isEqualTo(PROCEED_GENERAL_APPLICATION.fullName());
+        assertThat(stateFlow.getFlags()).hasSize(4);
+        assertThat(stateFlow.getStateHistory()).hasSize(3)
+            .extracting(State::getName)
+            .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
+                             PROCEED_GENERAL_APPLICATION.fullName());
     }
 }
