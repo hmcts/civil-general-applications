@@ -44,6 +44,7 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(GENERATE_DRAFT_DOCUMENT);
     private static final String TASK_ID = "GenerateDraftDocumentId";
+    private static final int ONE_V_ONE = 1;
     private final ObjectMapper objectMapper;
     private final GeneralApplicationDraftGenerator gaDraftGenerator;
     private final AssignCategoryId assignCategoryId;
@@ -116,7 +117,8 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
 
-                if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicantBilingual()) {
+                if (featureToggleService.isGaForWelshEnabled()
+                    && (caseData.isApplicantBilingual() || caseData.isRespondentBilingual())) {
                     List<Element<CaseDocument>> preTranslatedDocuments =
                         Optional.ofNullable(caseData.getPreTranslationGaDocuments())
                             .orElseGet(ArrayList::new);
@@ -126,7 +128,12 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
                         document -> document.getValue().getDocumentLink(),
                         AssignCategoryId.APPLICATIONS
                     );
-                    caseDataBuilder.preTranslationGaDocumentType(PreTranslationGaDocumentType.APPLICATION_SUMMARY_DOC);
+                    if (caseData.getRespondentsResponses() != null
+                        && !caseData.getRespondentsResponses().isEmpty()) {
+                        caseDataBuilder.preTranslationGaDocumentType(PreTranslationGaDocumentType.RESPOND_TO_APPLICATION_SUMMARY_DOC);
+                    } else {
+                        caseDataBuilder.preTranslationGaDocumentType(PreTranslationGaDocumentType.APPLICATION_SUMMARY_DOC);
+                    }
                     caseDataBuilder.preTranslationGaDocuments(preTranslatedDocuments);
                 } else {
                     draftApplicationList.add(element(gaDraftDocument));
