@@ -35,6 +35,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAStatementOfTruth;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAUrgencyRequirement;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
+import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 import uk.gov.hmcts.reform.civil.sampledata.PDFBuilder;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
@@ -63,6 +64,7 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.RELIEF_FROM_SANCTIONS;
 import static uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder.CUSTOMER_REFERENCE;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @ExtendWith(SpringExtension.class)
@@ -150,8 +152,6 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
         CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         when(gaForLipService.isGaForLip(any())).thenReturn(false);
 
-        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-
         verifyNoInteractions(generalApplicationDraftGenerator);
     }
 
@@ -226,6 +226,30 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
         assertThat(updatedData.getPreTranslationGaDocuments().get(0).getValue())
             .isEqualTo(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
         assertThat(updatedData.getPreTranslationGaDocumentType()).isEqualTo(PreTranslationGaDocumentType.APPLICATION_SUMMARY_DOC);
+    }
+
+    @Test
+    void shouldSetTranslationDocumentsForWlu_LipWhenRespondnetRespond() {
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData caseData = getSampleGeneralApplicationCaseDataWithResponse(YES, YES, YES);
+        caseData = caseData.toBuilder()
+            .applicantBilingualLanguagePreference(YES)
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .paymentDetails(PaymentDetails.builder()
+                                                          .status(PaymentStatus.SUCCESS).build())
+                                      .fee(Fee.builder().code("NotFree").build()).build()).build();
+
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        when(generalApplicationDraftGenerator.generate(any(CaseData.class), anyString()))
+            .thenReturn(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+        when(time.now()).thenReturn(submittedOn.atStartOfDay());
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        verify(generalApplicationDraftGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+        CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+        assertThat(updatedData.getPreTranslationGaDocuments().get(0).getValue())
+            .isEqualTo(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+        assertThat(updatedData.getPreTranslationGaDocumentType()).isEqualTo(PreTranslationGaDocumentType.RESPOND_TO_APPLICATION_SUMMARY_DOC);
     }
 
     @Test
@@ -391,6 +415,27 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
                 getGeneralApplication(isConsented, isTobeNotified, isUrgent))
             .toBuilder()
             .gaDraftDocument(gaDraft)
+            .claimant1PartyName("Test Claimant1 Name")
+            .defendant1PartyName("Test Defendant1 Name")
+            .ccdCaseReference(CHILD_CCD_REF)
+            .submittedOn(APPLICATION_SUBMITTED_DATE).build();
+    }
+
+    private CaseData getSampleGeneralApplicationCaseDataWithResponse(YesOrNo isConsented, YesOrNo isTobeNotified, YesOrNo isUrgent) {
+        List<Element<CaseDocument>> gaDraft = new ArrayList<>();
+        List<Element<GARespondentResponse>> respondentsResponses = new ArrayList<>();
+
+        GARespondentResponse respondent1Response = GARespondentResponse.builder()
+            .generalAppRespondent1Representative(YES)
+            .gaRespondentDetails("id")
+            .build();
+        respondentsResponses.add(element(respondent1Response));
+        gaDraft.addAll(wrapElements(PDFBuilder.APPLICATION_DRAFT_DOCUMENT));
+        return CaseDataBuilder.builder().buildCaseDateBaseOnGeneralApplication(
+                getGeneralApplication(isConsented, isTobeNotified, isUrgent))
+            .toBuilder()
+            .gaDraftDocument(gaDraft)
+            .respondentsResponses(respondentsResponses)
             .claimant1PartyName("Test Claimant1 Name")
             .defendant1PartyName("Test Defendant1 Name")
             .ccdCaseReference(CHILD_CCD_REF)
