@@ -326,4 +326,50 @@ public class StateFlowEngineTest {
             .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
                              PROCEED_GENERAL_APPLICATION.fullName());
     }
+
+    @Test
+    void shouldReturnApplicationSubmittedWhenPBAPaymentIsSuccess_DontSetWelshFlowFlagForRespondentLip() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData caseData =
+            CaseDataBuilder.builder().withNoticeCaseData().toBuilder()
+                .isGaApplicantLip(NO)
+                .isGaRespondentOneLip(YES)
+                .parentClaimantIsApplicant(NO)
+                .respondentBilingualLanguagePreference(NO)
+                .build();
+
+        StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
+
+        assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
+            .isEqualTo(PROCEED_GENERAL_APPLICATION.fullName());
+        assertThat(stateFlow.getFlags()).hasSize(4);
+        assertThat(stateFlow.getFlags().get("WELSH_ENABLED")).isFalse();
+        assertThat(stateFlow.getStateHistory()).hasSize(3)
+            .extracting(State::getName)
+            .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
+                             PROCEED_GENERAL_APPLICATION.fullName());
+    }
+
+    @Test
+    void shouldReturnApplicationSubmittedWhenPBAPaymentIsSuccess_DontSetWelshFlowFlagForApplicantLip() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData caseData =
+            CaseDataBuilder.builder().withNoticeCaseData().toBuilder()
+                .isGaApplicantLip(YES)
+                .isGaRespondentOneLip(YES)
+                .parentClaimantIsApplicant(YES)
+                .applicantBilingualLanguagePreference(NO)
+                .build();
+
+        StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
+
+        assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
+            .isEqualTo(PROCEED_GENERAL_APPLICATION.fullName());
+        assertThat(stateFlow.getFlags()).hasSize(4);
+        assertThat(stateFlow.getFlags().get("WELSH_ENABLED")).isFalse();
+        assertThat(stateFlow.getStateHistory()).hasSize(3)
+            .extracting(State::getName)
+            .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
+                             PROCEED_GENERAL_APPLICATION.fullName());
+    }
 }
