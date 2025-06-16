@@ -10,6 +10,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
@@ -251,6 +252,32 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
         assertThat(updatedData.getPreTranslationGaDocuments().get(0).getValue())
             .isEqualTo(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
         assertThat(updatedData.getPreTranslationGaDocumentType()).isEqualTo(PreTranslationGaDocumentType.APPLICATION_SUMMARY_DOC);
+    }
+
+    @Test
+    void shouldSetTranslationDocumentsForWlu_LipWhenRespondentRespond() {
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData caseData = getSampleGeneralApplicationCaseDataWithResponse(YES, YES, YES);
+        caseData = caseData.toBuilder()
+            .ccdState(CaseState.AWAITING_RESPONDENT_RESPONSE)
+            .applicantBilingualLanguagePreference(YES)
+            .isGaApplicantLip(YES)
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .paymentDetails(PaymentDetails.builder()
+                                                          .status(PaymentStatus.SUCCESS).build())
+                                      .fee(Fee.builder().code("NotFree").build()).build()).build();
+
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        when(generalApplicationDraftGenerator.generate(any(CaseData.class), anyString()))
+            .thenReturn(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+        when(time.now()).thenReturn(submittedOn.atStartOfDay());
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        verify(generalApplicationDraftGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+        CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+        assertThat(updatedData.getPreTranslationGaDocuments().get(0).getValue())
+            .isEqualTo(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+        assertThat(updatedData.getPreTranslationGaDocumentType()).isEqualTo(PreTranslationGaDocumentType.RESPOND_TO_APPLICATION_SUMMARY_DOC);
     }
 
     @Test
