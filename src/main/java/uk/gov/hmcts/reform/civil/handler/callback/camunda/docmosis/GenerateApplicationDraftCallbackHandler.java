@@ -45,7 +45,6 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(GENERATE_DRAFT_DOCUMENT);
     private static final String TASK_ID = "GenerateDraftDocumentId";
-    private static final int ONE_V_ONE = 1;
     private final ObjectMapper objectMapper;
     private final GeneralApplicationDraftGenerator gaDraftGenerator;
     private final AssignCategoryId assignCategoryId;

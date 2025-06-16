@@ -20,9 +20,9 @@ import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -237,6 +237,7 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
         CaseData caseData = getSampleGeneralApplicationCaseDataLip(YES, YES, YES);
         caseData = caseData.toBuilder()
             .respondentBilingualLanguagePreference(YES)
+            .ccdState(CaseState.AWAITING_APPLICATION_PAYMENT)
             .isGaRespondentOneLip(YES)
             .generalAppPBADetails(GAPbaDetails.builder()
                                       .paymentDetails(PaymentDetails.builder()
@@ -261,8 +262,8 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
         CaseData caseData = getSampleGeneralApplicationCaseDataWithResponse(YES, YES, YES);
         caseData = caseData.toBuilder()
             .ccdState(CaseState.AWAITING_RESPONDENT_RESPONSE)
-            .applicantBilingualLanguagePreference(YES)
-            .isGaApplicantLip(YES)
+            .respondentBilingualLanguagePreference(YES)
+            .isGaRespondentOneLip(YES)
             .generalAppPBADetails(GAPbaDetails.builder()
                                       .paymentDetails(PaymentDetails.builder()
                                                           .status(PaymentStatus.SUCCESS).build())
@@ -278,6 +279,31 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
         assertThat(updatedData.getPreTranslationGaDocuments().get(0).getValue())
             .isEqualTo(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
         assertThat(updatedData.getPreTranslationGaDocumentType()).isEqualTo(PreTranslationGaDocumentType.RESPOND_TO_APPLICATION_SUMMARY_DOC);
+    }
+
+    @Test
+    void shouldSetTranslationDocumentsForWlu_LipWhenRespondentResponseNull() {
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData caseData = getSampleGeneralApplicationCaseDataLip(YES, YES, YES);
+        caseData = caseData.toBuilder()
+            .ccdState(CaseState.AWAITING_RESPONDENT_RESPONSE)
+            .respondentBilingualLanguagePreference(YES)
+            .isGaRespondentOneLip(YES)
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .paymentDetails(PaymentDetails.builder()
+                                                          .status(PaymentStatus.SUCCESS).build())
+                                      .fee(Fee.builder().code("NotFree").build()).build()).build();
+
+        CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        when(generalApplicationDraftGenerator.generate(any(CaseData.class), anyString()))
+            .thenReturn(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
+        when(time.now()).thenReturn(submittedOn.atStartOfDay());
+        var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+        verify(generalApplicationDraftGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+        CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+        assertThat(updatedData.getPreTranslationGaDocuments().get(0).getValue())
+            .isEqualTo(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
     }
 
     @Test
