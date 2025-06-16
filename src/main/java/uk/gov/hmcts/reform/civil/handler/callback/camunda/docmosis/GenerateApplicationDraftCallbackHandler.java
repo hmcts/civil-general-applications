@@ -118,7 +118,9 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
                 );
 
                 if (featureToggleService.isGaForWelshEnabled()
-                    && (caseData.isApplicantBilingual() || caseData.isRespondentBilingual())) {
+                    && (((caseData.getIsGaApplicantLip() == YES
+                    && caseData.isApplicantBilingual())
+                    || (caseData.isRespondentBilingual() && caseData.getIsGaRespondentOneLip() == YES)))) {
                     List<Element<CaseDocument>> preTranslatedDocuments =
                         Optional.ofNullable(caseData.getPreTranslationGaDocuments())
                             .orElseGet(ArrayList::new);
@@ -128,12 +130,8 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
                         document -> document.getValue().getDocumentLink(),
                         AssignCategoryId.APPLICATIONS
                     );
-                    if (caseData.getRespondentsResponses() != null
-                        && !caseData.getRespondentsResponses().isEmpty()) {
-                        caseDataBuilder.preTranslationGaDocumentType(PreTranslationGaDocumentType.RESPOND_TO_APPLICATION_SUMMARY_DOC);
-                    } else {
-                        caseDataBuilder.preTranslationGaDocumentType(PreTranslationGaDocumentType.APPLICATION_SUMMARY_DOC);
-                    }
+
+                    caseDataBuilder.preTranslationGaDocumentType(PreTranslationGaDocumentType.APPLICATION_SUMMARY_DOC);
                     caseDataBuilder.preTranslationGaDocuments(preTranslatedDocuments);
                 } else {
                     draftApplicationList.add(element(gaDraftDocument));

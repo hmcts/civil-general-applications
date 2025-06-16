@@ -212,6 +212,7 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
         CaseData caseData = getSampleGeneralApplicationCaseDataLip(YES, YES, YES);
         caseData = caseData.toBuilder()
             .applicantBilingualLanguagePreference(YES)
+            .isGaApplicantLip(YES)
             .generalAppPBADetails(GAPbaDetails.builder()
                                       .paymentDetails(PaymentDetails.builder()
                                                           .status(PaymentStatus.SUCCESS).build())
@@ -229,17 +230,17 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
     }
 
     @Test
-    void shouldSetTranslationDocumentsForWlu_LipWhenRespondnetRespond() {
+    void shouldSetTranslationDocumentsForWlu_LipRespondent() {
         when(gaForLipService.isGaForLip(any())).thenReturn(true);
         when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
-        CaseData caseData = getSampleGeneralApplicationCaseDataWithResponse(YES, YES, YES);
+        CaseData caseData = getSampleGeneralApplicationCaseDataLip(YES, YES, YES);
         caseData = caseData.toBuilder()
-            .applicantBilingualLanguagePreference(YES)
+            .respondentBilingualLanguagePreference(YES)
+            .isGaRespondentOneLip(YES)
             .generalAppPBADetails(GAPbaDetails.builder()
                                       .paymentDetails(PaymentDetails.builder()
                                                           .status(PaymentStatus.SUCCESS).build())
                                       .fee(Fee.builder().code("NotFree").build()).build()).build();
-
         CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         when(generalApplicationDraftGenerator.generate(any(CaseData.class), anyString()))
             .thenReturn(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
@@ -249,7 +250,7 @@ class GenerateApplicationDraftCallbackHandlerTest extends BaseCallbackHandlerTes
         CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
         assertThat(updatedData.getPreTranslationGaDocuments().get(0).getValue())
             .isEqualTo(PDFBuilder.APPLICATION_DRAFT_DOCUMENT);
-        assertThat(updatedData.getPreTranslationGaDocumentType()).isEqualTo(PreTranslationGaDocumentType.RESPOND_TO_APPLICATION_SUMMARY_DOC);
+        assertThat(updatedData.getPreTranslationGaDocumentType()).isEqualTo(PreTranslationGaDocumentType.APPLICATION_SUMMARY_DOC);
     }
 
     @Test
