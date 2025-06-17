@@ -22,4 +22,5 @@ definition_output_file="$(realpath ".")/ccd-definition/build/ccd-development-con
 
 
 ./bin/utils/import-ccd-definition.sh "${definition_input_dir}" "${definition_output_file}" "${params}"
+rm -rf ./civil-ccd-definition
 cd ..
