@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAByCourtsInitiativeGAspec;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderMadeOnTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.OrderOnCourts;
+import uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType;
 import uk.gov.hmcts.reform.civil.model.citizenui.CertOfSC;
 import uk.gov.hmcts.reform.civil.model.citizenui.HelpWithFees;
 import uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocument;
@@ -246,6 +247,7 @@ public class CaseData implements MappableObject {
     private final FreeFormOrderValues orderOnCourtInitiative;
     private final FreeFormOrderValues orderWithoutNotice;
     private final Document gaFinalOrderDocPreview;
+    private final LocalDateTime mainCaseSubmittedDate;
 
     @JsonProperty("CaseAccessCategory")
     private final CaseCategory caseAccessCategory;
@@ -339,6 +341,8 @@ public class CaseData implements MappableObject {
     private final YesOrNo isGaApplicantLip;
     private final YesOrNo isGaRespondentOneLip;
     private final YesOrNo isGaRespondentTwoLip;
+    private final YesOrNo isApplicantResponded;
+    private final YesOrNo isRespondentResponded;
     private final IdamUserDetails claimantUserDetails;
     private final IdamUserDetails defendantUserDetails;
     private final HelpWithFees generalAppHelpWithFees;
@@ -374,6 +378,10 @@ public class CaseData implements MappableObject {
 
     @Builder.Default
     private final List<IdValue<Bundle>> caseBundles = new ArrayList<>();
+
+    @Builder.Default
+    private final List<Element<CaseDocument>> preTranslationGaDocuments = new ArrayList<>();
+    private final PreTranslationGaDocumentType preTranslationGaDocumentType;
 
     @JsonIgnore
     public boolean isHWFTypeApplication() {

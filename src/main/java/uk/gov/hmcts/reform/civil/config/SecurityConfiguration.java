@@ -10,6 +10,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import uk.gov.hmcts.reform.auth.checker.core.RequestAuthorizer;
 import uk.gov.hmcts.reform.auth.checker.core.user.User;
 import uk.gov.hmcts.reform.auth.checker.spring.useronly.AuthCheckerUserOnlyFilter;
+import uk.gov.hmcts.reform.civil.security.CustomAuthCheckerUserOnlyFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -39,7 +40,8 @@ public class SecurityConfiguration {
         "/status/health",
         "/service-request-update",
         "/",
-        "/loggers/**"
+        "/loggers/**",
+        "/testing-support/flowstate"
     };
 
     private final RequestAuthorizer<User> userRequestAuthorizer;
@@ -55,7 +57,7 @@ public class SecurityConfiguration {
 
     @Bean
     public AuthCheckerUserOnlyFilter<User> authCheckerUserOnlyFilter() {
-        AuthCheckerUserOnlyFilter<User> filter = new AuthCheckerUserOnlyFilter<>(userRequestAuthorizer);
+        CustomAuthCheckerUserOnlyFilter<User> filter = new CustomAuthCheckerUserOnlyFilter<>(userRequestAuthorizer);
         filter.setAuthenticationManager(authenticationManager);
         return filter;
     }

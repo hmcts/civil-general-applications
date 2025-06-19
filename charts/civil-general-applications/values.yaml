@@ -53,6 +53,7 @@ java:
     CUI_URL: https://civil-citizen-ui.{{ .Values.global.environment }}.platform.hmcts.net
     CONSOLE_LOG_PATTERN: '%d{${LOGBACK_DATE_FORMAT}} %-5level [%thread] %logger{${LOGGER_LENGTH}}%ex{${EXCEPTION_LENGTH}} %mdc %msg%n}'
     EM_CCD_ORCHESTRATOR_URL: http://em-ccd-orchestrator-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
+    ROLE_ASSIGNMENT_URL: http://am-role-assignment-service-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
 
   keyVaults:
     civil:
