@@ -139,12 +139,6 @@ allprojects {
       ) {
         entry 'groovy-all'
       }
-
-      // CVE-2023-6378
-      dependencySet(group: 'ch.qos.logback', version: '1.5.18') {
-        entry 'logback-core'
-        entry 'logback-classic'
-      }
     }
     imports {
       mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2021.0.8'
