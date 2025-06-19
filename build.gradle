@@ -409,6 +409,7 @@ dependencies {
   implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '6.3.0'
 
   implementation group: 'com.github.hmcts', name: 'auth-checker-lib', version: '3.1.1'
+  implementation group: 'ch.qos.logback', name: 'logback-access', version: '1.5.18'
 
   testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '5.1.1'
   testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.1.1'
@@ -437,7 +438,6 @@ dependencies {
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-    exclude group: 'ch.qos.logback', module: 'logback-classic'
   }
 
   integrationTestImplementation sourceSets.main.runtimeClasspath
