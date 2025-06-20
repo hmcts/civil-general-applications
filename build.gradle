@@ -331,10 +331,7 @@ configurations.configureEach {
 }
 
 dependencies {
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web',{
-      exclude group: 'ch.qos.logback', module: 'logback-core'
-    }
-
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
   implementation group: 'org.springframework', name: 'spring-aspects'
@@ -368,13 +365,9 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'document-management-client', version: '7.0.0'
   implementation('com.github.hmcts:fees-java-client:0.0.6') {
     exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
-    exclude group: 'ch.qos.logback', module: 'logback-core'
-    exclude group: 'ch.qos.logback', module: 'logback-classic'
   }
   implementation('com.github.hmcts:payments-java-client:1.6.7') {
     exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
-    exclude group: 'ch.qos.logback', module: 'logback-core'
-    exclude group: 'ch.qos.logback', module: 'logback-classic'
     exclude group: 'uk.gov.hmcts.reform', module: 'service-auth-provider-client'
   }
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '4.1.0-RELEASE'
