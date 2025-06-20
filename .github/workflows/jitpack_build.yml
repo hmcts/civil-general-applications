@@ -1,0 +1,41 @@
+name: Trigger JitPack Build
+
+on:
+  push:
+    tags: 
+      - '*'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Trigger Build in JitPack
+      run: |
+        echo "Triggering JitPack build"
+        
+        PACKAGES_URL="https://jitpack.io/com/github/${GITHUB_REPOSITORY}/${GITHUB_REF#refs/tags/}/"
+        PACKAGES_FILE="packages.txt"
+        touch ${PACKAGES_FILE}
+        # Try the URL 6 times before failing
+        count=1
+        until [[ $count -gt 6 ]] || grep -q build.log ${PACKAGES_FILE} ; do
+          echo "Attempt ${count}/6"
+          STATUS=$(curl -s -o packages.txt -w "%{http_code}" --max-time 900 ${PACKAGES_URL})
+          
+          let count+=1
+          if [[ "${STATUS}" -gt 399 ]]; then
+            sleep 30
+          fi
+        done
+        
+        echo "::group::Files Available"
+        echo $(cat ${PACKAGES_FILE})
+        echo "::endgroup::"
+        
+        if [[ ${STATUS} -gt 399 ]] ; then
+          echo "FAILURE: ${STATUS} response from JitPack"
+          exit 1 
+        fi
