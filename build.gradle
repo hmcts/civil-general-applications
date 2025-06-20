@@ -152,7 +152,7 @@ allprojects {
   }
 
   configurations {
-    //testCompile.exclude group: 'ch.qos.logback', module: 'logback-classic'
+    testCompile.exclude group: 'ch.qos.logback', module: 'logback-classic'
   }
 
   repositories {
