@@ -69,12 +69,6 @@ class EventAllowedAspectTest {
     @MockBean
     FeatureToggleService featureToggleService;
 
-    @Test
-    void debugLogbackJar() {
-        System.out.println("LoggerContext loaded from: " +
-            LoggerContext.class.getProtectionDomain().getCodeSource().getLocation());
-    }
-
     @ParameterizedTest
     @EnumSource(value = CallbackType.class, mode = EnumSource.Mode.EXCLUDE, names = {"ABOUT_TO_START"})
     @SneakyThrows
