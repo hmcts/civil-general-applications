@@ -96,14 +96,20 @@ withPipeline(type, product, component) {
   disableLegacyDeployment()
   enableAksStagingDeployment()
 
+  before('build') {
+      echo "Cleaning Gradle Logback caches before build"
+      sh '''
+      rm -rf ~/.gradle/caches/modules-2/files-2.1/ch.qos.logback
+      rm -rf ~/.gradle/caches/modules-2/metadata-*/descriptors/ch.qos.logback
+      rm -rf ~/.gradle/caches/modules-2/metadata-*/artifact-at-repository/ch.qos.logback
+    '''
+  }
+
   onPR {
     enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
     env.ENVIRONMENT = "preview"
     env.YARN_ENABLE_IMMUTABLE_INSTALLS = false
     loadVaultSecrets(secrets)
-    sh 'rm -rf ~/.gradle/caches/modules-2/files-2.1/ch.qos.logback'
-    sh 'rm -rf ~/.gradle/caches/modules-2/metadata-*/descriptors/ch.qos.logback'
-    sh 'rm -rf ~/.gradle/caches/modules-2/metadata-*/artifact-at-repository/ch.qos.logback'
   }
   onMaster {
     enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
