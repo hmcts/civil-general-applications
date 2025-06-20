@@ -141,7 +141,7 @@ allprojects {
       }
 
       // CVE-2023-6378
-      dependencySet(group: 'ch.qos.logback', version: '1.4.14') {
+      dependencySet(group: 'ch.qos.logback', version: '1.2.13') {
         entry 'logback-core'
         entry 'logback-classic'
       }
@@ -149,6 +149,10 @@ allprojects {
     imports {
       mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2021.0.8'
     }
+  }
+
+  configurations {
+    testCompile.exclude group: 'ch.qos.logback', module: 'logback-classic'
   }
 
   repositories {
@@ -323,7 +327,7 @@ configurations.configureEach {
       details.useVersion versions.lombok
     }
     if (details.requested.group == 'ch.qos.logback') {
-      details.useVersion '1.4.14'
+      details.useVersion '1.2.13'
     }
   }
   exclude group: 'org.springframework.security', module: 'spring-security-rsa'
