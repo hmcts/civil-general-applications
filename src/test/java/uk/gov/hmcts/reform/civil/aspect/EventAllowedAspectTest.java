@@ -72,6 +72,11 @@ class EventAllowedAspectTest {
     @EnumSource(value = CallbackType.class, mode = EnumSource.Mode.EXCLUDE, names = {"ABOUT_TO_START"})
     @SneakyThrows
     void shouldProceedToMethodInvocation_whenCallbackTypeIsNotAboutToStart(CallbackType callbackType) {
+        System.out.println("LoggerContext loaded from: " +
+            ch.qos.logback.classic.LoggerContext.class
+                .getProtectionDomain()
+                .getCodeSource()
+                .getLocation());
         AboutToStartOrSubmitCallbackResponse response = AboutToStartOrSubmitCallbackResponse.builder().build();
         when(proceedingJoinPoint.proceed()).thenReturn(response);
 
