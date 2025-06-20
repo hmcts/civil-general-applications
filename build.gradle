@@ -141,7 +141,7 @@ allprojects {
       }
 
       // CVE-2023-6378
-      dependencySet(group: 'ch.qos.logback', version: '1.4.12') {
+      dependencySet(group: 'ch.qos.logback', version: '1.5.18') {
         entry 'logback-core'
         entry 'logback-classic'
       }
@@ -152,7 +152,7 @@ allprojects {
   }
 
   configurations {
-    testCompile.exclude group: 'ch.qos.logback', module: 'logback-classic'
+    //testCompile.exclude group: 'ch.qos.logback', module: 'logback-classic'
   }
 
   repositories {
