@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.aspect;
 
+import ch.qos.logback.classic.LoggerContext;
 import lombok.SneakyThrows;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.Test;
@@ -68,15 +69,16 @@ class EventAllowedAspectTest {
     @MockBean
     FeatureToggleService featureToggleService;
 
+    @Test
+    void debugLogbackJar() {
+        System.out.println("LoggerContext loaded from: " +
+            LoggerContext.class.getProtectionDomain().getCodeSource().getLocation());
+    }
+
     @ParameterizedTest
     @EnumSource(value = CallbackType.class, mode = EnumSource.Mode.EXCLUDE, names = {"ABOUT_TO_START"})
     @SneakyThrows
     void shouldProceedToMethodInvocation_whenCallbackTypeIsNotAboutToStart(CallbackType callbackType) {
-        System.out.println("LoggerContext loaded from: " +
-            ch.qos.logback.classic.LoggerContext.class
-                .getProtectionDomain()
-                .getCodeSource()
-                .getLocation());
         AboutToStartOrSubmitCallbackResponse response = AboutToStartOrSubmitCallbackResponse.builder().build();
         when(proceedingJoinPoint.proceed()).thenReturn(response);
 
