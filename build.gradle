@@ -139,12 +139,6 @@ allprojects {
       ) {
         entry 'groovy-all'
       }
-
-      // CVE-2023-6378
-      dependencySet(group: 'ch.qos.logback', version: '1.5.18') {
-        entry 'logback-core'
-        entry 'logback-classic'
-      }
     }
     imports {
       mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2021.0.8'
@@ -410,6 +404,9 @@ dependencies {
 
   implementation group: 'com.github.hmcts', name: 'auth-checker-lib', version: '3.1.1'
 
+  implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.5.18'
+  implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.18'
+
   testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '5.1.1'
   testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.1.1'
   testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '5.1.1'
@@ -420,6 +417,8 @@ dependencies {
 
   testImplementation libraries.junit5
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test'
+  testImplementation group: 'ch.qos.logback', name: 'logback-core', version: '1.5.18'
+  testImplementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.5.18'
 
   testImplementation group: 'io.rest-assured', name: 'rest-assured'
 
