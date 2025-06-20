@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.civil.aspect;
 
 import lombok.SneakyThrows;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -33,7 +32,6 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPL
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.MAKE_DECISION;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
-@Disabled
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
     EventEmitterAspect.class,

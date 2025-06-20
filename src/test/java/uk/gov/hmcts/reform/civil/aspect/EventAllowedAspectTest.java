@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.civil.aspect;
 
 import lombok.SneakyThrows;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -50,7 +49,6 @@ import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT;
 
-@Disabled
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
     EventAllowedAspect.class,
