@@ -141,7 +141,7 @@ allprojects {
       }
 
       // CVE-2023-6378
-      dependencySet(group: 'ch.qos.logback', version: '1.2.13') {
+      dependencySet(group: 'ch.qos.logback', version: '1.4.14') {
         entry 'logback-core'
         entry 'logback-classic'
       }
@@ -327,7 +327,7 @@ configurations.configureEach {
       details.useVersion versions.lombok
     }
     if (details.requested.group == 'ch.qos.logback') {
-      details.useVersion '1.2.13'
+      details.useVersion '1.4.14'
     }
   }
   exclude group: 'org.springframework.security', module: 'spring-security-rsa'
