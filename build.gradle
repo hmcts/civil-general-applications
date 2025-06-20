@@ -444,6 +444,21 @@ dependencies {
 
   integrationTestImplementation sourceSets.main.runtimeClasspath
   integrationTestImplementation sourceSets.test.runtimeClasspath
+
+  // Add strict version constraints
+  // Add strict version constraints
+  constraints {
+    implementation('ch.qos.logback:logback-classic') {
+      version {
+        strictly '1.4.14'
+      }
+    }
+    implementation('ch.qos.logback:logback-core') {
+      version {
+        strictly '1.4.14'
+      }
+    }
+  }
 }
 
 mainClassName = 'uk.gov.hmcts.reform.civil.Application'
