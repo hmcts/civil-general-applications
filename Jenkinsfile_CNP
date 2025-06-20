@@ -87,10 +87,6 @@ def checkForEnableHelmLabel(branch_name) {
   return new GithubAPI(this).getLabelsbyPattern(branch_name, "enableHelm").contains("enableHelm")
 }
 
-def checkForRunFailedTestFiles(branch_name) {
-  return new GithubAPI(this).getLabelsbyPattern(branch_name, "runFailedTestFiles").contains("runFailedTestFiles")
-}
-
 withPipeline(type, product, component) {
   pipelineConf = config
   disableLegacyDeployment()
@@ -143,6 +139,10 @@ withPipeline(type, product, component) {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/smokeTest/**/*'
   }
 
+  before('functionalTest:aat') {
+    copyPrevFailedAndNotExecutedTestFilesJson();
+  }
+
   before('functionalTest:preview') {
     env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
     env.URL = "https://xui-civil-general-applications-pr-${CHANGE_ID}.preview.platform.hmcts.net"
@@ -151,12 +151,8 @@ withPipeline(type, product, component) {
     env.SERVICE_AUTH_PROVIDER_API_BASE_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
     env.CCD_DATA_STORE_URL = "https://ccd-data-store-api-civil-general-applications-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     env.DM_STORE_URL = "http://dm-store-aat.service.core-compute-aat.internal"
-
-    if(checkForRunFailedTestFiles(env.BRANCH_NAME)) {
-      echo "GitHub label: 'runFailedTestFiles' currently on PR"
-      copyPrevFailedAndNotExecutedTestFilesJson();
-      env.RUN_PREV_FAILED_AND_NOT_EXECUTED_TEST_FILES = true
-    }
+    
+    copyPrevFailedAndNotExecutedTestFilesJson();
   }
 
   afterAlways('functionalTest:preview') {
