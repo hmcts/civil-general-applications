@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
@@ -129,7 +130,14 @@ public class GenerateApplicationDraftCallbackHandler extends CallbackHandler {
                         document -> document.getValue().getDocumentLink(),
                         AssignCategoryId.APPLICATIONS
                     );
-                    caseDataBuilder.preTranslationGaDocumentType(PreTranslationGaDocumentType.APPLICATION_SUMMARY_DOC);
+
+                    if (caseData.getRespondentsResponses() != null
+                        && !caseData.getRespondentsResponses().isEmpty()
+                        && caseData.getCcdState().equals(CaseState.AWAITING_RESPONDENT_RESPONSE)) {
+                        caseDataBuilder.preTranslationGaDocumentType(PreTranslationGaDocumentType.RESPOND_TO_APPLICATION_SUMMARY_DOC);
+                    } else {
+                        caseDataBuilder.preTranslationGaDocumentType(PreTranslationGaDocumentType.APPLICATION_SUMMARY_DOC);
+                    }
                     caseDataBuilder.preTranslationGaDocuments(preTranslatedDocuments);
                 } else {
                     draftApplicationList.add(element(gaDraftDocument));
