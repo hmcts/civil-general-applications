@@ -419,7 +419,7 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
             when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
-
+            when(featureToggleService.isGaForWelshEnabled()).thenReturn(false);
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
             var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
@@ -485,6 +485,7 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
             when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
             when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+            when(featureToggleService.isGaForWelshEnabled()).thenReturn(false);
 
             CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
 
