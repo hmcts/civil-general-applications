@@ -328,6 +328,38 @@ public class StateFlowEngineTest {
     }
 
     @Test
+    void shouldReturn_Judge_Written_Rep_WhenJudgeMadeDecisionForWelshApplicant() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData caseData = CaseDataBuilder.builder()
+            .writtenRepresentationSequentialApplication()
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .paymentDetails(PaymentDetails.builder()
+                                        .status(PaymentStatus.SUCCESS)
+                                        .build()).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(YES).build())
+            .isGaApplicantLip(YES)
+            .applicantBilingualLanguagePreference(YES)
+            .parentClaimantIsApplicant(NO)
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                               .hasAgreed(YES).build()).build();
+        StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
+
+        assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
+            .isEqualTo(JUDGE_WRITTEN_REPRESENTATION.fullName());
+
+        assertThat(stateFlow.getStateHistory()).hasSize(5)
+            .extracting(State::getName)
+            .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
+                             PROCEED_GENERAL_APPLICATION.fullName(),
+                             APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
+                             JUDGE_WRITTEN_REPRESENTATION.fullName()
+            );
+        assertThat(stateFlow.getFlags().get("WELSH_ENABLED_FOR_JUDGE_DECISION")).isTrue();
+    }
+
+    @Test
     void shouldReturnApplicationSubmittedWhenPBAPaymentIsSuccess_DontSetWelshFlowFlagForRespondentLip() {
         when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
         CaseData caseData =
