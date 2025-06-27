@@ -804,6 +804,25 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldGenerateWrittenRepresentationSequentialDocument_whenAboutToSubmitEventIsCalledForRespondentWelshTranslationWhenFlagOff() {
+            CaseData caseData =
+                CaseDataBuilder.builder().writtenRepresentationSequentialApplication().isGaRespondentOneLip(YesOrNo.NO)
+                    .respondentBilingualLanguagePreference(YesOrNo.YES)
+                    .build();
+            when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(writtenRepresentationSequentailOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getPreTranslationGaDocuments()).isEmpty();
+            assertThat(updatedData.getPreTranslationGaDocumentType()).isNull();
+        }
+
+        @Test
         void shouldReturnCorrectActivityId_whenRequested() {
             CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build();
 
