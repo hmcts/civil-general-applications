@@ -762,6 +762,25 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
+        void shouldGenerateWrittenRepresentationConcurrentDocument_whenAboutToSubmitEventIsCalledForNotRespondentWelshTranslation() {
+            CaseData caseData =
+                CaseDataBuilder.builder().writtenRepresentationConcurrentApplication().isGaRespondentOneLip(YesOrNo.NO)
+                    .respondentBilingualLanguagePreference(YesOrNo.YES)
+                    .build();
+            when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(writtenRepresentationConcurrentOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getPreTranslationGaDocuments()).isEmpty();
+            assertThat(updatedData.getPreTranslationGaDocumentType()).isNull();
+        }
+
+        @Test
         void shouldGenerateWrittenRepresentationSequentialDocument_whenAboutToSubmitEventIsCalledForWelshTranslation() {
             CaseData caseData =
                 CaseDataBuilder.builder().writtenRepresentationSequentialApplication().isGaApplicantLip(YesOrNo.YES)
