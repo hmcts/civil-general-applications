@@ -354,8 +354,7 @@ public class StateFlowEngineTest {
             .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
                              PROCEED_GENERAL_APPLICATION.fullName(),
                              APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
-                             JUDGE_WRITTEN_REPRESENTATION.fullName()
-            );
+                             JUDGE_WRITTEN_REPRESENTATION.fullName());
         assertThat(stateFlow.getFlags().get("WELSH_ENABLED_FOR_JUDGE_DECISION")).isTrue();
     }
 
