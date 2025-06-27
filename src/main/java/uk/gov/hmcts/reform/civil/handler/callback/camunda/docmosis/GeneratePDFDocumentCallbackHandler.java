@@ -422,7 +422,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
              * Generate Judge Request for Information order document with LIP Applicant Post Address
              * */
             if (gaForLipService.isLipApp(caseData)
-                && ((!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual()))) {
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipApplicant = writtenRepresentationConcurrentOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -434,7 +434,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
              * Generate Judge Request for Information order document with LIP Respondent Post Address
              * */
             if (gaForLipService.isLipResp(caseData)
-                && ((!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual()))) {
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipRespondent = writtenRepresentationConcurrentOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
