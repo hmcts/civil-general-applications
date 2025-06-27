@@ -760,7 +760,6 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
                 .isEqualTo(WRITTEN_REPRESENTATION_ORDER_DOC);
         }
 
-
         @Test
         void shouldReturnCorrectActivityId_whenRequested() {
             CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build();
