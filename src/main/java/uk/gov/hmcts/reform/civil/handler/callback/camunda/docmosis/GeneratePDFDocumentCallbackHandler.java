@@ -48,7 +48,6 @@ import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CallbackParams.Params.BEARER_TOKEN;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.GENERATE_JUDGES_FORM;
-import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.ASSISTED_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection.FREE_FORM_ORDER;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.LIST_FOR_A_HEARING;
@@ -371,8 +370,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
              * Generate Judge Request for Information order document with LIP Applicant Post Address
              * if GA is with notice
              * */
-            if (gaForLipService.isLipApp(caseData) &&
-                (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
+            if (gaForLipService.isLipApp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipApplicant = writtenRepresentationSequentailOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -384,8 +383,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             /*
              * Generate Judge Request for Information order document with LIP Respondent Post Address
              * */
-            if (gaForLipService.isLipResp(caseData) &&
-                (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
+            if (gaForLipService.isLipResp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipRespondent = writtenRepresentationSequentailOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -422,8 +421,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             /*
              * Generate Judge Request for Information order document with LIP Applicant Post Address
              * */
-            if (gaForLipService.isLipApp(caseData) &&
-                ((!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual()))) {
+            if (gaForLipService.isLipApp(caseData)
+                && ((!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual()))) {
                 postJudgeOrderToLipApplicant = writtenRepresentationConcurrentOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -434,8 +433,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             /*
              * Generate Judge Request for Information order document with LIP Respondent Post Address
              * */
-            if (gaForLipService.isLipResp(caseData) &&
-                ((!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual()))) {
+            if (gaForLipService.isLipResp(caseData)
+                && ((!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual()))) {
                 postJudgeOrderToLipRespondent = writtenRepresentationConcurrentOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -464,7 +463,6 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
                 caseDataBuilder.writtenRepConcurrentDocument(newWrittenRepConcurrentDocumentList);
             }
-
 
         } else if (isRequestMoreInfo(caseData) || isRequestMoreInfoAndSendAppToOtherParty(caseData)) {
             decision = requestForInformationGenerator.generate(
