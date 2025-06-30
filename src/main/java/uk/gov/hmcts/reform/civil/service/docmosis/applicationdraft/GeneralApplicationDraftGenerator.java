@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.civil.service.docmosis.applicationdraft;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,7 +9,6 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAHearingSupportRequirements;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.enums.dq.SupportRequirements;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.GADraftForm;
 import uk.gov.hmcts.reform.civil.model.docmosis.UnavailableDates;
@@ -20,7 +17,6 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAUnavailabilityDates;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates;
@@ -214,23 +210,6 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
 
     private Boolean validateCasePastDueDate(CaseData caseData) {
         return caseData.getRespondentsResponses() == null;
-    }
-
-    private LocalDate getAppUnavailabilityDate(CaseData caseData, YesOrNo unavailabilityFrom) {
-        LocalDate appDateFrom = null;
-        LocalDate appDateTo = null;
-        if (caseData.getGeneralAppHearingDetails() != null && caseData.getGeneralAppHearingDetails()
-            .getGeneralAppUnavailableDates() != null) {
-
-            List<Element<GAUnavailabilityDates>> datesUnavailableList = caseData.getGeneralAppHearingDetails()
-                .getGeneralAppUnavailableDates();
-
-            for (Element<GAUnavailabilityDates> dateRange : datesUnavailableList) {
-                appDateFrom = dateRange.getValue().getUnavailableTrialDateFrom();
-                appDateTo = dateRange.getValue().getUnavailableTrialDateTo();
-            }
-        }
-        return unavailabilityFrom == YesOrNo.YES ? appDateFrom : appDateTo;
     }
 
     private List<UnavailableDates> getAppUnavailabilityDates(GAHearingDetails hearingDetails) {

@@ -74,29 +74,21 @@ public class UploadTranslatedDocumentService {
     }
 
     private List<Element<CaseDocument>> getExistingDocumentsByType(CaseData caseData, DocumentType documentType) {
-        switch (documentType) {
-            case REQUEST_FOR_INFORMATION:
-            case SEND_APP_TO_OTHER_PARTY:
-                return ofNullable(caseData.getRequestForInformationDocument()).orElse(new ArrayList<>());
-            case DIRECTION_ORDER:
-                return ofNullable(caseData.getDirectionOrderDocument()).orElse(new ArrayList<>());
-            case GENERAL_ORDER:
-                return ofNullable(caseData.getGeneralOrderDocument()).orElse(new ArrayList<>());
-            case HEARING_ORDER:
-                return ofNullable(caseData.getHearingOrderDocument()).orElse(new ArrayList<>());
-            case HEARING_NOTICE:
-                return ofNullable(caseData.getHearingNoticeDocument()).orElse(new ArrayList<>());
-            case DISMISSAL_ORDER:
-                return ofNullable(caseData.getDismissalOrderDocument()).orElse(new ArrayList<>());
-            case WRITTEN_REPRESENTATION_CONCURRENT:
-                return ofNullable(caseData.getWrittenRepConcurrentDocument()).orElse(new ArrayList<>());
-            case WRITTEN_REPRESENTATION_SEQUENTIAL:
-                return ofNullable(caseData.getWrittenRepSequentialDocument()).orElse(new ArrayList<>());
-            case GENERAL_APPLICATION_DRAFT:
-                return ofNullable(caseData.getGaDraftDocument()).orElse(new ArrayList<>());
-            default:
-                return new ArrayList<>();
-        }
+        return switch (documentType) {
+            case REQUEST_FOR_INFORMATION, SEND_APP_TO_OTHER_PARTY ->
+                ofNullable(caseData.getRequestForInformationDocument()).orElse(new ArrayList<>());
+            case DIRECTION_ORDER -> ofNullable(caseData.getDirectionOrderDocument()).orElse(new ArrayList<>());
+            case GENERAL_ORDER -> ofNullable(caseData.getGeneralOrderDocument()).orElse(new ArrayList<>());
+            case HEARING_ORDER -> ofNullable(caseData.getHearingOrderDocument()).orElse(new ArrayList<>());
+            case HEARING_NOTICE -> ofNullable(caseData.getHearingNoticeDocument()).orElse(new ArrayList<>());
+            case DISMISSAL_ORDER -> ofNullable(caseData.getDismissalOrderDocument()).orElse(new ArrayList<>());
+            case WRITTEN_REPRESENTATION_CONCURRENT ->
+                ofNullable(caseData.getWrittenRepConcurrentDocument()).orElse(new ArrayList<>());
+            case WRITTEN_REPRESENTATION_SEQUENTIAL ->
+                ofNullable(caseData.getWrittenRepSequentialDocument()).orElse(new ArrayList<>());
+            case GENERAL_APPLICATION_DRAFT -> ofNullable(caseData.getGaDraftDocument()).orElse(new ArrayList<>());
+            default -> new ArrayList<>();
+        };
     }
 
     private void updateCaseDataBuilderByType(CaseData caseData, CaseData.CaseDataBuilder caseDataBuilder,
