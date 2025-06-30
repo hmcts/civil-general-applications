@@ -113,8 +113,8 @@ public class UploadTranslatedDocumentServiceTest {
             .preTranslationGaDocuments(preTranslationGaDocuments)
             .preTranslationGaDocumentType(PreTranslationGaDocumentType.APPLICATION_SUMMARY_DOC)
             .build();
-        // When
-       uploadTranslatedDocumentService.updateGADocumentsWithOriginalDocuments(caseData.toBuilder());
+        //when
+        uploadTranslatedDocumentService.updateGADocumentsWithOriginalDocuments(caseData.toBuilder());
 
         // Then
         assertThat(caseData.getGaDraftDocument()).isNotNull();
@@ -174,7 +174,6 @@ public class UploadTranslatedDocumentServiceTest {
         String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
         assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_GA_LIP");
     }
-
 
     @Test
     void shouldHandleMultipleDocumentTypes() {

@@ -329,12 +329,12 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
         );
         CaseData gaLipCaseData = CaseData.builder().applicantBilingualLanguagePreference(YesOrNo.YES).gaDraftDocument(draftDocumentsList).build();
         CaseDetails caseDetails = CaseDetailsBuilder.builder().data(gaLipCaseData).build();
-        StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
 
         Map<String, Object> mockOutputMap = new HashMap<>();
         mockOutputMap.put("gaDraftDocument", gaLipCaseData.getGaDraftDocument());
         mockOutputMap.put("applicantBilingualLanguagePreference", YesOrNo.YES);
 
+        StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
         when(gaLipCaseData.toMap(mapper)).thenReturn(mockOutputMap);
         when(coreCaseDataService.startGaUpdate(anyString(), eq(WAIT_GA_DRAFT))).thenReturn(startEventResponse);
         when(caseDetailsConverter.toCaseData(any())).thenReturn(gaLipCaseData);
