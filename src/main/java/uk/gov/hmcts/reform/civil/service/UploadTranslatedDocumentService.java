@@ -17,7 +17,9 @@ import java.util.*;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_GA_LIP;
-import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.*;
+import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.APPLICATION_SUMMARY_DOCUMENT_RESPONDED;
+import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.APPLICATION_SUMMARY_DOCUMENT;
+
 
 @RequiredArgsConstructor
 @Service
