@@ -360,9 +360,6 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
     public CaseDocument generate(CaseData caseData, String authorisation) {
         try {
             GADraftForm templateData = getTemplateData(caseData);
-            ObjectMapper objectMapper = new ObjectMapper();
-            String jsonString = objectMapper.writeValueAsString(templateData);
-            log.info("Template Data in JSON: {}", jsonString);
             DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 
             DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(
@@ -377,13 +374,6 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                         DocumentType.GENERAL_APPLICATION_DRAFT
                 )
             );
-        } catch (JsonProcessingException e) {
-            // Catch the specific JsonProcessingException for object serialization issues
-            log.error("Error serializing template data for caseId: {}", caseData.getCcdCaseReference(), e);
-            throw new RuntimeException(
-                "Error serializing template data",
-                e
-            ); // Optionally rethrow or handle accordingly
         } catch (Exception e) {
             // Catch all other exceptions
             log.error("Error generating general application draft for caseId: {}", caseData.getCcdCaseReference(), e);

@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.civil.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocument;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -11,13 +12,12 @@ import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentUploadExcept
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_GA_LIP;
+import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.*;
 
 @RequiredArgsConstructor
 @Service
@@ -146,5 +146,45 @@ public class UploadTranslatedDocumentService {
             default:
                 throw new DocumentUploadException("No document file type found for Translated document");
         }
+    }
+
+    public void updateGADocumentsWithOriginalDocuments(CaseData.CaseDataBuilder caseDataBuilder) {
+        List<Element<TranslatedDocument>> translatedDocuments = caseDataBuilder.build().getTranslatedDocuments();
+        List<Element<CaseDocument>> preTranslationGaDocuments = caseDataBuilder.build().getPreTranslationGaDocuments();
+        List<Element<CaseDocument>> gaDraftDocument;
+        if (Objects.isNull(caseDataBuilder.build().getGaDraftDocument())) {
+            gaDraftDocument = newArrayList();
+        } else {
+            gaDraftDocument = caseDataBuilder.build().getGaDraftDocument();
+        }
+
+        if (Objects.nonNull(translatedDocuments)) {
+            translatedDocuments.forEach(document -> {
+                if (document.getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT)
+                    || document.getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT_RESPONDED)) {
+                    if (Objects.nonNull(preTranslationGaDocuments)) {
+                        Optional<Element<CaseDocument>> preTranslationGADraftDocument = preTranslationGaDocuments.stream()
+                            .filter(item -> item.getValue().getDocumentType() == DocumentType.GENERAL_APPLICATION_DRAFT)
+                            .findFirst();
+                        preTranslationGADraftDocument.ifPresent(preTranslationGaDocuments::remove);
+                        preTranslationGADraftDocument.ifPresent(gaDraftDocument::add);
+                        caseDataBuilder.gaDraftDocument(gaDraftDocument);
+                    }
+                }
+            });
+        }
+    }
+
+    public CaseEvent getBusinessProcessEvent(CaseData caseData) {
+        List<Element<TranslatedDocument>> translatedDocuments = caseData.getTranslatedDocuments();
+
+        if (Objects.nonNull(translatedDocuments)
+            && translatedDocuments.get(0).getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT)) {
+            return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_GA_SUMMARY_DOC;
+        } else if (Objects.nonNull(translatedDocuments)
+            && translatedDocuments.get(0).getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT_RESPONDED)) {
+            return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_GA_SUMMARY_RESPONSE_DOC;
+        }
+        return UPLOAD_TRANSLATED_DOCUMENT_GA_LIP;
     }
 }

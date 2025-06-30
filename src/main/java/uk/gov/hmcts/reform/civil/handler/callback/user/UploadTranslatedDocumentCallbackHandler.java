@@ -46,12 +46,18 @@ public class UploadTranslatedDocumentCallbackHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         UserInfo userDetails = idamClient.getUserInfo(callbackParams.getParams().get(BEARER_TOKEN).toString());
         String translator = IdamUserUtils.getIdamUserFullName(userDetails);
-        CaseData.CaseDataBuilder caseDataBuilder = uploadTranslatedDocumentService.processTranslatedDocument(caseData, translator);
-        CaseData updatedCaseData =
-            caseDataBuilder.businessProcess(BusinessProcess.ready(UPLOAD_TRANSLATED_DOCUMENT_GA_LIP)).build();
+        CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
 
+        uploadTranslatedDocumentService.updateGADocumentsWithOriginalDocuments(caseDataBuilder);
+        caseDataBuilder = uploadTranslatedDocumentService.processTranslatedDocument(caseDataBuilder.build(), translator);
+        CaseEvent businessProcessEvent = uploadTranslatedDocumentService.getBusinessProcessEvent(caseData);
+        if (businessProcessEvent != null) {
+            caseDataBuilder = caseDataBuilder.businessProcess(BusinessProcess.ready(businessProcessEvent));
+        }
+
+        caseDataBuilder.preTranslationGaDocumentType(null);
         return AboutToStartOrSubmitCallbackResponse.builder()
-            .data(updatedCaseData.toMap(objectMapper))
+            .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
     }
 
