@@ -24,6 +24,8 @@ import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_GA_LIP;
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.APPLICATION_SUMMARY_DOCUMENT_RESPONDED;
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.APPLICATION_SUMMARY_DOCUMENT;
+import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.WRITTEN_REPRESENTATIONS_ORDER_CONCURRENT;
+import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL;
 
 @RequiredArgsConstructor
 @Service
@@ -155,7 +157,10 @@ public class UploadTranslatedDocumentService {
         } else {
             gaDraftDocument = caseDataBuilder.build().getGaDraftDocument();
         }
-
+        List<Element<CaseDocument>> writtenRepsSequentialDocs = Objects.isNull(caseDataBuilder.build().getWrittenRepSequentialDocument())
+            ? newArrayList() : caseDataBuilder.build().getWrittenRepSequentialDocument();
+        List<Element<CaseDocument>> writtenRepsConcurrentDocs = Objects.isNull(caseDataBuilder.build().getWrittenRepConcurrentDocument())
+            ? newArrayList() : caseDataBuilder.build().getWrittenRepConcurrentDocument();
         if (Objects.nonNull(translatedDocuments)) {
             translatedDocuments.forEach(document -> {
                 if (document.getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT)
@@ -168,6 +173,20 @@ public class UploadTranslatedDocumentService {
                         preTranslationGADraftDocument.ifPresent(gaDraftDocument::add);
                         caseDataBuilder.gaDraftDocument(gaDraftDocument);
                     }
+                } else if (document.getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL)) {
+                    Optional<Element<CaseDocument>> preTranslationGADraftDocument = preTranslationGaDocuments.stream()
+                        .filter(item -> item.getValue().getDocumentType() == DocumentType.WRITTEN_REPRESENTATION_SEQUENTIAL)
+                        .findFirst();
+                    preTranslationGADraftDocument.ifPresent(preTranslationGaDocuments::remove);
+                    preTranslationGADraftDocument.ifPresent(writtenRepsSequentialDocs::add);
+                    caseDataBuilder.writtenRepSequentialDocument(writtenRepsSequentialDocs);
+                } else if (document.getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_CONCURRENT)) {
+                    Optional<Element<CaseDocument>> preTranslationGADraftDocument = preTranslationGaDocuments.stream()
+                        .filter(item -> item.getValue().getDocumentType() == DocumentType.WRITTEN_REPRESENTATION_CONCURRENT)
+                        .findFirst();
+                    preTranslationGADraftDocument.ifPresent(preTranslationGaDocuments::remove);
+                    preTranslationGADraftDocument.ifPresent(writtenRepsConcurrentDocs::add);
+                    caseDataBuilder.writtenRepConcurrentDocument(writtenRepsConcurrentDocs);
                 }
             });
         }
@@ -182,6 +201,10 @@ public class UploadTranslatedDocumentService {
         } else if (Objects.nonNull(translatedDocuments)
             && translatedDocuments.get(0).getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT_RESPONDED)) {
             return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_GA_SUMMARY_RESPONSE_DOC;
+        } else if (Objects.nonNull(translatedDocuments)
+            && (translatedDocuments.get(0).getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL)
+            || translatedDocuments.get(0).getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_CONCURRENT))) {
+            return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_JUDGE_DECISION;
         }
         return UPLOAD_TRANSLATED_DOCUMENT_GA_LIP;
     }
