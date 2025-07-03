@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -17,7 +16,9 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
@@ -76,6 +77,8 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
     private ExternalTask mockTask;
     @Autowired
     private WaitCivilDocUpdatedTaskHandler waitCivilDocUpdatedTaskHandler;
+    @MockBean
+    private FeatureToggleService featureToggleService;
 
     private CaseData gaCaseData;
     private CaseData civilCaseDataEmpty;
@@ -86,6 +89,7 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
     @BeforeEach
     void init() {
         when(gaForLipService.isGaForLip(any())).thenReturn(false);
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
         CaseDocument caseDocumentNow = CaseDocument.builder().documentName("current")
                 .documentLink(Document.builder().documentUrl("url")
                         .documentFileName("filename").documentHash("hash")
@@ -255,7 +259,7 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
     }
 
     @Test
-    void shouldDeleteOnlyDraftApplicationForGaLip() {
+    void shouldDeleteOnlyDraftAndTranslatedDocApplicationForGaLip() {
         String uid1 = "f000aa01-0451-4000-b000-000000000001";
         String uid2 = "f000aa01-0451-4000-b000-000000000002";
         String uid3 = "f000aa01-0451-4000-b000-000000000003";
@@ -268,7 +272,6 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
 
         when(mapper.convertValue(any(), eq(ExternalTaskInput.class))).thenReturn(externalTaskInput);
         when(gaForLipService.isGaForLip(any())).thenReturn(true); // GA for LIP condition
-        CaseData gaLipCaseData = mock(CaseData.class);
         var draftDocumentsList = List.of(
             Element.<CaseDocument>builder()
                 .id(UUID.fromString(uid1))
@@ -324,13 +327,14 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
                            .build())
                 .build()
         );
-        when(gaLipCaseData.getGaDraftDocument()).thenReturn(draftDocumentsList);
+        CaseData gaLipCaseData = CaseData.builder().applicantBilingualLanguagePreference(YesOrNo.YES).gaDraftDocument(draftDocumentsList).build();
         CaseDetails caseDetails = CaseDetailsBuilder.builder().data(gaLipCaseData).build();
-        StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
 
         Map<String, Object> mockOutputMap = new HashMap<>();
         mockOutputMap.put("gaDraftDocument", gaLipCaseData.getGaDraftDocument());
+        mockOutputMap.put("applicantBilingualLanguagePreference", YesOrNo.YES);
 
+        StartEventResponse startEventResponse = StartEventResponse.builder().caseDetails(caseDetails).build();
         when(gaLipCaseData.toMap(mapper)).thenReturn(mockOutputMap);
         when(coreCaseDataService.startGaUpdate(anyString(), eq(WAIT_GA_DRAFT))).thenReturn(startEventResponse);
         when(caseDetailsConverter.toCaseData(any())).thenReturn(gaLipCaseData);
@@ -339,7 +343,6 @@ public class WaitCivilDocUpdatedTaskHandlerTest {
 
         verify(coreCaseDataService).startGaUpdate(anyString(), eq(WAIT_GA_DRAFT));
         verify(caseDetailsConverter).toCaseData(any());
-        verify(gaLipCaseData).toMap(mapper);
     }
 
     public final CaseDocument pdfDocument = CaseDocument.builder()
