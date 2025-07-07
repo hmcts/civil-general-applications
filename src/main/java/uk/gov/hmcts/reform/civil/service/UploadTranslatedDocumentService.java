@@ -162,6 +162,7 @@ public class UploadTranslatedDocumentService {
             ? newArrayList() : caseDataBuilder.build().getWrittenRepSequentialDocument();
         List<Element<CaseDocument>> writtenRepsConcurrentDocs = Objects.isNull(caseDataBuilder.build().getWrittenRepConcurrentDocument())
             ? newArrayList() : caseDataBuilder.build().getWrittenRepConcurrentDocument();
+
         if (Objects.nonNull(translatedDocuments)) {
             translatedDocuments.forEach(document -> {
                 if (document.getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT)
