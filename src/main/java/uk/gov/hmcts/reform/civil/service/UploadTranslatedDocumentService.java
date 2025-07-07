@@ -149,6 +149,7 @@ public class UploadTranslatedDocumentService {
     }
 
     public void updateGADocumentsWithOriginalDocuments(CaseData.CaseDataBuilder caseDataBuilder) {
+        List<Element<CaseDocument>> bulkPrintOriginalDocuments = newArrayList();
         List<Element<TranslatedDocument>> translatedDocuments = caseDataBuilder.build().getTranslatedDocuments();
         List<Element<CaseDocument>> preTranslationGaDocuments = caseDataBuilder.build().getPreTranslationGaDocuments();
         List<Element<CaseDocument>> gaDraftDocument;
@@ -174,19 +175,23 @@ public class UploadTranslatedDocumentService {
                         caseDataBuilder.gaDraftDocument(gaDraftDocument);
                     }
                 } else if (document.getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL)) {
-                    Optional<Element<CaseDocument>> preTranslationGADraftDocument = preTranslationGaDocuments.stream()
+                    Optional<Element<CaseDocument>> preTranslationWrittenRepsSequential = preTranslationGaDocuments.stream()
                         .filter(item -> item.getValue().getDocumentType() == DocumentType.WRITTEN_REPRESENTATION_SEQUENTIAL)
                         .findFirst();
-                    preTranslationGADraftDocument.ifPresent(preTranslationGaDocuments::remove);
-                    preTranslationGADraftDocument.ifPresent(writtenRepsSequentialDocs::add);
+                    preTranslationWrittenRepsSequential.ifPresent(preTranslationGaDocuments::remove);
+                    preTranslationWrittenRepsSequential.ifPresent(writtenRepsSequentialDocs::add);
+                    preTranslationWrittenRepsSequential.ifPresent(bulkPrintOriginalDocuments::add);
                     caseDataBuilder.writtenRepSequentialDocument(writtenRepsSequentialDocs);
+                    caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
                 } else if (document.getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_CONCURRENT)) {
-                    Optional<Element<CaseDocument>> preTranslationGADraftDocument = preTranslationGaDocuments.stream()
+                    Optional<Element<CaseDocument>> preTranslationWrittenRepsConcurrent = preTranslationGaDocuments.stream()
                         .filter(item -> item.getValue().getDocumentType() == DocumentType.WRITTEN_REPRESENTATION_CONCURRENT)
                         .findFirst();
-                    preTranslationGADraftDocument.ifPresent(preTranslationGaDocuments::remove);
-                    preTranslationGADraftDocument.ifPresent(writtenRepsConcurrentDocs::add);
+                    preTranslationWrittenRepsConcurrent.ifPresent(preTranslationGaDocuments::remove);
+                    preTranslationWrittenRepsConcurrent.ifPresent(writtenRepsConcurrentDocs::add);
+                    preTranslationWrittenRepsConcurrent.ifPresent(bulkPrintOriginalDocuments::add);
                     caseDataBuilder.writtenRepConcurrentDocument(writtenRepsConcurrentDocs);
+                    caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
                 }
             });
         }
