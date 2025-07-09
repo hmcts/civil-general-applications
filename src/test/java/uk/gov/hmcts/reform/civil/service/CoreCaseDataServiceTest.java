@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
+import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.search.Query;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
@@ -104,6 +105,7 @@ class CoreCaseDataServiceTest {
         private static final String USER_ID = "User1";
         private final CaseData caseData = new CaseDataBuilder().atStateClaimDraft()
             .businessProcess(BusinessProcess.builder().status(BusinessProcessStatus.READY).build())
+            .caseManagementLocation(GACaseLocation.builder().region("1").baseLocation("12334").siteName("london").siteName("London SE1").postcode("SE1 1AA").build())
             .build();
         private final CaseDetails caseDetails = CaseDetailsBuilder.builder()
             .createdDate(LocalDateTime.now())
@@ -156,9 +158,9 @@ class CoreCaseDataServiceTest {
             LocationRefData locationRefData = LocationRefData.builder()
                 .region("1")
                 .epimmsId("12345")
-                .courtAddress("Londone")
+                .courtAddress("Central London")
                 .postcode("LJ09 EMM")
-                .siteName("London")
+                .siteName("London SX12 2345")
                 .build();
             mockLocation.add(locationRefData);
             when(locationRefDataService.getCourtLocationsByEpimmsId(anyString(), anyString())).thenReturn(mockLocation);
