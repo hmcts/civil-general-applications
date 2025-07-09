@@ -55,6 +55,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
@@ -321,6 +323,28 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             verify(sendFinalOrderPrintService, times(2))
                 .sendJudgeFinalOrderToPrintForLIP(eq("BEARER_TOKEN"), any(Document.class),
                                                   any(CaseData.class), any(CaseData.class), any(FlowFlag.class));
+
+        }
+
+        @Test
+        void shouldNotPrintGenerateDismissalOrderDocument_ifApplicantHasBilingualPreference() {
+            CaseData caseData = CaseDataBuilder.builder().dismissalOrderApplication()
+                .isGaApplicantLip(YesOrNo.YES)
+                .applicationIsUncloakedOnce(YesOrNo.YES)
+                .isGaRespondentOneLip(YesOrNo.YES)
+                .applicantBilingualLanguagePreference(YesOrNo.YES)
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(dismissalOrderGenerator, times(1))
+                .generate(any(CaseData.class), eq("BEARER_TOKEN"));
+            verifyNoMoreInteractions(dismissalOrderGenerator);
+            verifyNoInteractions(sendFinalOrderPrintService);
 
         }
 

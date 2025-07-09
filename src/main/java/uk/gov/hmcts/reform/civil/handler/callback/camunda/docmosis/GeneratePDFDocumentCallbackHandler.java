@@ -301,7 +301,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
              * Generate Judge Request for Information order document with LIP Applicant Post Address
              * if GA is with notice
              * */
-            if (gaForLipService.isLipApp(caseData)) {
+            if (gaForLipService.isLipApp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipApplicant = dismissalOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -313,7 +314,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             /*
              * Generate Judge Request for Information order document with LIP Respondent Post Address
              * */
-            if (gaForLipService.isLipResp(caseData)) {
+            if (gaForLipService.isLipResp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipRespondent = dismissalOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -321,11 +323,20 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                               FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
                     );
             }
+            if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicationBilingual()) {
+                setPreTranslationDocument(
+                    caseData,
+                    caseDataBuilder,
+                    decision,
+                    PreTranslationGaDocumentType.DISMISSAL_ORDER_DOC
+                );
+            } else {
+                assignCategoryId.assignCategoryIdToCaseDocument(decision,
+                                                                AssignCategoryId.ORDER_DOCUMENTS);
 
-            assignCategoryId.assignCategoryIdToCaseDocument(decision,
-                                                            AssignCategoryId.ORDER_DOCUMENTS);
+                caseDataBuilder.dismissalOrderDocument(wrapElements(decision));
+            }
 
-            caseDataBuilder.dismissalOrderDocument(wrapElements(decision));
         } else if (isHearingOrder(caseData)) {
             decision = hearingOrderGenerator.generate(
                 caseDataBuilder.build(),

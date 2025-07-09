@@ -24,6 +24,7 @@ import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_GA_LIP;
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.APPLICATION_SUMMARY_DOCUMENT_RESPONDED;
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.APPLICATION_SUMMARY_DOCUMENT;
+import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.DISMISSAL_ORDER;
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.WRITTEN_REPRESENTATIONS_ORDER_CONCURRENT;
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL;
 
@@ -162,7 +163,8 @@ public class UploadTranslatedDocumentService {
             ? newArrayList() : caseDataBuilder.build().getWrittenRepSequentialDocument();
         List<Element<CaseDocument>> writtenRepsConcurrentDocs = Objects.isNull(caseDataBuilder.build().getWrittenRepConcurrentDocument())
             ? newArrayList() : caseDataBuilder.build().getWrittenRepConcurrentDocument();
-
+        List<Element<CaseDocument>> dismissalOrderDocs = Objects.isNull(caseDataBuilder.build().getDismissalOrderDocument())
+            ? newArrayList() : caseDataBuilder.build().getDismissalOrderDocument();
         if (Objects.nonNull(translatedDocuments)) {
             translatedDocuments.forEach(document -> {
                 if (document.getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT)
@@ -193,6 +195,15 @@ public class UploadTranslatedDocumentService {
                     preTranslationWrittenRepsConcurrent.ifPresent(bulkPrintOriginalDocuments::add);
                     caseDataBuilder.writtenRepConcurrentDocument(writtenRepsConcurrentDocs);
                     caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
+                } else if (document.getValue().getDocumentType().equals(DISMISSAL_ORDER)) {
+                    Optional<Element<CaseDocument>> preTranslationDismissalOrder = preTranslationGaDocuments.stream()
+                        .filter(item -> item.getValue().getDocumentType() == DocumentType.DISMISSAL_ORDER)
+                        .findFirst();
+                    preTranslationDismissalOrder.ifPresent(preTranslationGaDocuments::remove);
+                    preTranslationDismissalOrder.ifPresent(dismissalOrderDocs::add);
+                    preTranslationDismissalOrder.ifPresent(bulkPrintOriginalDocuments::add);
+                    caseDataBuilder.dismissalOrderDocument(dismissalOrderDocs);
+                    caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
                 }
             });
         }
@@ -209,7 +220,8 @@ public class UploadTranslatedDocumentService {
             return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_GA_SUMMARY_RESPONSE_DOC;
         } else if (Objects.nonNull(translatedDocuments)
             && (translatedDocuments.get(0).getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL)
-            || translatedDocuments.get(0).getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_CONCURRENT))) {
+            || translatedDocuments.get(0).getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_CONCURRENT)
+        || translatedDocuments.get(0).getValue().getDocumentType().equals(DISMISSAL_ORDER))) {
             return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_JUDGE_DECISION;
         }
         return UPLOAD_TRANSLATED_DOCUMENT_GA_LIP;
