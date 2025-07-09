@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GeneralApplication;
 import uk.gov.hmcts.reform.civil.model.search.Query;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
@@ -52,7 +53,8 @@ import static uk.gov.hmcts.reform.civil.service.EventEmitterService.CASE_ID;
 @SpringBootTest(classes = {
     CoreCaseDataService.class,
     JacksonAutoConfiguration.class,
-    CaseDetailsConverter.class
+    CaseDetailsConverter.class,
+    GeneralAppLocationRefDataService.class
 })
 class CoreCaseDataServiceTest {
 
@@ -79,6 +81,9 @@ class CoreCaseDataServiceTest {
 
     @Autowired
     private CoreCaseDataService service;
+
+    @MockBean
+    private GeneralAppLocationRefDataService locationRefDataService;
 
     @BeforeEach
     void init() {
@@ -139,6 +144,42 @@ class CoreCaseDataServiceTest {
                 eq(USER_ID),
                 eq(JURISDICTION),
                 eq(CASE_TYPE),
+                eq(CASE_ID),
+                anyBoolean(),
+                any(CaseDataContent.class)
+            );
+        }
+
+        @Test
+        void triggerUpdateLocationEpimdsIdEvent_WhenApplicant1DQRequestedCourtCalled() {
+            List<LocationRefData> mockLocation = new ArrayList<>();
+            LocationRefData locationRefData = LocationRefData.builder()
+                .region("1")
+                .epimmsId("12345")
+                .courtAddress("Londone")
+                .postcode("LJ09 EMM")
+                .siteName("London")
+                .build();
+            mockLocation.add(locationRefData);
+            when(locationRefDataService.getCourtLocationsByEpimmsId(anyString(), anyString())).thenReturn(mockLocation);
+
+            service.triggerUpdateCaseManagementLocation(Long.valueOf(CASE_ID),
+                                                       CaseEvent.valueOf(EVENT_ID),
+                                                       "2",
+                                                       "12345",
+                                                       "yes",
+                                                       "yes"
+            );
+
+            verify(coreCaseDataApi).startEventForCaseWorker(USER_AUTH_TOKEN, SERVICE_AUTH_TOKEN, USER_ID,
+                                                            JURISDICTION, CASE_TYPE, CASE_ID, EVENT_ID
+            );
+            verify(coreCaseDataApi).submitEventForCaseWorker(
+                eq(USER_AUTH_TOKEN),
+                eq(SERVICE_AUTH_TOKEN),
+                eq(USER_ID),
+                eq(JURISDICTION),
+                eq(GENERAL_APPLICATION_CASE_TYPE),
                 eq(CASE_ID),
                 anyBoolean(),
                 any(CaseDataContent.class)

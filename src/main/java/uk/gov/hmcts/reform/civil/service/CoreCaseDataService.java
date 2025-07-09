@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.config.SystemUpdateUserConfiguration;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
+import uk.gov.hmcts.reform.civil.model.genapplication.GACaseLocation;
 import uk.gov.hmcts.reform.civil.model.search.Query;
 import uk.gov.hmcts.reform.civil.service.data.UserAuthContent;
 
@@ -39,6 +41,8 @@ public class CoreCaseDataService {
     private final SystemUpdateUserConfiguration userConfig;
     private final AuthTokenGenerator authTokenGenerator;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final GeneralAppLocationRefDataService locationRefDataService;
+
     private static final String RETRY_MSG = "retry with fresh token";
 
     public void triggerEvent(Long caseId, CaseEvent eventName) {
@@ -342,4 +346,43 @@ public class CoreCaseDataService {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
         return systemUpdateUser.getUserToken();
     }
+
+    public void triggerUpdateCaseManagementLocation(Long caseId,
+                                                    CaseEvent eventName,
+                                                    String region,
+                                                    String epimdsId,
+                                                    String eventSummary,
+                                                    String eventDescription) {
+        StartEventResponse startEventResponse = startUpdate(caseId.toString(), eventName);
+        HashMap<String, Object> payload = new HashMap<>(startEventResponse.getCaseDetails().getData());
+        //set case management location epimsId
+        Object caseManagementLocationObj = payload.get("caseManagementLocation");
+        if (caseManagementLocationObj != null) {
+            List<LocationRefData> byEpimmsId = locationRefDataService.getCourtLocationsByEpimmsId(
+                getSystemUpdateUserToken(),
+                epimdsId
+            );
+            if (byEpimmsId != null && !byEpimmsId.isEmpty()) {
+                LocationRefData locationRefData = byEpimmsId.get(0);
+                GACaseLocation newCmLocation = GACaseLocation.builder()
+                    .region(region)
+                    .postcode(locationRefData.getPostcode())
+                    .address(locationRefData.getCourtAddress())
+                    .siteName(locationRefData.getSiteName())
+                    .baseLocation(epimdsId).build();
+                payload.put("caseManagementLocation", newCmLocation);
+            } else {
+                log.info("No case management location found for epimmsId {} for caseId {}", epimdsId, caseId);
+            }
+        }
+
+        //set payload
+        CaseDataContent caseDataContent = caseDataContentFromStartEventResponse(startEventResponse, Map.of());
+        caseDataContent.setData(payload);
+        caseDataContent.getEvent().setSummary(eventSummary);
+        caseDataContent.getEvent().setDescription(eventDescription);
+
+        submitGaUpdate(caseId.toString(), caseDataContent);
+    }
+
 }
