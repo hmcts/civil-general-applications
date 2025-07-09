@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RetriggerUpdateCaseMgmtLocationDataHandlerTest {
+
     private static final String EVENT_DESCRIPTION = "Process ID: 1";
 
     @Mock
