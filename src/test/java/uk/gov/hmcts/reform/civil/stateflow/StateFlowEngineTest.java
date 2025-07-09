@@ -407,8 +407,7 @@ public class StateFlowEngineTest {
             .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
                              PROCEED_GENERAL_APPLICATION.fullName(),
                              APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
-                             JUDGE_DIRECTIONS.fullName()
-            );
+                             JUDGE_DIRECTIONS.fullName());
     }
 
     @Test
@@ -437,8 +436,7 @@ public class StateFlowEngineTest {
             .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
                              PROCEED_GENERAL_APPLICATION.fullName(),
                              APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
-                             JUDGE_DIRECTIONS.fullName()
-            );
+                             JUDGE_DIRECTIONS.fullName());
     }
 
     @Test
@@ -469,8 +467,7 @@ public class StateFlowEngineTest {
             .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
                              PROCEED_GENERAL_APPLICATION.fullName(),
                              APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
-                             ORDER_MADE.fullName()
-            );
+                             ORDER_MADE.fullName());
     }
 
     @Test
@@ -502,8 +499,7 @@ public class StateFlowEngineTest {
             .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
                              PROCEED_GENERAL_APPLICATION.fullName(),
                              APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
-                             ORDER_MADE.fullName()
-            );
+                             ORDER_MADE.fullName());
     }
 
     @Test
@@ -534,8 +530,7 @@ public class StateFlowEngineTest {
             .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
                              PROCEED_GENERAL_APPLICATION.fullName(),
                              APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
-                             ORDER_MADE.fullName()
-            );
+                             ORDER_MADE.fullName());
     }
 
     @Test
