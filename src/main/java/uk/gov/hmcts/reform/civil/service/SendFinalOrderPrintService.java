@@ -87,9 +87,8 @@ public class SendFinalOrderPrintService {
 
     }
 
-    public void sendJudgeTranslatedOrderToPrintForLIP(String authorisation, Document orderDocument, CaseData caseData, CaseEvent caseEvent) {
+    public void sendJudgeTranslatedOrderToPrintForLIP(String authorisation, Document originalDocument, Document translatedDocument, CaseData caseData, CaseEvent caseEvent) {
 
-        List<String> recipients = new ArrayList<>();
         CaseData civilCaseData = caseDetailsConverter
             .toCaseData(coreCaseDataService
                             .getCase(Long.parseLong(caseData.getGeneralAppParentCaseLink().getCaseReference())));
@@ -108,20 +107,20 @@ public class SendFinalOrderPrintService {
         if (stitchEnabled) {
             stitchAndSendDocument(
                 authorisation,
-                orderDocument,
+                originalDocument,
+                translatedDocument,
                 caseData,
                 caseEvent,
                 coverLetterCaseDocument,
-                civilCaseData,
-                recipients
+                civilCaseData
             );
         }
     }
 
-    private void stitchAndSendDocument(String authorisation, Document orderDocument, CaseData caseData, CaseEvent caseEvent,
-                                       CaseDocument coverLetterCaseDocument, CaseData civilCaseData, List<String> recipients) {
+    private void stitchAndSendDocument(String authorisation, Document originalDocument, Document translatedDocument, CaseData caseData, CaseEvent caseEvent,
+                                       CaseDocument coverLetterCaseDocument, CaseData civilCaseData) {
         List<DocumentMetaData> documentMetaDataList
-            = stitchCoverLetterAndOrderDocument(coverLetterCaseDocument, orderDocument);
+            = stitchCoverLetterAndOrderDocuments(coverLetterCaseDocument, originalDocument, translatedDocument);
 
         CaseDocument stitchedDocument = civilDocumentStitchingService.bundle(
             documentMetaDataList,
@@ -145,7 +144,13 @@ public class SendFinalOrderPrintService {
             log.error("Failed getting letter content for Pip Stitched Letter ");
             throw new DocumentDownloadException(stitchedDocument.getDocumentLink().getDocumentFileName(), e);
         }
+        List<String> recipients = getRecipients(caseData, caseEvent, civilCaseData);
 
+        sendBulkPrint(letterContent, caseData, civilCaseData, recipients);
+    }
+
+    private List<String> getRecipients(CaseData caseData, CaseEvent caseEvent, CaseData civilCaseData) {
+        List<String> recipients = new ArrayList<>();
         if (caseEvent == SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT) {
             String applicant = caseData.getParentClaimantIsApplicant() == YES
                 ? civilCaseData.getApplicant1().getPartyName()
@@ -159,8 +164,7 @@ public class SendFinalOrderPrintService {
                 : civilCaseData.getApplicant1().getPartyName();
             recipients.add(respondent);
         }
-
-        sendBulkPrint(letterContent, caseData, civilCaseData, recipients);
+        return recipients;
     }
 
     private void sendBulkPrint(byte[] letterContent, CaseData caseData, CaseData civilCaseData, List<String> recipients) {
@@ -170,17 +174,26 @@ public class SendFinalOrderPrintService {
                                      SendFinalOrderPrintService.TRANSLATED_ORDER_PACK_LETTER_TYPE, recipients);
     }
 
-    private List<DocumentMetaData> stitchCoverLetterAndOrderDocument(CaseDocument coverLetterCaseDocument, Document orderDocument) {
+    private List<DocumentMetaData> stitchCoverLetterAndOrderDocuments(CaseDocument coverLetterCaseDocument, Document originalDocument, Document translatedDocument) {
         List<DocumentMetaData> documentMetaDataList = new ArrayList<>();
 
         documentMetaDataList.add(new DocumentMetaData(coverLetterCaseDocument.getDocumentLink(),
                                                       "Post order cover letter",
                                                       LocalDate.now().toString()));
-        documentMetaDataList.add(new DocumentMetaData(
-            orderDocument,
-            "Translated judge order",
-            LocalDate.now().toString()
-        ));
+        if (originalDocument != null) {
+            documentMetaDataList.add(new DocumentMetaData(
+                originalDocument,
+                "Judge order",
+                LocalDate.now().toString()
+            ));
+        }
+        if (translatedDocument != null) {
+            documentMetaDataList.add(new DocumentMetaData(
+                translatedDocument,
+                "Translated judge order",
+                LocalDate.now().toString()
+            ));
+        }
 
         return documentMetaDataList;
     }
