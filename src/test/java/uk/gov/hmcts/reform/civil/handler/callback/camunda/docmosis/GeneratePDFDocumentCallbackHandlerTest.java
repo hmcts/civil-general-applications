@@ -1049,7 +1049,6 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(updatedData.getPreTranslationGaDocumentType()).isNull();
         }
 
-
         @Test
         void shouldReturnCorrectActivityId_whenRequested() {
             CaseData caseData = CaseDataBuilder.builder().generalOrderApplication().build();
