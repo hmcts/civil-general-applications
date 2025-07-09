@@ -223,7 +223,6 @@ public class UploadTranslatedDocumentServiceTest {
         assertThat(caseData.getPreTranslationGaDocuments().isEmpty()).isTrue();
     }
 
-
     @Test
     void shouldGetCorrectBusinessProcessForApplicationSummaryDraftDoc() {
         // Given
