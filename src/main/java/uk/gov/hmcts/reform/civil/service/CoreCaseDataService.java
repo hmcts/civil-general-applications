@@ -362,18 +362,15 @@ public class CoreCaseDataService {
                 getSystemUpdateUserToken(),
                 epimdsId
             );
-            if (byEpimmsId != null && !byEpimmsId.isEmpty()) {
-                LocationRefData locationRefData = byEpimmsId.get(0);
-                GACaseLocation newCmLocation = GACaseLocation.builder()
-                    .region(region)
-                    .postcode(locationRefData.getPostcode())
-                    .address(locationRefData.getCourtAddress())
-                    .siteName(locationRefData.getSiteName())
-                    .baseLocation(epimdsId).build();
-                payload.put("caseManagementLocation", newCmLocation);
-            } else {
-                log.info("No case management location found for epimmsId {} for caseId {}", epimdsId, caseId);
-            }
+
+            LocationRefData locationRefData = byEpimmsId.get(0);
+            GACaseLocation newCmLocation = GACaseLocation.builder()
+                .region(region)
+                .postcode(locationRefData.getPostcode())
+                .address(locationRefData.getCourtAddress())
+                .siteName(locationRefData.getSiteName())
+                .baseLocation(epimdsId).build();
+            payload.put("caseManagementLocation", newCmLocation);
         }
 
         //set payload
