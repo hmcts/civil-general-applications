@@ -1,9 +1,11 @@
 package uk.gov.hmcts.reform.civil.service;
 
 import lombok.extern.slf4j.Slf4j;
+import uk.gov.hmcts.reform.civil.config.NotificationsSignatureConfiguration;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
 import java.util.HashMap;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
+import static uk.gov.hmcts.reform.civil.utils.EmailFooterUtils.addAllFooterItems;
 
 @Slf4j
 @Service
@@ -30,6 +33,8 @@ public class DocUploadNotificationService implements NotificationData {
     private final Map<String, String> customProps = new HashMap<>();
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
+    private final FeatureToggleService featureToggleService;
+    private final NotificationsSignatureConfiguration configuration;
 
     public void notifyApplicantEvidenceUpload(CaseData caseData) throws NotificationException {
         log.info("Starting applicant evidence upload notification for Case ID: {}", caseData.getCcdCaseReference());
@@ -117,6 +122,9 @@ public class DocUploadNotificationService implements NotificationData {
         customProps.put(PARTY_REFERENCE,
                         Objects.requireNonNull(getSolicitorReferences(caseData.getEmailPartyReference())));
         customProps.put(GENAPP_REFERENCE, String.valueOf(Objects.requireNonNull(caseData.getCcdCaseReference())));
+        addAllFooterItems(caseData, customProps, configuration,
+                           featureToggleService.isQueryManagementLRsEnabled(),
+                           featureToggleService.isLipQueryManagementEnabled(caseData));
         return customProps;
     }
 

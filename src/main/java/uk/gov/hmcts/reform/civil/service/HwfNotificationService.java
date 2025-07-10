@@ -3,15 +3,18 @@ package uk.gov.hmcts.reform.civil.service;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.formatLocalDate;
 import static uk.gov.hmcts.reform.civil.utils.DateUtils.formatDateInWelsh;
+import static uk.gov.hmcts.reform.civil.utils.EmailFooterUtils.addAllFooterItems;
 
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.config.NotificationsSignatureConfiguration;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.enums.FeeType;
 import uk.gov.hmcts.reform.civil.enums.HwFMoreInfoRequiredDocuments;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.handler.callback.user.JudicialFinalDecisionHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.HelpWithFeesMoreInformation;
 import uk.gov.hmcts.reform.civil.utils.HwFFeeTypeService;
@@ -19,6 +22,7 @@ import uk.gov.hmcts.reform.civil.utils.MonetaryConversions;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -41,6 +45,8 @@ public class HwfNotificationService implements NotificationData {
     private Map<CaseEvent, String> emailTemplates;
     private Map<CaseEvent, String> emailTemplatesBilingual;
     private CaseEvent event;
+    private final FeatureToggleService featureToggleService;
+    private final NotificationsSignatureConfiguration configuration;
 
     private static final String ERROR_HWF_EVENT = "Hwf Event not support";
 
@@ -82,13 +88,17 @@ public class HwfNotificationService implements NotificationData {
     }
 
     private Map<String, String> getCommonProperties(CaseData caseData) {
-        return Map.of(
+        HashMap<String, String> properties = new HashMap<>(Map.of(
                 CASE_REFERENCE, caseData.getParentCaseReference(),
                 CLAIMANT_NAME, caseData.getApplicantPartyName(),
                 TYPE_OF_FEE, caseData.getHwfFeeType().getLabel(),
                 TYPE_OF_FEE_WELSH, caseData.getHwfFeeType().getLabelInWelsh(),
                 HWF_REFERENCE_NUMBER, caseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber()
-        );
+        ));
+        addAllFooterItems(caseData, properties, configuration,
+                          featureToggleService.isQueryManagementLRsEnabled(),
+                          featureToggleService.isLipQueryManagementEnabled(caseData));
+        return properties;
     }
 
     private Map<String, String> getPartialRemissionProperties(CaseData caseData) {

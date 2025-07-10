@@ -4,11 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.config.NotificationsSignatureConfiguration;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.handler.callback.user.JudicialFinalDecisionHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
@@ -26,6 +28,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SE
 import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.JUDICIAL_FORMATTER;
+import static uk.gov.hmcts.reform.civil.utils.EmailFooterUtils.addAllFooterItems;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.areRespondentSolicitorsPresent;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isGeneralAppConsentOrder;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.notificationCriterion;
@@ -53,6 +56,9 @@ public class JudicialNotificationService implements NotificationData {
 
     private final SolicitorEmailValidation solicitorEmailValidation;
     private final JudicialDecisionHelper judicialDecisionHelper;
+
+    private final FeatureToggleService featureToggleService;
+    private final NotificationsSignatureConfiguration configuration;
 
     public CaseData sendNotification(CaseData caseData, String solicitorType) throws NotificationException {
         CaseData civilCaseData = caseDetailsConverter
@@ -147,6 +153,9 @@ public class JudicialNotificationService implements NotificationData {
             customProps.remove(GA_LIP_RESP_NAME);
             customProps.remove(CASE_TITLE);
         }
+        addAllFooterItems(caseData, customProps, configuration,
+                           featureToggleService.isQueryManagementLRsEnabled(),
+                           featureToggleService.isLipQueryManagementEnabled(caseData));
         return customProps;
     }
 

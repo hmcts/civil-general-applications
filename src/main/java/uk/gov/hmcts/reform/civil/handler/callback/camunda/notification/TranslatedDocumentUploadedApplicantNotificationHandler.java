@@ -9,8 +9,10 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.config.NotificationsSignatureConfiguration;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.OrganisationResponse;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
@@ -20,11 +22,13 @@ import uk.gov.hmcts.reform.civil.service.NotificationService;
 import uk.gov.hmcts.reform.civil.service.OrganisationService;
 import uk.gov.hmcts.reform.civil.service.SolicitorEmailValidation;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
+import static uk.gov.hmcts.reform.civil.utils.EmailFooterUtils.addAllFooterItems;
 
 @Slf4j
 @Service
@@ -39,6 +43,8 @@ public class TranslatedDocumentUploadedApplicantNotificationHandler extends Call
     private final CoreCaseDataService coreCaseDataService;
     private final SolicitorEmailValidation solicitorEmailValidation;
     private final OrganisationService organisationService;
+    private final FeatureToggleService featureToggleService;
+    private final NotificationsSignatureConfiguration configuration;
 
     private static final List<CaseEvent> EVENTS = List.of(CaseEvent.NOTIFY_APPLICANT_TRANSLATED_DOCUMENT_UPLOADED_GA);
     private static final String REFERENCE_TEMPLATE = "translated-document-uploaded-applicant-notification-%s";
@@ -60,16 +66,24 @@ public class TranslatedDocumentUploadedApplicantNotificationHandler extends Call
         if (gaForLipService.isLipApp(caseData)) {
             String caseTitle = DocUploadNotificationService.getAllPartyNames(caseData);
             String isLipAppName = caseData.getApplicantPartyName();
-            return Map.of(
+            HashMap<String, String> properties = new HashMap<>(Map.of(
                 CASE_TITLE, Objects.requireNonNull(caseTitle),
                 GA_LIP_APPLICANT_NAME, Objects.requireNonNull(isLipAppName),
                 CASE_REFERENCE, caseData.getParentCaseReference()
-            );
+            ));
+            addAllFooterItems(caseData, properties, configuration,
+                              featureToggleService.isQueryManagementLRsEnabled(),
+                              featureToggleService.isLipQueryManagementEnabled(caseData));
+            return properties;
         }
-        return Map.of(
+        HashMap<String, String> properties = new HashMap<>(Map.of(
             CASE_REFERENCE, caseData.getParentCaseReference(),
             CLAIM_LEGAL_ORG_NAME_SPEC, getApplicantLegalOrganizationName(caseData)
-        );
+        ));
+        addAllFooterItems(caseData, properties, configuration,
+                          featureToggleService.isQueryManagementLRsEnabled(),
+                          featureToggleService.isLipQueryManagementEnabled(caseData));
+        return properties;
     }
 
     private CallbackResponse notifyApplicant(CallbackParams callbackParams) {

@@ -11,6 +11,7 @@ import org.camunda.bpm.engine.delegate.BpmnError;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.ExternalTaskData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
@@ -26,6 +27,8 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -34,10 +37,12 @@ public class WaitCivilDocUpdatedTaskHandler extends BaseExternalTaskHandler {
     protected static int maxWait = 10;
     protected static int waitGap = 3;
     private static final String DRAFT_APPLICATION_PREFIX = "Draft_application_";
+    private static final String DRAFT_TRANSLATED_APPLICATION_PREFIX = "Translated_draft_application_";
     private final CoreCaseDataService coreCaseDataService;
     private final CaseDetailsConverter caseDetailsConverter;
     private final GaForLipService gaForLipService;
     private final ObjectMapper mapper;
+    private final FeatureToggleService featureToggleService;
 
     @Override
     public ExternalTaskData handleTask(ExternalTask externalTask) throws Exception {
@@ -75,6 +80,7 @@ public class WaitCivilDocUpdatedTaskHandler extends BaseExternalTaskHandler {
 
     private Map<String, Object> getUpdatedCaseData(CaseData gaCaseData) {
         Map<String, Object> output = gaCaseData.toMap(mapper);
+        List<Element<CaseDocument>> updatedDocuments = newArrayList();
         try {
             if (gaForLipService.isGaForLip(gaCaseData)
                 && (Objects.nonNull(gaCaseData.getGaDraftDocument()) && gaCaseData.getGaDraftDocument().size() > 1)) {
@@ -88,14 +94,35 @@ public class WaitCivilDocUpdatedTaskHandler extends BaseExternalTaskHandler {
                     .toList();
                 if (!draftApplications.isEmpty()) {
                     List<Element<CaseDocument>> latestDraftApplication = List.of(draftApplications.get(0));
-                    List<Element<CaseDocument>> updatedDocuments = gaCaseData.getGaDraftDocument().stream()
+                    updatedDocuments = gaCaseData.getGaDraftDocument().stream()
                         .filter(gaDocElement -> !gaDocElement.getValue().getDocumentName()
                             .startsWith(DRAFT_APPLICATION_PREFIX))
                         .collect(Collectors.toList());
                     updatedDocuments.addAll(latestDraftApplication);
-                    output.put("gaDraftDocument", updatedDocuments);
                 }
             }
+
+            if (featureToggleService.isGaForWelshEnabled()
+                && (gaCaseData.isApplicantBilingual() || gaCaseData.isRespondentBilingual())
+                && updatedDocuments.size() > 1) {
+                List<Element<CaseDocument>> translatedAppDocument = updatedDocuments.stream()
+                    .filter(gaDocElement -> gaDocElement.getValue().getDocumentName()
+                        .startsWith(DRAFT_TRANSLATED_APPLICATION_PREFIX))
+                    .sorted(Comparator.comparing(gaDocElement -> gaDocElement
+                        .getValue().getCreatedDatetime(), Comparator.reverseOrder()
+                    ))
+                    .toList();
+                if (!translatedAppDocument.isEmpty()) {
+                    List<Element<CaseDocument>> latestTranslatedAppDoc = List.of(translatedAppDocument.get(0));
+                    updatedDocuments = updatedDocuments.stream()
+                        .filter(gaDocElement -> !gaDocElement.getValue().getDocumentName()
+                            .startsWith(DRAFT_TRANSLATED_APPLICATION_PREFIX))
+                        .collect(Collectors.toList());
+                    updatedDocuments.addAll(latestTranslatedAppDoc);
+
+                }
+            }
+            output.put("gaDraftDocument", updatedDocuments);
         } catch (Exception e) {
             log.error(e.getMessage());
         }

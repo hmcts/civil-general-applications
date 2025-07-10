@@ -4,11 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.civil.config.NotificationsSignatureConfiguration;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
 import uk.gov.hmcts.reform.civil.handler.callback.user.JudicialFinalDecisionHandler;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
@@ -20,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static uk.gov.hmcts.reform.civil.helpers.DateFormatHelper.DATE;
+import static uk.gov.hmcts.reform.civil.utils.EmailFooterUtils.addAllFooterItems;
 
 @Slf4j
 @Service
@@ -32,6 +35,8 @@ public class HearingScheduledNotificationService implements NotificationData {
     private final NotificationsProperties notificationProperties;
     private final SolicitorEmailValidation solicitorEmailValidation;
     private final CoreCaseDataService coreCaseDataService;
+    private final FeatureToggleService featureToggleService;
+    private final NotificationsSignatureConfiguration configuration;
     private final Map<String, String> customProps = new HashMap<>();
     private final GaForLipService gaForLipService;
     private static final String REFERENCE_TEMPLATE_HEARING = "general-apps-notice-of-hearing-%s";
@@ -61,7 +66,9 @@ public class HearingScheduledNotificationService implements NotificationData {
             customProps.remove(GA_LIP_APPLICANT_NAME);
             customProps.remove(GA_LIP_RESP_NAME);
         }
-
+        addAllFooterItems(caseData, customProps, configuration,
+                           featureToggleService.isQueryManagementLRsEnabled(),
+                           featureToggleService.isLipQueryManagementEnabled(caseData));
         return customProps;
     }
 
