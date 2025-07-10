@@ -28,6 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_GA_LIP;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 public class UploadTranslatedDocumentServiceTest {
@@ -296,7 +297,7 @@ public class UploadTranslatedDocumentServiceTest {
             .build();
         // When
         String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
-        assertThat(caseEvent).isNullOrEmpty();
+        assertThat(caseEvent).isEqualTo(UPLOAD_TRANSLATED_DOCUMENT_GA_LIP);
     }
 
     @Test
