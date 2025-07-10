@@ -40,7 +40,7 @@ class RetriggerUpdateCaseMgmtLocationDataHandlerTest {
 
         verify(coreCaseDataService).triggerUpdateCaseManagementLocation(
             1L,
-            CaseEvent.UPDATE_CASE_DATA,
+            CaseEvent.UPDATE_GA_CASE_DATA,
             "2",
             "123456",
             "Update Case Management locations epimId by 123456",
@@ -48,7 +48,7 @@ class RetriggerUpdateCaseMgmtLocationDataHandlerTest {
         );
         verify(coreCaseDataService).triggerUpdateCaseManagementLocation(
             2L,
-            CaseEvent.UPDATE_CASE_DATA,
+            CaseEvent.UPDATE_GA_CASE_DATA,
             "2",
             "123456",
             "Update Case Management locations epimId by 123456",

@@ -42,7 +42,7 @@ public class RetriggerUpdateCaseMgmtLocationDataHandler extends BaseExternalTask
                 externalTask.getAllVariables().put("caseId", caseId);
                 coreCaseDataService.triggerUpdateCaseManagementLocation(
                     parseLong(caseId.trim()),
-                    CaseEvent.UPDATE_CASE_DATA,
+                    CaseEvent.UPDATE_GA_CASE_DATA,
                     region,
                     epimsId,
                     eventSummary,
