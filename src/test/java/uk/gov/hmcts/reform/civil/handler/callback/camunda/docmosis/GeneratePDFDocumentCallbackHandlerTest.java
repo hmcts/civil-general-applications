@@ -386,7 +386,6 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
         }
 
-
         @Test
         void shouldCopyHearingOrderDocInTempCollectionIfWelshParty() {
             when(gaForLipService.isGaForLip(any())).thenReturn(true);
@@ -407,7 +406,6 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
                 .isEqualTo(PDFBuilder.HEARING_ORDER_DOCUMENT);
             assertThat(updatedData.getPreTranslationGaDocumentType()).isEqualTo(PreTranslationGaDocumentType.HEARING_ORDER_DOC);
         }
-
 
         @Test
         void shouldPrintGenerateHearingOrderDocumentLip() {

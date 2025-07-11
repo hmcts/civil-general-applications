@@ -209,15 +209,15 @@ public class UploadTranslatedDocumentService {
                     caseDataBuilder.requestForInformationDocument(requestMoreInformationDocs);
                     caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
                 } else if (document.getValue().getDocumentType().equals(HEARING_ORDER)) {
-                Optional<Element<CaseDocument>> preTranslationHearingOrder = preTranslationGaDocuments.stream()
-                    .filter(item -> item.getValue().getDocumentType() == DocumentType.HEARING_ORDER)
-                    .findFirst();
+                    Optional<Element<CaseDocument>> preTranslationHearingOrder = preTranslationGaDocuments.stream()
+                        .filter(item -> item.getValue().getDocumentType() == DocumentType.HEARING_ORDER)
+                        .findFirst();
                     preTranslationHearingOrder.ifPresent(preTranslationGaDocuments::remove);
                     preTranslationHearingOrder.ifPresent(hearingOrders::add);
                     preTranslationHearingOrder.ifPresent(bulkPrintOriginalDocuments::add);
                     caseDataBuilder.hearingOrderDocument(hearingOrders);
                     caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
-            }
+                }
             });
         }
     }

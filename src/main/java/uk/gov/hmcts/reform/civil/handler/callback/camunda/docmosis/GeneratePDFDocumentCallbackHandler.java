@@ -69,9 +69,6 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(GENERATE_JUDGES_FORM);
     private static final String TASK_ID = "CreatePDFDocument";
-    private static final String LIP_APPLICANT = "Applicant";
-    private static final String LIP_RESPONDENT = "Respondent";
-
     private final GeneralOrderGenerator generalOrderGenerator;
     private final RequestForInformationGenerator requestForInformationGenerator;
     private final DirectionOrderGenerator directionOrderGenerator;
