@@ -987,6 +987,11 @@ public class CaseDataBuilder {
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .judgeTitle("John Doe")
+            .generalAppParentCaseLink(
+                GeneralAppParentCaseLink
+                    .builder()
+                    .caseReference(CASE_REFERENCE.toString())
+                    .build())
             .judicialListForHearing(GAJudgesHearingListGAspec.builder()
                                         .hearingPreferredLocation(DynamicList.builder()
                                                                       .value(selectedLocation).listItems(listItems)
