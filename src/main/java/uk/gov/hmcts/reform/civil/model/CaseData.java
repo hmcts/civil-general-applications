@@ -130,6 +130,7 @@ public class CaseData implements MappableObject {
     private final String generalAppRespondConsentReason;
     private List<Element<TranslatedDocument>> translatedDocuments;
     private List<Element<TranslatedDocument>> translatedDocumentsBulkPrint;
+    private final List<Element<CaseDocument>> originalDocumentsBulkPrint;
     private final List<Element<Document>> generalAppRespondDocument;
     private final List<Element<Document>> generalAppRespondConsentDocument;
     private final List<Element<Document>> generalAppRespondDebtorDocument;
@@ -580,5 +581,18 @@ public class CaseData implements MappableObject {
             )
             .filter(Objects::nonNull)
             .findFirst().orElse(null);
+    }
+
+    @JsonIgnore
+    public boolean isApplicationBilingual() {
+        return ((this.getIsGaApplicantLip() == YES && this.isApplicantBilingual())
+            || (this.getIsGaRespondentOneLip() == YES && this.isRespondentBilingual()));
+    }
+
+    @JsonIgnore
+    public String getDefendantBilingualLanguagePreference() {
+        return Optional.ofNullable(getRespondent1LiPResponse())
+            .map(RespondentLiPResponse::getRespondent1ResponseLanguage)
+            .orElse(null);
     }
 }

@@ -2,5 +2,8 @@ package uk.gov.hmcts.reform.civil.enums.welshenhancements;
 
 public enum PreTranslationGaDocumentType {
     APPLICATION_SUMMARY_DOC,
-    RESPOND_TO_APPLICATION_SUMMARY_DOC
+    RESPOND_TO_APPLICATION_SUMMARY_DOC,
+    WRITTEN_REPRESENTATION_ORDER_DOC,
+    DIRECTIONS_ORDER_DOC,
+    GENERAL_ORDER_DOC
 }
