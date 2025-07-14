@@ -74,7 +74,6 @@ public class FlowPredicate {
             || YES.equals(caseData.getIsGaRespondentTwoLip())
             || caseData.isApplicantNotRepresented();
 
-
     public static final Predicate<CaseData> isVaryJudgementAppByResp = caseData -> caseData.getParentClaimantIsApplicant().equals(NO)
             && caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT);
 
