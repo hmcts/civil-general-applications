@@ -1,6 +1,9 @@
 java:
   image: ${IMAGE_NAME}
   ingressHost: ${SERVICE_FQDN}
+  devcpuRequests: 500m
+  devmemoryRequests: 2048Mi
+  devmemoryLimits: 4096Mi
   environment:
     CORE_CASE_DATA_API_URL: http://${SERVICE_NAME}-ccd-data-store-api
     IDAM_CLIENT_ID: civil-service
