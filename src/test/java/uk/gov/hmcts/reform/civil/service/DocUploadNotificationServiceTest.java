@@ -8,6 +8,7 @@ import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.STARTED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
+import static uk.gov.hmcts.reform.civil.utils.EmailFooterUtils.RAISE_QUERY_LR;
 
 import uk.gov.hmcts.reform.ccd.model.Organisation;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
@@ -99,8 +100,6 @@ public class DocUploadNotificationServiceTest {
             when(configuration.getPhoneContact()).thenReturn("For anything related to hearings, call 0300 123 5577 "
                                                                  + "\n For all other matters, call 0300 123 7050");
             when(configuration.getOpeningHours()).thenReturn("Monday to Friday, 8.30am to 5pm");
-            when(configuration.getSpecUnspecContact()).thenReturn("Email for Specified Claims: contactocmc@justice.gov.uk "
-                                                                      + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
             when(configuration.getWelshContact()).thenReturn("E-bost: ymholiadaucymraeg@justice.gov.uk");
             when(configuration.getSpecContact()).thenReturn("Email: contactocmc@justice.gov.uk");
             when(configuration.getWelshHmctsSignature()).thenReturn("Hawliadau am Arian yn y Llys Sifil Ar-lein \n Gwasanaeth Llysoedd a Thribiwnlysoedd EF");
@@ -116,7 +115,7 @@ public class DocUploadNotificationServiceTest {
             verify(notificationService, times(1)).sendMail(
                     DUMMY_EMAIL,
                     "general-apps-notice-of-document-template-id",
-                    getNotificationDataMap(false),
+                    getNotificationDataMap(false, false),
                     "general-apps-notice-of-document-upload-" + CASE_REFERENCE
             );
         }
@@ -129,26 +128,29 @@ public class DocUploadNotificationServiceTest {
             verify(notificationService, times(1)).sendMail(
                 DUMMY_EMAIL,
                 "general-apps-notice-of-document-template-id",
-                getNotificationDataMap(true),
+                getNotificationDataMap(true, false),
                 "general-apps-notice-of-document-upload-" + CASE_REFERENCE
             );
         }
 
         @Test
         void respNotificationShouldSendTwice1V2() {
+            when(configuration.getSpecUnspecContact()).thenReturn("Email for Specified Claims: contactocmc@justice.gov.uk "
+                                                                      + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
             CaseData caseData = getCaseData(true, NO, YES);
             docUploadNotificationService.notifyRespondentEvidenceUpload(caseData);
             verify(notificationService, times(2)).sendMail(
                     DUMMY_EMAIL,
                     "general-apps-notice-of-document-template-id",
-                    getNotificationDataMap(false),
+                    getNotificationDataMap(false, true),
                     "general-apps-notice-of-document-upload-" + CASE_REFERENCE
             );
         }
 
         @Test
         void lipApplicantNotificationShouldSendWhenInvoked() {
-
+            when(configuration.getSpecUnspecContact()).thenReturn("Email for Specified Claims: contactocmc@justice.gov.uk "
+                                                                      + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
             when(gaForLipService.isGaForLip(any())).thenReturn(true);
             when(gaForLipService.isLipApp(any())).thenReturn(true);
             CaseData caseData = getCaseData(true, YES, NO);
@@ -164,7 +166,8 @@ public class DocUploadNotificationServiceTest {
 
         @Test
         void lipApplicantNotificationShouldSendWhenInvoked_whenMainClaimIssuedInWelsh() {
-
+            when(configuration.getSpecUnspecContact()).thenReturn("Email for Specified Claims: contactocmc@justice.gov.uk "
+                                                                      + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
             when(gaForLipService.isGaForLip(any())).thenReturn(true);
             when(gaForLipService.isLipApp(any())).thenReturn(true);
             CaseData caseData =
@@ -183,7 +186,8 @@ public class DocUploadNotificationServiceTest {
 
         @Test
         void lipRespondentNotificationShouldSend() {
-
+            when(configuration.getSpecUnspecContact()).thenReturn("Email for Specified Claims: contactocmc@justice.gov.uk "
+                                                                      + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
             when(gaForLipService.isGaForLip(any())).thenReturn(true);
             when(gaForLipService.isLipApp(any())).thenReturn(false);
             when(gaForLipService.isLipResp(any())).thenReturn(true);
@@ -207,7 +211,8 @@ public class DocUploadNotificationServiceTest {
 
         @Test
         void lipRespondentNotificationShouldSend_whenRespondentResponseInWelsh() {
-
+            when(configuration.getSpecUnspecContact()).thenReturn("Email for Specified Claims: contactocmc@justice.gov.uk "
+                                                                      + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
             when(gaForLipService.isGaForLip(any())).thenReturn(true);
             when(gaForLipService.isLipApp(any())).thenReturn(false);
             when(gaForLipService.isLipResp(any())).thenReturn(true);
@@ -260,7 +265,7 @@ public class DocUploadNotificationServiceTest {
             return customProp;
         }
 
-        private Map<String, String> getNotificationDataMap(boolean customReferencePresent) {
+        private Map<String, String> getNotificationDataMap(boolean customReferencePresent, boolean isLipCase) {
             HashMap<String, String> properties = new HashMap<>();
             if (customReferencePresent) {
                 properties.put(NotificationData.CASE_REFERENCE, CASE_REFERENCE.toString());
@@ -276,8 +281,12 @@ public class DocUploadNotificationServiceTest {
             properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
             properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
             properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
-            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
-                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            if (isLipCase) {
+                properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
+                    + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            } else {
+                properties.put(NotificationData.SPEC_UNSPEC_CONTACT, RAISE_QUERY_LR);
+            }
             properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
             properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
             properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "

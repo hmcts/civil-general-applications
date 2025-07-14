@@ -123,8 +123,7 @@ public class DocUploadNotificationService implements NotificationData {
                         Objects.requireNonNull(getSolicitorReferences(caseData.getEmailPartyReference())));
         customProps.put(GENAPP_REFERENCE, String.valueOf(Objects.requireNonNull(caseData.getCcdCaseReference())));
         addAllFooterItems(caseData, customProps, configuration,
-                           featureToggleService.isQueryManagementLRsEnabled(),
-                           featureToggleService.isLipQueryManagementEnabled(caseData));
+                           featureToggleService.isPublicQueryManagementEnabled(caseData));
         return customProps;
     }
 

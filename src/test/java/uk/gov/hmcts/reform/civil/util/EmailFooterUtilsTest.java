@@ -50,7 +50,7 @@ public class EmailFooterUtilsTest {
     }
 
     @Test
-    void shouldAddEmailsToFooterWhenLRQmAndLipQmNotEnabled() {
+    void shouldAddEmailsToFooterWhenPublicQmNotEnabled() {
         CaseData caseData = CaseDataBuilder.builder()
             .ccdState(CaseState.AWAITING_APPLICANT_INTENTION)
             .build().toBuilder().respondent1Represented(YES).applicant1Represented(YES).build();
@@ -58,14 +58,13 @@ public class EmailFooterUtilsTest {
             caseData,
             new HashMap<>(),
             configuration,
-            false,
             false
         );
-        assertFooterItems(actual, false, false, false, true);
+        assertFooterItems(actual, false, false, true);
     }
 
     @Test
-    void shouldAddEmailsToLipFooterWhenLRQmOnAndLipQmNotEnabled() {
+    void shouldAddQueryStringToFooterWhenPublicQmEnabled() {
         CaseData caseData = CaseDataBuilder.builder()
             .ccdState(CaseState.AWAITING_APPLICANT_INTENTION)
             .build().toBuilder().respondent1Represented(YES).applicant1Represented(YES).build();
@@ -73,29 +72,13 @@ public class EmailFooterUtilsTest {
             caseData,
             new HashMap<>(),
             configuration,
-            true,
-            false
-        );
-        assertFooterItems(actual, true, false, false, true);
-    }
-
-    @Test
-    void shouldAddQueryStringToFooterWhenLRQmAndLipQmEnabled() {
-        CaseData caseData = CaseDataBuilder.builder()
-            .ccdState(CaseState.AWAITING_APPLICANT_INTENTION)
-            .build().toBuilder().respondent1Represented(YES).applicant1Represented(YES).build();
-        Map<String, String> actual = addAllFooterItems(
-            caseData,
-            new HashMap<>(),
-            configuration,
-            true,
             true
         );
-        assertFooterItems(actual, true, true, false, true);
+        assertFooterItems(actual, true, false, true);
     }
 
     @Test
-    void shouldAddQueryStringToFooterWhenLRQmAndLipQmEnabledApplicantLip() {
+    void shouldAddQueryStringToFooterWhenPublicQmEnabledApplicantLip() {
         CaseData caseData = CaseDataBuilder.builder()
             .ccdState(CaseState.AWAITING_APPLICANT_INTENTION)
             .build().toBuilder().respondent1Represented(YES).isGaApplicantLip(YES).build();
@@ -103,14 +86,13 @@ public class EmailFooterUtilsTest {
             caseData,
             new HashMap<>(),
             configuration,
-            true,
             true
         );
-        assertFooterItems(actual, true, true, true, true);
+        assertFooterItems(actual, true, true, true);
     }
 
     @Test
-    void shouldAddQueryStringToFooterWhenLRQmAndLipQmEnabledRespondentLip() {
+    void shouldAddQueryStringToFooterWhenPublicEnabledRespondentLip() {
         CaseData caseData = CaseDataBuilder.builder()
             .ccdState(CaseState.AWAITING_APPLICANT_INTENTION)
             .build().toBuilder().isGaRespondentOneLip(YES).applicant1Represented(YES).build();
@@ -118,10 +100,9 @@ public class EmailFooterUtilsTest {
             caseData,
             new HashMap<>(),
             configuration,
-            true,
             true
         );
-        assertFooterItems(actual, true, true, true, true);
+        assertFooterItems(actual, true, true, true);
     }
 
     @ParameterizedTest()
@@ -135,13 +116,12 @@ public class EmailFooterUtilsTest {
             caseData,
             new HashMap<>(),
             configuration,
-            true,
             true
         );
-        assertFooterItems(actual, true, true, false, false);
+        assertFooterItems(actual, true, false, false);
     }
 
-    private void assertFooterItems(Map<String, String> actual, boolean lrQmOn, boolean lipQmOn, boolean isLipCase, boolean queryAllowedCaseState) {
+    private void assertFooterItems(Map<String, String> actual, boolean publicQmEnabled, boolean isLipCase, boolean queryAllowedCaseState) {
         assertThat(actual.get(HMCTS_SIGNATURE)).isEqualTo("Online Civil Claims \n HM Courts & Tribunal Service");
         assertThat(actual.get(WELSH_HMCTS_SIGNATURE)).isEqualTo("Hawliadau am Arian yn y Llys Sifil Ar-lein "
                                                                     + "\n Gwasanaeth Llysoedd a Thribiwnlysoedd EF");
@@ -150,14 +130,14 @@ public class EmailFooterUtilsTest {
         assertThat(actual.get(WELSH_PHONE_CONTACT)).isEqualTo("Ffôn: 0300 303 5174");
         assertThat(actual.get(OPENING_HOURS)).isEqualTo("Monday to Friday, 8.30am to 5pm");
         assertThat(actual.get(WELSH_OPENING_HOURS)).isEqualTo("Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
-        if (lrQmOn && !isLipCase && queryAllowedCaseState) {
+        if ((!isLipCase || (isLipCase && publicQmEnabled)) && queryAllowedCaseState) {
             assertThat(actual.get(SPEC_UNSPEC_CONTACT)).isEqualTo(RAISE_QUERY_LR);
         } else {
             assertThat(actual.get(SPEC_UNSPEC_CONTACT)).isEqualTo("Email for Specified Claims: contactocmc@justice.gov.uk "
                                                                       + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
         }
 
-        if (lrQmOn && lipQmOn && isLipCase && queryAllowedCaseState) {
+        if (isLipCase && queryAllowedCaseState && publicQmEnabled) {
             assertThat(actual.get(SPEC_CONTACT)).isEqualTo(RAISE_QUERY_LIP);
             assertThat(actual.get(WELSH_CONTACT)).isEqualTo(RAISE_QUERY_LIP_WELSH);
         } else {

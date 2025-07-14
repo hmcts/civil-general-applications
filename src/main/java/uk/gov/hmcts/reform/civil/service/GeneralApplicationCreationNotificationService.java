@@ -176,8 +176,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
             CASE_TITLE, Objects.requireNonNull(caseTitle)
         ));
         addAllFooterItems(caseData, properties, configuration,
-                           featureToggleService.isQueryManagementLRsEnabled(),
-                           featureToggleService.isLipQueryManagementEnabled(caseData));
+                           featureToggleService.isPublicQueryManagementEnabled(caseData));
         return properties;
     }
 

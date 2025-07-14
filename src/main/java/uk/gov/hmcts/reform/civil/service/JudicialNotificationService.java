@@ -154,8 +154,7 @@ public class JudicialNotificationService implements NotificationData {
             customProps.remove(CASE_TITLE);
         }
         addAllFooterItems(caseData, customProps, configuration,
-                           featureToggleService.isQueryManagementLRsEnabled(),
-                           featureToggleService.isLipQueryManagementEnabled(caseData));
+                           featureToggleService.isPublicQueryManagementEnabled(caseData));
         return customProps;
     }
 

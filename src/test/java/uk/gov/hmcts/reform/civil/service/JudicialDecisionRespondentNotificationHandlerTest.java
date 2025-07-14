@@ -61,6 +61,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_D
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
+import static uk.gov.hmcts.reform.civil.utils.EmailFooterUtils.RAISE_QUERY_LR;
 
 @SpringBootTest(classes = {
     JudicialNotificationService.class,
@@ -1408,8 +1409,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
             properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
             properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
             properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
-            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
-                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, RAISE_QUERY_LR);
             properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
             properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
             properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
@@ -1430,8 +1430,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
             properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
             properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
             properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
-            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
-                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, RAISE_QUERY_LR);
             properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
             properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
             properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
@@ -1484,8 +1483,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
             properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
             properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
             properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
-            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
-                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, RAISE_QUERY_LR);
             properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
             properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
             properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
@@ -1512,8 +1510,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
             properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
             properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
             properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
-            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
-                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, RAISE_QUERY_LR);
             properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
             properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
             properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
@@ -1634,8 +1631,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
         properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
         properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
-        properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
-            + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+        properties.put(NotificationData.SPEC_UNSPEC_CONTACT, RAISE_QUERY_LR);
         properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
         properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
         properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "

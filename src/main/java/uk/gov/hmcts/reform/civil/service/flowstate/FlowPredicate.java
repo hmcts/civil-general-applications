@@ -69,6 +69,12 @@ public class FlowPredicate {
     public static final Predicate<CaseData> isLipApplication = caseData -> caseData.getIsGaApplicantLip() == YES;
     public static final Predicate<CaseData> isLipRespondent = caseData -> caseData.getIsGaRespondentOneLip() == YES;
 
+    public static final Predicate<CaseData> caseContainsLiP = caseData ->
+        NO.equals(caseData.getRespondent1Represented())
+            || YES.equals(caseData.getIsGaRespondentTwoLip())
+            || caseData.isApplicantNotRepresented();
+
+
     public static final Predicate<CaseData> isVaryJudgementAppByResp = caseData -> caseData.getParentClaimantIsApplicant().equals(NO)
             && caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT);
 

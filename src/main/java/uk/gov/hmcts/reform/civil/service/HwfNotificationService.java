@@ -96,8 +96,7 @@ public class HwfNotificationService implements NotificationData {
                 HWF_REFERENCE_NUMBER, caseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber()
         ));
         addAllFooterItems(caseData, properties, configuration,
-                          featureToggleService.isQueryManagementLRsEnabled(),
-                          featureToggleService.isLipQueryManagementEnabled(caseData));
+                          featureToggleService.isPublicQueryManagementEnabled(caseData));
         return properties;
     }
 

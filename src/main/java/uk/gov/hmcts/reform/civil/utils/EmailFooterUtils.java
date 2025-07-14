@@ -49,17 +49,15 @@ public class EmailFooterUtils {
 
     public static Map<String, String> addAllFooterItems(CaseData caseData, Map<String, String> properties,
                                  NotificationsSignatureConfiguration configuration,
-                                 boolean isLRQmEnabled, boolean isLipQMEnabled) {
+                                 boolean isPublicQMEnabled) {
         addCommonFooterSignature(properties, configuration);
         addCommonFooterSignatureWelsh(properties, configuration);
         addSpecAndUnspecContact(caseData, properties, configuration,
-                                isLRQmEnabled);
+                                isPublicQMEnabled);
         addLipContact(caseData, properties, configuration,
-                      isLRQmEnabled,
-                      isLipQMEnabled);
+                      isPublicQMEnabled);
         addWelshLipContact(caseData, properties, configuration,
-                           isLRQmEnabled,
-                           isLipQMEnabled);
+                           isPublicQMEnabled);
         return properties;
     }
 
@@ -79,14 +77,15 @@ public class EmailFooterUtils {
 
     public static void addSpecAndUnspecContact(CaseData caseData, Map<String, String> properties,
                                                NotificationsSignatureConfiguration configuration,
-                                               boolean isLRQmEnabled) {
+                                               boolean isPublicQMEnabled) {
         log.info("add LR contact");
-        log.info("isLRQmEnabled " + isLRQmEnabled);
+        log.info("isPublicQMEnabled " + isPublicQMEnabled);
         log.info("!isLipCase(caseData) " + !isLipCase(caseData));
         log.info("!queryNotAllowedCaseStates(caseData) " + !queryNotAllowedCaseStates(caseData));
         log.info("app rep " + caseData.getApplicant1Represented());
         log.info("res rep " + caseData.getRespondent1Represented());
-        if (isLRQmEnabled && !queryNotAllowedCaseStates(caseData) && !isLipCase(caseData)) {
+        if (!queryNotAllowedCaseStates(caseData)
+            && (!isLipCase(caseData) || (isPublicQMEnabled && isLipCase(caseData)))) {
             properties.put(SPEC_UNSPEC_CONTACT, RAISE_QUERY_LR);
         } else {
             properties.put(SPEC_UNSPEC_CONTACT, configuration.getSpecUnspecContact());
@@ -95,17 +94,15 @@ public class EmailFooterUtils {
 
     public static void addLipContact(CaseData caseData, Map<String, String> properties,
                                      NotificationsSignatureConfiguration configuration,
-                                     boolean isLRQmEnabled, boolean isLipQMEnabled) {
+                                     boolean isPublicQMEnabled) {
         log.info("add lip contact");
-        log.info("isLRQmEnabled " + isLRQmEnabled);
+        log.info("isPublicQMEnabled " + isPublicQMEnabled);
         log.info("!queryNotAllowedCaseStates(caseData) " + !queryNotAllowedCaseStates(caseData));
         log.info("!isLipCase(caseData) " + !isLipCase(caseData));
         log.info("res rep " + caseData.getRespondent1Represented());
         log.info("app rep " + caseData.getApplicant1Represented());
-        log.info("isLipQMEnabled " + isLipQMEnabled);
-        if (isLRQmEnabled
-            && !queryNotAllowedCaseStates(caseData)
-            && isLipCase(caseData) && isLipQMEnabled) {
+        if (!queryNotAllowedCaseStates(caseData)
+            && isLipCase(caseData) && isPublicQMEnabled) {
             properties.put(SPEC_CONTACT, RAISE_QUERY_LIP);
         } else {
             properties.put(SPEC_CONTACT, configuration.getSpecContact());
@@ -114,17 +111,15 @@ public class EmailFooterUtils {
 
     public static void addWelshLipContact(CaseData caseData, Map<String, String> properties,
                                           NotificationsSignatureConfiguration configuration,
-                                          boolean isLRQmEnabled, boolean isLipQMEnabled) {
+                                          boolean isPublicQMEnabled) {
         log.info("add welsh lip contact");
         log.info("!queryNotAllowedCaseStates(caseData) " + !queryNotAllowedCaseStates(caseData));
-        log.info("isLRQmEnabled " + isLRQmEnabled);
+        log.info("isPublicQMEnabled " + isPublicQMEnabled);
         log.info("res rep " + caseData.getRespondent1Represented());
         log.info("isLipCase(caseData) " + isLipCase(caseData));
         log.info("app rep " + caseData.getApplicant1Represented());
-        log.info("isLipQMEnabled " + isLipQMEnabled);
-        if (isLRQmEnabled
-            && !queryNotAllowedCaseStates(caseData)
-            && isLipCase(caseData) && isLipQMEnabled) {
+        if (!queryNotAllowedCaseStates(caseData)
+            && isLipCase(caseData) && isPublicQMEnabled) {
             properties.put(WELSH_CONTACT, RAISE_QUERY_LIP_WELSH);
         } else {
             properties.put(WELSH_CONTACT, configuration.getWelshContact());

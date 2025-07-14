@@ -85,8 +85,7 @@ public class TranslatedDocumentUploadedRespondentNotificationHandler extends Cal
                 CASE_REFERENCE, caseData.getParentCaseReference()
             ));
             addAllFooterItems(caseData, properties, configuration,
-                              featureToggleService.isQueryManagementLRsEnabled(),
-                              featureToggleService.isLipQueryManagementEnabled(caseData));
+                              featureToggleService.isPublicQueryManagementEnabled(caseData));
             return properties;
         }
         HashMap<String, String> properties = new HashMap<>(Map.of(
@@ -94,8 +93,7 @@ public class TranslatedDocumentUploadedRespondentNotificationHandler extends Cal
             CLAIM_LEGAL_ORG_NAME_SPEC, getApplicantLegalOrganizationName(respondentSolicitor)
         ));
         addAllFooterItems(caseData, properties, configuration,
-                           featureToggleService.isQueryManagementLRsEnabled(),
-                           featureToggleService.isLipQueryManagementEnabled(caseData));
+                           featureToggleService.isPublicQueryManagementEnabled(caseData));
         return properties;
     }
 

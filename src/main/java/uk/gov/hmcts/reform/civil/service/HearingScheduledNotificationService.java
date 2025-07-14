@@ -67,8 +67,7 @@ public class HearingScheduledNotificationService implements NotificationData {
             customProps.remove(GA_LIP_RESP_NAME);
         }
         addAllFooterItems(caseData, customProps, configuration,
-                           featureToggleService.isQueryManagementLRsEnabled(),
-                           featureToggleService.isLipQueryManagementEnabled(caseData));
+                           featureToggleService.isPublicQueryManagementEnabled(caseData));
         return customProps;
     }
 
