@@ -753,7 +753,6 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             verifyNoInteractions(sendFinalOrderPrintService);
         }
 
-
         @Test
         void shouldGenerateConsentOrderDocument_whenAboutToSubmitEventIsCalled() {
             CaseData caseData = CaseDataBuilder.builder().consentOrderApplication()
