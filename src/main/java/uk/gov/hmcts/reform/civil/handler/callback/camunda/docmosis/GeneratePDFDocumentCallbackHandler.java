@@ -13,7 +13,9 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
+import uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -34,6 +36,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.writtenrepresentationsequentia
 import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +59,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMIS
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.CONCURRENT_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeWrittenRepresentationsOptions.SEQUENTIAL_REPRESENTATIONS;
+import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @Slf4j
@@ -65,9 +69,6 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(GENERATE_JUDGES_FORM);
     private static final String TASK_ID = "CreatePDFDocument";
-    private static final String LIP_APPLICANT = "Applicant";
-    private static final String LIP_RESPONDENT = "Respondent";
-
     private final GeneralOrderGenerator generalOrderGenerator;
     private final RequestForInformationGenerator requestForInformationGenerator;
     private final DirectionOrderGenerator directionOrderGenerator;
@@ -86,6 +87,7 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
     private final CaseDetailsConverter caseDetailsConverter;
     private final CoreCaseDataService coreCaseDataService;
+    private final FeatureToggleService featureToggleService;
 
     @Value("${print.service.enabled}")
     public String printServiceEnabled;
@@ -330,7 +332,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             /*
              * Generate Judge Request for Information order document with LIP Applicant Post Address
              * */
-            if (gaForLipService.isLipApp(caseData)) {
+            if (gaForLipService.isLipApp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipApplicant = hearingOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -342,7 +345,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
              * Generate Judge Request for Information order document with LIP Respondent Post Address
              * if GA is with notice
              * */
-            if (gaForLipService.isLipResp(caseData)) {
+            if (gaForLipService.isLipResp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipRespondent = hearingOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -351,10 +355,21 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                     );
             }
 
-            assignCategoryId.assignCategoryIdToCaseDocument(decision,
-                                                            AssignCategoryId.APPLICATIONS);
+            if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicationBilingual()) {
+                setPreTranslationDocument(
+                    caseData,
+                    caseDataBuilder,
+                    decision,
+                    PreTranslationGaDocumentType.HEARING_ORDER_DOC
+                );
+            } else {
 
-            caseDataBuilder.hearingOrderDocument(wrapElements(decision));
+                assignCategoryId.assignCategoryIdToCaseDocument(
+                    decision,
+                    AssignCategoryId.APPLICATIONS
+                );
+                caseDataBuilder.hearingOrderDocument(wrapElements(decision));
+            }
         } else if (isWrittenRepSeqOrder(caseData)) {
             decision = writtenRepresentationSequentailOrderGenerator.generate(
                     caseDataBuilder.build(),
@@ -365,7 +380,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
              * Generate Judge Request for Information order document with LIP Applicant Post Address
              * if GA is with notice
              * */
-            if (gaForLipService.isLipApp(caseData)) {
+            if (gaForLipService.isLipApp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipApplicant = writtenRepresentationSequentailOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -377,7 +393,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             /*
              * Generate Judge Request for Information order document with LIP Respondent Post Address
              * */
-            if (gaForLipService.isLipResp(caseData)) {
+            if (gaForLipService.isLipResp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipRespondent = writtenRepresentationSequentailOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -385,17 +402,26 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                               FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
                     );
             }
+            if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicationBilingual()) {
+                setPreTranslationDocument(
+                    caseData,
+                    caseDataBuilder,
+                    decision,
+                    PreTranslationGaDocumentType.WRITTEN_REPRESENTATION_ORDER_DOC
+                );
+            } else {
+                List<Element<CaseDocument>> newWrittenRepSequentialDocumentList =
+                    ofNullable(caseData.getWrittenRepSequentialDocument()).orElse(newArrayList());
 
-            List<Element<CaseDocument>> newWrittenRepSequentialDocumentList =
-                ofNullable(caseData.getWrittenRepSequentialDocument()).orElse(newArrayList());
+                newWrittenRepSequentialDocumentList.addAll(wrapElements(decision));
 
-            newWrittenRepSequentialDocumentList.addAll(wrapElements(decision));
-
-            assignCategoryId.assignCategoryIdToCollection(newWrittenRepSequentialDocumentList,
-                                                          document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.APPLICATIONS);
-            caseDataBuilder.writtenRepSequentialDocument(newWrittenRepSequentialDocumentList);
-
+                assignCategoryId.assignCategoryIdToCollection(
+                    newWrittenRepSequentialDocumentList,
+                    document -> document.getValue().getDocumentLink(),
+                    AssignCategoryId.APPLICATIONS
+                );
+                caseDataBuilder.writtenRepSequentialDocument(newWrittenRepSequentialDocumentList);
+            }
         } else if (isWrittenRepConOrder(caseData)) {
             decision = writtenRepresentationConcurrentOrderGenerator.generate(
                 caseDataBuilder.build(),
@@ -405,7 +431,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             /*
              * Generate Judge Request for Information order document with LIP Applicant Post Address
              * */
-            if (gaForLipService.isLipApp(caseData)) {
+            if (gaForLipService.isLipApp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipApplicant = writtenRepresentationConcurrentOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -416,7 +443,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             /*
              * Generate Judge Request for Information order document with LIP Respondent Post Address
              * */
-            if (gaForLipService.isLipResp(caseData)) {
+            if (gaForLipService.isLipResp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipRespondent = writtenRepresentationConcurrentOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -425,15 +453,26 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                     );
             }
 
-            List<Element<CaseDocument>> newWrittenRepConcurrentDocumentList =
-                ofNullable(caseData.getWrittenRepConcurrentDocument()).orElse(newArrayList());
+            if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicationBilingual()) {
+                setPreTranslationDocument(
+                    caseData,
+                    caseDataBuilder,
+                    decision,
+                    PreTranslationGaDocumentType.WRITTEN_REPRESENTATION_ORDER_DOC
+                );
+            } else {
+                List<Element<CaseDocument>> newWrittenRepConcurrentDocumentList =
+                    ofNullable(caseData.getWrittenRepConcurrentDocument()).orElse(newArrayList());
 
-            newWrittenRepConcurrentDocumentList.addAll(wrapElements(decision));
-            assignCategoryId.assignCategoryIdToCollection(newWrittenRepConcurrentDocumentList,
-                                                          document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.APPLICATIONS);
+                newWrittenRepConcurrentDocumentList.addAll(wrapElements(decision));
+                assignCategoryId.assignCategoryIdToCollection(
+                    newWrittenRepConcurrentDocumentList,
+                    document -> document.getValue().getDocumentLink(),
+                    AssignCategoryId.APPLICATIONS
+                );
 
-            caseDataBuilder.writtenRepConcurrentDocument(newWrittenRepConcurrentDocumentList);
+                caseDataBuilder.writtenRepConcurrentDocument(newWrittenRepConcurrentDocumentList);
+            }
 
         } else if (isRequestMoreInfo(caseData) || isRequestMoreInfoAndSendAppToOtherParty(caseData)) {
             decision = requestForInformationGenerator.generate(
@@ -441,21 +480,32 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
-            List<Element<CaseDocument>> newRequestForInfoDocumentList =
-                ofNullable(caseData.getRequestForInformationDocument()).orElse(newArrayList());
+            if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicationBilingual()) {
+                setPreTranslationDocument(
+                    caseData,
+                    caseDataBuilder,
+                    decision,
+                    PreTranslationGaDocumentType.REQUEST_MORE_INFORMATION_ORDER_DOC
+                );
+            } else {
+                List<Element<CaseDocument>> newRequestForInfoDocumentList =
+                    ofNullable(caseData.getRequestForInformationDocument()).orElse(newArrayList());
 
-            newRequestForInfoDocumentList.addAll(wrapElements(decision));
+                newRequestForInfoDocumentList.addAll(wrapElements(decision));
 
-            assignCategoryId.assignCategoryIdToCollection(newRequestForInfoDocumentList,
-                                                          document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.APPLICATIONS
-            );
-
+                assignCategoryId.assignCategoryIdToCollection(
+                    newRequestForInfoDocumentList,
+                    document -> document.getValue().getDocumentLink(),
+                    AssignCategoryId.APPLICATIONS
+                );
+                caseDataBuilder.requestForInformationDocument(newRequestForInfoDocumentList);
+            }
             /*
             * Generate Judge Request for Information order document with LIP Applicant Post Address
             * */
 
-            if (gaForLipService.isLipApp(caseData)) {
+            if (gaForLipService.isLipApp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipApplicant = requestForInformationGenerator.generate(
                     civilCaseData,
                     caseData,
@@ -467,7 +517,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             /*
              * Generate Judge Request for Information order document with LIP Respondent Post Address
              * */
-            if (gaForLipService.isLipResp(caseData)) {
+            if (gaForLipService.isLipResp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipRespondent = requestForInformationGenerator.generate(
                     civilCaseData,
                     caseData,
@@ -476,7 +527,6 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 );
             }
 
-            caseDataBuilder.requestForInformationDocument(newRequestForInfoDocumentList);
         } else if (Objects.nonNull(caseData.getJudicialDecision())) {
             if (caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.FREE_FORM_ORDER)) {
 
@@ -542,6 +592,21 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(caseDataBuilder.build().toMap(objectMapper))
             .build();
+    }
+
+    private void setPreTranslationDocument(CaseData caseData, CaseData.CaseDataBuilder caseDataBuilder,
+                                           CaseDocument decision, PreTranslationGaDocumentType doctype) {
+        List<Element<CaseDocument>> preTranslatedDocuments =
+            Optional.ofNullable(caseData.getPreTranslationGaDocuments())
+                .orElseGet(ArrayList::new);
+        preTranslatedDocuments.add(element(decision));
+        assignCategoryId.assignCategoryIdToCollection(
+            preTranslatedDocuments,
+            document -> document.getValue().getDocumentLink(),
+            AssignCategoryId.APPLICATIONS
+        );
+        caseDataBuilder.preTranslationGaDocuments(preTranslatedDocuments);
+        caseDataBuilder.preTranslationGaDocumentType(doctype);
     }
 
     private CaseDocument generateFreeFormSendLetterDocForApplicant(CaseData civilCaseData, CaseData caseData, String auth) {
