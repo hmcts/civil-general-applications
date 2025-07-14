@@ -159,7 +159,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 /*
                  * Generate Judge Request for Information order document with LIP Applicant Post Address
                  * */
-                if (gaForLipService.isLipApp(caseData)) {
+                if (gaForLipService.isLipApp(caseData)
+                    && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
 
                     postJudgeOrderToLipApplicant = generateFreeFormSendLetterDocForApplicant(
                         civilCaseData,
@@ -170,7 +171,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 /*
                  * Generate Judge Request for Information order document with LIP Respondent Post Address
                  * */
-                if (gaForLipService.isLipResp(caseData)) {
+                if (gaForLipService.isLipResp(caseData)
+                    && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
 
                     postJudgeOrderToLipRespondent = generateFreeFormSendLetterDocForRespondent(
                         civilCaseData,
@@ -188,7 +190,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 /*
                  * Generate Judge Request for Information order document with LIP Applicant Post Address
                  * */
-                if (gaForLipService.isLipApp(caseData)) {
+                if (gaForLipService.isLipApp(caseData)
+                    && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                     postJudgeOrderToLipApplicant = assistedOrderFormGenerator.generate(
                         civilCaseData,
                         caseData,
@@ -200,7 +203,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 /*
                  * Generate Judge Request for Information order document with LIP Respondent Post Address
                  * */
-                if (gaForLipService.isLipResp(caseData)) {
+                if (gaForLipService.isLipResp(caseData)
+                    && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                     postJudgeOrderToLipRespondent = assistedOrderFormGenerator.generate(
                         civilCaseData,
                         caseData,
@@ -209,15 +213,26 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                     );
                 }
             }
-            List<Element<CaseDocument>> newGeneralOrderDocumentList =
+            if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicationBilingual()) {
+                setPreTranslationDocument(
+                    caseData,
+                    caseDataBuilder,
+                    decision,
+                    PreTranslationGaDocumentType.FINAL_ORDER_DOC
+                );
+            } else {
+                List<Element<CaseDocument>> newGeneralOrderDocumentList =
                     ofNullable(caseData.getGeneralOrderDocument()).orElse(newArrayList());
 
-            newGeneralOrderDocumentList.addAll(wrapElements(decision));
+                newGeneralOrderDocumentList.addAll(wrapElements(decision));
 
-            assignCategoryId.assignCategoryIdToCollection(newGeneralOrderDocumentList,
-                                                          document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.ORDER_DOCUMENTS);
-            caseDataBuilder.generalOrderDocument(newGeneralOrderDocumentList);
+                assignCategoryId.assignCategoryIdToCollection(
+                    newGeneralOrderDocumentList,
+                    document -> document.getValue().getDocumentLink(),
+                    AssignCategoryId.ORDER_DOCUMENTS
+                );
+                caseDataBuilder.generalOrderDocument(newGeneralOrderDocumentList);
+            }
         } else if (isGeneralOrder(caseData)) {
             decision = generalOrderGenerator.generate(
                 caseDataBuilder.build(),
