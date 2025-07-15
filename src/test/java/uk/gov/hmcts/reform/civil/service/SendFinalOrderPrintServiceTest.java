@@ -24,7 +24,6 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentDownloadService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
-import uk.gov.hmcts.reform.civil.service.stitching.CivilDocumentStitchingService;
 import uk.gov.hmcts.reform.civil.stitch.service.CivilStitchService;
 
 import java.util.List;
