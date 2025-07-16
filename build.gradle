@@ -248,14 +248,7 @@ static def inStrictOrder(Task... tasks) {
 
 tasks.register('runApiTests', Exec) {
   onlyIf {
-    return System.env.ENVIRONMENT == 'aat' && System.env.NIGHTLY_BUILD != 'true'
-  }
-  commandLine '/usr/bin/yarn', '--silent', 'run', 'test:api'
-}
-
-tasks.register('runNonProdApiTests', Exec) {
-  onlyIf {
-    return System.env.ENVIRONMENT == 'preview' && System.env.NIGHTLY_BUILD != 'true'
+    return System.env.NIGHTLY_BUILD != 'true'
   }
   commandLine './bin/run-api-tests.sh'
 }
@@ -271,8 +264,8 @@ tasks.register('smoke') {
   dependsOn(inStrictOrder(awaitApplicationReadiness, runSmokeTests))
 }
 
-tasks.register('functional') {
-  dependsOn(inStrictOrder(awaitApplicationReadiness, runNightlyAPITests, runApiTests, runNonProdApiTests))
+task functional(description: 'Runs the functional tests.') {
+  dependsOn(inStrictOrder(awaitApplicationReadiness, runNightlyAPITests, runApiTests))
 }
 
 tasks.register('crossbrowser') {
