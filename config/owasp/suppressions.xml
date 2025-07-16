@@ -28,4 +28,7 @@
         <cve>CVE-2024-47554</cve>
         <cve>CVE-2024-56337</cve>
     </suppress>
+    <suppress>
+        <cve>CVE-2024-56337</cve>
+    </suppress>
 </suppressions>
