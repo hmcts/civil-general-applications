@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.civil.utils;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.annotations.Case;
 import uk.gov.hmcts.reform.civil.config.NotificationsSignatureConfiguration;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
@@ -53,19 +52,12 @@ public class EmailFooterUtils {
                                  boolean isPublicQMEnabled) {
         addCommonFooterSignature(properties, configuration);
         addCommonFooterSignatureWelsh(properties, configuration);
-        addSpecAndUnspecContact(caseData,mainCaseData, properties, configuration,
+        addSpecAndUnspecContact(caseData, mainCaseData, properties, configuration,
                                 isPublicQMEnabled);
         addLipContact(caseData, mainCaseData, properties, configuration,
                       isPublicQMEnabled);
         addWelshLipContact(caseData, mainCaseData, properties, configuration,
                            isPublicQMEnabled);
-
-//        System.out.println("Signature: " + properties.get(HMCTS_SIGNATURE));
-//        System.out.println("UnSpec Contact: " + properties.get(SPEC_UNSPEC_CONTACT));
-//        System.out.println("SpecContact: " + properties.get(SPEC_CONTACT));
-//        System.out.println("Welsh Signature: " + properties.get(WELSH_HMCTS_SIGNATURE));
-//        System.out.println("Welsh Contact: " + properties.get(WELSH_CONTACT));
-
         return properties;
     }
 

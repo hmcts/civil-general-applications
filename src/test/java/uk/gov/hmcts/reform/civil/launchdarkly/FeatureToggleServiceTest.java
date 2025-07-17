@@ -164,11 +164,9 @@ class FeatureToggleServiceTest {
         givenToggle(multipartyFeatureKey, toggleStat);
         CaseData caseData = CaseDataBuilder.builder().withNoticeDraftAppCaseData()
             .toBuilder()
+            .isGaApplicantLip(Enum.valueOf(YesOrNo.class, applicant1Represented))
+            .isGaRespondentOneLip(Enum.valueOf(YesOrNo.class, respondent1Represented))
             .mainCaseSubmittedDate(LocalDateTime.of(LocalDate.now(), LocalTime.NOON))
-            .applicant1Represented(Enum.valueOf(YesOrNo.class, applicant1Represented))
-            .respondent1Represented(Enum.valueOf(YesOrNo.class, respondent1Represented))
-            .isGaRespondentTwoLip(Enum.valueOf(YesOrNo.class, respondent2Represented))
-            .specRespondent1Represented(Enum.valueOf(YesOrNo.class, respondent1Represented))
             .build();
 
         assertThat(featureToggleService.isPublicQueryManagementEnabled(caseData)).isEqualTo(toggleStat);

@@ -124,6 +124,7 @@ class JudicialApplicantNotificationServiceTest {
     @BeforeEach
     void setup() {
         when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
         when(notificationsProperties.getWrittenRepConcurrentRepresentationRespondentEmailTemplate())
             .thenReturn(SAMPLE_TEMPLATE);
         when(notificationsProperties.getWrittenRepConcurrentRepresentationApplicantEmailTemplate())
@@ -255,7 +256,7 @@ class JudicialApplicantNotificationServiceTest {
 
         @Test
         void notificationUncloakShouldSendForDismissal_ApplicantLIP() {
-
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForJudgeDismissal(NO, NO, NO, YES, NO));
             when(gaForLipService.isLipApp(any())).thenReturn(true);
@@ -272,7 +273,7 @@ class JudicialApplicantNotificationServiceTest {
 
         @Test
         void notificationCloakShouldSendForDismissal_ApplicantLIP() {
-
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForJudgeDismissal(NO, NO, YES, YES, NO));
             when(gaForLipService.isLipApp(any())).thenReturn(true);
@@ -312,6 +313,7 @@ class JudicialApplicantNotificationServiceTest {
             CaseData caseData
                 = caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO,
                                                                                                 NO, YES, YES, YES, NO);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(gaForLipService.isLipApp(any())).thenReturn(true);
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
@@ -326,7 +328,7 @@ class JudicialApplicantNotificationServiceTest {
 
         @Test
         void notificationShouldSendSendToLipRespondent_IfApplicationUncloakedForApproveOrEdit() {
-
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(
                     YES, NO, NO));
@@ -345,7 +347,7 @@ class JudicialApplicantNotificationServiceTest {
 
         @Test
         void notificationShouldSendSendToLipRespondent_IfApplicationForApproveOrEdit() {
-
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(
                     YES, NO, YES));
@@ -2264,6 +2266,7 @@ class JudicialApplicantNotificationServiceTest {
                     SEND_APP_TO_OTHER_PARTY).toBuilder().isMultiParty(NO).build();
 
             when(time.now()).thenReturn(responseDate);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 
@@ -2285,6 +2288,7 @@ class JudicialApplicantNotificationServiceTest {
             CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, YES, NO, NO, NO,
                                                                                       REQUEST_MORE_INFORMATION);
 
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
 
             judicialNotificationService.sendNotification(caseData, APPLICANT);
@@ -2307,6 +2311,7 @@ class JudicialApplicantNotificationServiceTest {
                 .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .build();
 
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 
@@ -2328,6 +2333,7 @@ class JudicialApplicantNotificationServiceTest {
                                                                                       REQUEST_MORE_INFORMATION);
             caseData = caseData.toBuilder().ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION).build();
 
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 
@@ -2350,6 +2356,7 @@ class JudicialApplicantNotificationServiceTest {
                 .isMultiParty(NO)
                 .generalAppRespondentSolicitors(Arrays.asList()).build();
 
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 
@@ -2369,6 +2376,8 @@ class JudicialApplicantNotificationServiceTest {
             CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, NO, NO, NO,
                                                                                       SEND_APP_TO_OTHER_PARTY)
                 .toBuilder().isMultiParty(NO).build();
+
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 
