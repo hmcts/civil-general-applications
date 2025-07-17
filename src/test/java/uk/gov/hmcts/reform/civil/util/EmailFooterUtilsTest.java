@@ -54,8 +54,10 @@ public class EmailFooterUtilsTest {
         CaseData caseData = CaseDataBuilder.builder()
             .ccdState(CaseState.AWAITING_APPLICANT_INTENTION)
             .build().toBuilder().respondent1Represented(YES).applicant1Represented(YES).build();
+        CaseData mainCaseData = CaseDataBuilder.builder().build();
         Map<String, String> actual = addAllFooterItems(
             caseData,
+            mainCaseData,
             new HashMap<>(),
             configuration,
             false
@@ -68,8 +70,10 @@ public class EmailFooterUtilsTest {
         CaseData caseData = CaseDataBuilder.builder()
             .ccdState(CaseState.AWAITING_APPLICANT_INTENTION)
             .build().toBuilder().respondent1Represented(YES).applicant1Represented(YES).build();
+        CaseData mainCaseData = CaseDataBuilder.builder().build();
         Map<String, String> actual = addAllFooterItems(
             caseData,
+            mainCaseData,
             new HashMap<>(),
             configuration,
             true
@@ -82,8 +86,10 @@ public class EmailFooterUtilsTest {
         CaseData caseData = CaseDataBuilder.builder()
             .ccdState(CaseState.AWAITING_APPLICANT_INTENTION)
             .build().toBuilder().respondent1Represented(YES).isGaApplicantLip(YES).build();
+        CaseData mainCaseData = CaseDataBuilder.builder().build();
         Map<String, String> actual = addAllFooterItems(
             caseData,
+            mainCaseData,
             new HashMap<>(),
             configuration,
             true
@@ -96,8 +102,10 @@ public class EmailFooterUtilsTest {
         CaseData caseData = CaseDataBuilder.builder()
             .ccdState(CaseState.AWAITING_APPLICANT_INTENTION)
             .build().toBuilder().isGaRespondentOneLip(YES).applicant1Represented(YES).build();
+        CaseData mainCaseData = CaseDataBuilder.builder().build();
         Map<String, String> actual = addAllFooterItems(
             caseData,
+            mainCaseData,
             new HashMap<>(),
             configuration,
             true
@@ -109,11 +117,12 @@ public class EmailFooterUtilsTest {
     @ValueSource(strings = {"PENDING_CASE_ISSUED", "CLOSED", "PROCEEDS_IN_HERITAGE_SYSTEM", "CASE_DISMISSED"})
     void shouldAddSpecAndUnspecContactWhenCaseInQueryNotAllowedState(String caseState) {
         CaseData caseData = CaseDataBuilder.builder()
-            .ccdState(CaseState.AWAITING_APPLICANT_INTENTION)
             .build().toBuilder().respondent1Represented(YES).applicant1Represented(YES)
             .ccdState(Enum.valueOf(CaseState.class, caseState)).build();
+        CaseData mainCaseData = CaseDataBuilder.builder().ccdState(CaseState.valueOf(caseState)).build();
         Map<String, String> actual = addAllFooterItems(
             caseData,
+            mainCaseData,
             new HashMap<>(),
             configuration,
             true

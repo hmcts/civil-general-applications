@@ -123,6 +123,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
     @BeforeEach
     void setup() {
         when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
         when(notificationsProperties.getWrittenRepConcurrentRepresentationRespondentEmailTemplate())
             .thenReturn(SAMPLE_TEMPLATE);
         when(notificationsProperties.getWrittenRepConcurrentRepresentationApplicantEmailTemplate())
@@ -703,7 +704,6 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
 
         @Test
         void notificationShouldSendIfJudicialApproval() {
-
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForJudicialApprovalOfApplication(NO, YES));
 
@@ -1533,7 +1533,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
         void notificationShouldSend_IfWithNotice() {
             CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, YES, NO,
                                                                                       REQUEST_MORE_INFORMATION);
-
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
 
             judicialRespondentNotificationService.sendNotification(caseData, RESPONDENT);
@@ -1571,6 +1571,7 @@ public class JudicialDecisionRespondentNotificationHandlerTest {
                                           .build())
                 .build();
 
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 

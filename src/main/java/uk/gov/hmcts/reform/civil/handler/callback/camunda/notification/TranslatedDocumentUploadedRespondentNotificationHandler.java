@@ -68,11 +68,11 @@ public class TranslatedDocumentUploadedRespondentNotificationHandler extends Cal
     }
 
     @Override
-    public Map<String, String> addProperties(CaseData caseData) {
+    public Map<String, String> addProperties(CaseData caseData, CaseData mainCaseData) {
         return Map.of();
     }
 
-    public Map<String, String> addPropertiesForRespondent(CaseData caseData,
+    public Map<String, String> addPropertiesForRespondent(CaseData caseData, CaseData mainCaseData,
                                                           Element<GASolicitorDetailsGAspec> respondentSolicitor) {
         if (gaForLipService.isLipResp(caseData)) {
             String caseTitle = DocUploadNotificationService.getAllPartyNames(caseData);
@@ -84,7 +84,7 @@ public class TranslatedDocumentUploadedRespondentNotificationHandler extends Cal
                 GA_LIP_RESP_NAME, Objects.requireNonNull(isLipResName),
                 CASE_REFERENCE, caseData.getParentCaseReference()
             ));
-            addAllFooterItems(caseData, properties, configuration,
+            addAllFooterItems(caseData, mainCaseData, properties, configuration,
                               featureToggleService.isPublicQueryManagementEnabled(caseData));
             return properties;
         }
@@ -92,7 +92,7 @@ public class TranslatedDocumentUploadedRespondentNotificationHandler extends Cal
             CASE_REFERENCE, caseData.getParentCaseReference(),
             CLAIM_LEGAL_ORG_NAME_SPEC, getApplicantLegalOrganizationName(respondentSolicitor)
         ));
-        addAllFooterItems(caseData, properties, configuration,
+        addAllFooterItems(caseData, mainCaseData, properties, configuration,
                            featureToggleService.isPublicQueryManagementEnabled(caseData));
         return properties;
     }
@@ -119,6 +119,7 @@ public class TranslatedDocumentUploadedRespondentNotificationHandler extends Cal
                                                                                   ),
                                                                                   addPropertiesForRespondent(
                                                                                       caseData,
+                                                                                      civilCaseData,
                                                                                       respondentSolicitor
                                                                                   ),
                                                                                   String.format(

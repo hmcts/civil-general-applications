@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import uk.gov.hmcts.reform.civil.config.NotificationsSignatureConfiguration;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.Language;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
@@ -149,6 +150,8 @@ public class HearingScheduledNotificationServiceTest {
 
         CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YesOrNo.NO)
             .build();
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
+
         when(solicitorEmailValidation
                  .validateSolicitorEmail(any(), any()))
             .thenReturn(caseData);
@@ -168,6 +171,8 @@ public class HearingScheduledNotificationServiceTest {
         CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YesOrNo.NO)
             .emailPartyReference("Claimant Reference: ABC limited - Defendant Reference: Defendant Ltd")
             .build();
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
+
         when(solicitorEmailValidation
                  .validateSolicitorEmail(any(), any()))
             .thenReturn(caseData);
@@ -185,6 +190,8 @@ public class HearingScheduledNotificationServiceTest {
     void notificationShouldSendToClaimantWhenInvoked() {
         CaseData caseData = CaseDataBuilder.builder().hearingScheduledApplication(YesOrNo.NO)
             .build();
+
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
         when(solicitorEmailValidation
                  .validateSolicitorEmail(any(), any()))
             .thenReturn(caseData);

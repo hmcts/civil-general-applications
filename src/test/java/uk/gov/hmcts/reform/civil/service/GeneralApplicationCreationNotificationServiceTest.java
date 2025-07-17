@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.ccd.model.Organisation;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.config.NotificationsSignatureConfiguration;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.dq.Language;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
@@ -122,6 +123,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
                 .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().code("FREE").build()).build())
                 .build();
 
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation
                      .validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
@@ -140,7 +142,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
                                           .paymentDetails(PaymentDetails.builder().status(
                     PaymentStatus.SUCCESS).build()).build())
                 .build();
-
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation
                      .validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
@@ -263,6 +265,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
         void notificationShouldSendWhenInvoked() {
             CaseData caseData = getCaseData(true);
 
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
+
             when(solicitorEmailValidation
                      .validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
@@ -278,6 +282,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
         @Test
         void notificationShouldSendWhenInvokedTwice() {
             CaseData caseData = getCaseData(true);
+
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
 
             when(solicitorEmailValidation
                      .validateSolicitorEmail(any(), any()))
