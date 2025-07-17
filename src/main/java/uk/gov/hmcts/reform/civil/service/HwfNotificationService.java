@@ -69,25 +69,25 @@ public class HwfNotificationService implements NotificationData {
                 caseData.getGeneralAppApplnSolicitor().getEmail(),
                 caseData.isApplicantBilingual() ? getTemplateBilingual(event) :
                     getTemplate(event),
-                addAllProperties(caseData, event),
+                addAllProperties(caseData, civilCaseData, event),
                 caseData.getGeneralAppParentCaseLink().getCaseReference()
         );
     }
 
     @Override
-    public Map<String, String> addProperties(CaseData caseData) {
-        return getCommonProperties(caseData);
+    public Map<String, String> addProperties(CaseData caseData, CaseData mainCaseDate) {
+        return getCommonProperties(caseData, mainCaseDate);
     }
 
-    private Map<String, String> addAllProperties(CaseData caseData, CaseEvent event) {
-        Map<String, String> commonProperties = addProperties(caseData);
+    private Map<String, String> addAllProperties(CaseData caseData, CaseData mainCaseData, CaseEvent event) {
+        Map<String, String> commonProperties = addProperties(caseData, mainCaseData);
         Map<String, String> furtherProperties = getFurtherProperties(caseData, event);
         return Collections.unmodifiableMap(
             Stream.concat(commonProperties.entrySet().stream(), furtherProperties.entrySet().stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 
-    private Map<String, String> getCommonProperties(CaseData caseData) {
+    private Map<String, String> getCommonProperties(CaseData caseData, CaseData mainCaseData) {
         HashMap<String, String> properties = new HashMap<>(Map.of(
                 CASE_REFERENCE, caseData.getParentCaseReference(),
                 CLAIMANT_NAME, caseData.getApplicantPartyName(),
@@ -95,7 +95,7 @@ public class HwfNotificationService implements NotificationData {
                 TYPE_OF_FEE_WELSH, caseData.getHwfFeeType().getLabelInWelsh(),
                 HWF_REFERENCE_NUMBER, caseData.getGeneralAppHelpWithFees().getHelpWithFeesReferenceNumber()
         ));
-        addAllFooterItems(caseData, properties, configuration,
+        addAllFooterItems(caseData, mainCaseData, properties, configuration,
                           featureToggleService.isPublicQueryManagementEnabled(caseData));
         return properties;
     }

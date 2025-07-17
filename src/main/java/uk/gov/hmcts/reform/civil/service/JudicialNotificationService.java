@@ -84,7 +84,7 @@ public class JudicialNotificationService implements NotificationData {
                 applicationApprovedNotification(caseData, solicitorType);
                 break;
             case JUDGE_DISMISSED_APPLICATION:
-                applicationDismissedByJudge(caseData, solicitorType);
+                applicationDismissedByJudge(caseData, civilCaseData, solicitorType);
                 break;
             case JUDGE_DIRECTION_ORDER:
                 applicationDirectionOrder(caseData, solicitorType);
@@ -99,7 +99,7 @@ public class JudicialNotificationService implements NotificationData {
     }
 
     @Override
-    public Map<String, String> addProperties(CaseData caseData) {
+    public Map<String, String> addProperties(CaseData caseData, CaseData mainCaseData) {
         customProps.put(
             GENAPP_REFERENCE,
             String.valueOf(Objects.requireNonNull(caseData.getCcdCaseReference()))
@@ -153,22 +153,27 @@ public class JudicialNotificationService implements NotificationData {
             customProps.remove(GA_LIP_RESP_NAME);
             customProps.remove(CASE_TITLE);
         }
-        addAllFooterItems(caseData, customProps, configuration,
+        addAllFooterItems(caseData, mainCaseData, customProps, configuration,
                            featureToggleService.isPublicQueryManagementEnabled(caseData));
         return customProps;
     }
 
-    private void sendNotificationForJudicialDecision(CaseData caseData, String recipient, String template)
+    private void sendNotificationForJudicialDecision(CaseData caseData, CaseData mainCaseData, String recipient, String template)
         throws NotificationException {
         try {
             log.info("JudicialNotificationService.class::sendNotificationForJudicialDecision::templateId: {}",
                      template);
-            notificationService.sendMail(recipient, template, addProperties(caseData),
+            notificationService.sendMail(recipient, template, addProperties(caseData, mainCaseData),
                                          String.format(REFERENCE_TEMPLATE,
                                                        caseData.getGeneralAppParentCaseLink().getCaseReference()));
         } catch (NotificationException e) {
             throw new NotificationException(e);
         }
+    }
+
+    private void sendNotificationForJudicialDecision(CaseData caseData, String recipient, String template)
+        throws NotificationException {
+        sendNotificationForJudicialDecision(caseData, null, recipient, template);
     }
 
     private void concurrentWrittenRepNotification(CaseData caseData, String solicitorType) {
@@ -465,7 +470,7 @@ public class JudicialNotificationService implements NotificationData {
         }
     }
 
-    private void applicationDismissedByJudge(CaseData caseData, String solicitorType) {
+    private void applicationDismissedByJudge(CaseData caseData, CaseData mainCaseData, String solicitorType) {
 
         if (solicitorType.equals(RESPONDENT)
             && areRespondentSolicitorsPresent(caseData)) {
@@ -475,6 +480,7 @@ public class JudicialNotificationService implements NotificationData {
             }
             sendEmailToRespondent(
                     caseData,
+                    mainCaseData,
                     template
             );
         }
@@ -561,6 +567,14 @@ public class JudicialNotificationService implements NotificationData {
                     : notificationProperties.getJudgeForDirectionOrderApplicantEmailTemplate()
             );
         }
+    }
+
+    private void sendEmailToRespondent(CaseData caseData, CaseData mainCaseData, String notificationProperties) {
+        caseData.getGeneralAppRespondentSolicitors().forEach(
+            respondentSolicitor -> sendNotificationForJudicialDecision(caseData,
+                                                                       respondentSolicitor.getValue().getEmail(),
+                                                                       notificationProperties
+            ));
     }
 
     private void sendEmailToRespondent(CaseData caseData, String notificationProperties) {
