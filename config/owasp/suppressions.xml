@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
     <suppress until = "2025-09-18">
-        <notes>Lucene 8.9.0 used transitively via Elasticsearch 7.15.2 Upgrade to ES 8.x under review. Spring upgrade required for CVE-2024-38820.</notes>
+        <notes>
+          Lucene 8.9.0 used transitively via Elasticsearch 7.15.2 Upgrade to ES 8.x under review.
+          Spring upgrade required for CVE-2024-38820.
+          CVE-2025-46392 refer [https://tools.hmcts.net/jira/browse/CCD-6624]
+        </notes>
         <cve>CVE-2024-45772</cve>
         <cve>CVE-2024-38820</cve>
         <cve>CVE-2023-52428</cve>
@@ -27,5 +31,6 @@
         <cve>CVE-2025-48976</cve>
         <cve>CVE-2024-47554</cve>
         <cve>CVE-2024-56337</cve>
+        <cve>CVE-2025-46392</cve>
     </suppress>
 </suppressions>
