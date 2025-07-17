@@ -581,4 +581,10 @@ public class CaseData implements MappableObject {
             .filter(Objects::nonNull)
             .findFirst().orElse(null);
     }
+
+    @JsonIgnore
+    public boolean isApplicationBilingual() {
+        return ((this.getIsGaApplicantLip() == YES && this.isApplicantBilingual())
+            || (this.getIsGaRespondentOneLip() == YES && this.isRespondentBilingual()));
+    }
 }
