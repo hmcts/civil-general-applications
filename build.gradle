@@ -278,7 +278,7 @@ sonarqube {
   properties {
     property "sonar.projectName", "Reform :: civil-general-applications"
     property "sonar.projectKey", "civil-general-applications"
-    property "sonar.coverage.jacoco.xmlReportPaths", "${jacocoTestReport.reports.xml.destination.path}"
+    property "sonar.coverage.jacoco.xmlReportPaths", "${jacocoTestReport.reports.xml.outputLocation}"
     property "sonar.coverage.exclusions", "**/model/**, **/config/**/*Configuration.java,**/testingsupport/**, **/*ExternalTaskListener.java, **/*BaseExternalTaskHandler.java, **/stereotypes/**, **/*Exception.java, src/main/java/uk/gov/hmcts/reform/civil/service/docmosis/applicationdraft/GeneralApplicationDraftGenerator.java"
     property "sonar.cpd.exclusions", "**/*DocumentManagementService.java"
     property "sonar.host.url", "https://sonar.reform.hmcts.net/"
@@ -292,9 +292,9 @@ jacocoTestReport {
     sourceSets it.sourceSets.main
   }
   reports {
-    xml.required = true
-    csv.required = false
-    xml.destination file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+    xml.required.set(true)
+    csv.required.set(false)
+    xml.outputLocation.set(file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml"))
   }
 }
 
