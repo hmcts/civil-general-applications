@@ -77,5 +77,6 @@ public class FlowPredicate {
 
     public static final Predicate<CaseData> isWelshJudgeDecision =
         caseData -> isWelshApplicant.test(caseData)
-            && (judgeMadeWrittenRep.test(caseData) || judgeMadeDirections.test(caseData));
+            && (judgeMadeWrittenRep.test(caseData)
+            || judgeMadeDirections.test(caseData) || judgeRequestAdditionalInfo.test(caseData));
 }
