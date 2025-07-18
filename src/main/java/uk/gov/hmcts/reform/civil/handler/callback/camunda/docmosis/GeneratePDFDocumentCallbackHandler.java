@@ -259,7 +259,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             /*
              * Generate Judge Request for Information order document with LIP Applicant Post Address
              * */
-            if (gaForLipService.isLipApp(caseData)) {
+            if (gaForLipService.isLipApp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipApplicant = directionOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -272,7 +273,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
              * Generate Judge Request for Information order document with LIP Respondent Post Address
              * if GA is with notice
              * */
-            if (gaForLipService.isLipResp(caseData)) {
+            if (gaForLipService.isLipResp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipRespondent = directionOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -281,15 +283,26 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                     );
             }
 
-            List<Element<CaseDocument>> newDirectionOrderDocumentList =
-                ofNullable(caseData.getDirectionOrderDocument()).orElse(newArrayList());
+            if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicationBilingual()) {
+                setPreTranslationDocument(
+                    caseData,
+                    caseDataBuilder,
+                    decision,
+                    PreTranslationGaDocumentType.DIRECTIONS_ORDER_DOC
+                );
+            } else {
+                List<Element<CaseDocument>> newDirectionOrderDocumentList =
+                    ofNullable(caseData.getDirectionOrderDocument()).orElse(newArrayList());
 
-            newDirectionOrderDocumentList.addAll(wrapElements(decision));
+                newDirectionOrderDocumentList.addAll(wrapElements(decision));
 
-            assignCategoryId.assignCategoryIdToCollection(newDirectionOrderDocumentList,
-                                                          document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.ORDER_DOCUMENTS);
-            caseDataBuilder.directionOrderDocument(newDirectionOrderDocumentList);
+                assignCategoryId.assignCategoryIdToCollection(
+                    newDirectionOrderDocumentList,
+                    document -> document.getValue().getDocumentLink(),
+                    AssignCategoryId.ORDER_DOCUMENTS
+                );
+                caseDataBuilder.directionOrderDocument(newDirectionOrderDocumentList);
+            }
 
         } else if (isDismissalOrder(caseData)) {
             decision = dismissalOrderGenerator.generate(
