@@ -62,7 +62,7 @@ public class TranslatedDocumentUploadedApplicantNotificationHandler extends Call
     }
 
     @Override
-    public Map<String, String> addProperties(CaseData caseData) {
+    public Map<String, String> addProperties(CaseData caseData, CaseData mainCaseData) {
         if (gaForLipService.isLipApp(caseData)) {
             String caseTitle = DocUploadNotificationService.getAllPartyNames(caseData);
             String isLipAppName = caseData.getApplicantPartyName();
@@ -71,18 +71,16 @@ public class TranslatedDocumentUploadedApplicantNotificationHandler extends Call
                 GA_LIP_APPLICANT_NAME, Objects.requireNonNull(isLipAppName),
                 CASE_REFERENCE, caseData.getParentCaseReference()
             ));
-            addAllFooterItems(caseData, properties, configuration,
-                              featureToggleService.isQueryManagementLRsEnabled(),
-                              featureToggleService.isLipQueryManagementEnabled(caseData));
+            addAllFooterItems(caseData, mainCaseData, properties, configuration,
+                              featureToggleService.isPublicQueryManagementEnabled(caseData));
             return properties;
         }
         HashMap<String, String> properties = new HashMap<>(Map.of(
             CASE_REFERENCE, caseData.getParentCaseReference(),
             CLAIM_LEGAL_ORG_NAME_SPEC, getApplicantLegalOrganizationName(caseData)
         ));
-        addAllFooterItems(caseData, properties, configuration,
-                          featureToggleService.isQueryManagementLRsEnabled(),
-                          featureToggleService.isLipQueryManagementEnabled(caseData));
+        addAllFooterItems(caseData, mainCaseData, properties, configuration,
+                          featureToggleService.isPublicQueryManagementEnabled(mainCaseData));
         return properties;
     }
 
@@ -97,7 +95,7 @@ public class TranslatedDocumentUploadedApplicantNotificationHandler extends Call
         notificationService.sendMail(
             caseData.getGeneralAppApplnSolicitor().getEmail(),
             addTemplate(caseData),
-            addProperties(caseData),
+            addProperties(caseData, civilCaseData),
             String.format(REFERENCE_TEMPLATE, caseData.getCcdCaseReference())
         );
         return AboutToStartOrSubmitCallbackResponse.builder().build();
