@@ -58,6 +58,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
+import static uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType.DIRECTIONS_ORDER_DOC;
 import static uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType.WRITTEN_REPRESENTATION_ORDER_DOC;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
@@ -837,6 +838,76 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
 
+            assertThat(updatedData.getPreTranslationGaDocuments()).isEmpty();
+            assertThat(updatedData.getPreTranslationGaDocumentType()).isNull();
+        }
+
+        @Test
+        void shouldPrintGenerateDirectionOrderDocumentForApplicantWelshLip() {
+            CaseData caseData = CaseDataBuilder.builder().directionOrderApplication()
+                .isGaApplicantLip(YesOrNo.YES)
+                .applicationIsUncloakedOnce(YesOrNo.YES)
+                .isGaRespondentOneLip(YesOrNo.YES)
+                .applicantBilingualLanguagePreference(YesOrNo.YES)
+                .build();
+
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+            assertThat(updatedData.getPreTranslationGaDocuments().get(0).getValue())
+                .isEqualTo(PDFBuilder.DIRECTION_ORDER_DOCUMENT);
+            assertThat(updatedData.getPreTranslationGaDocumentType())
+                .isEqualTo(DIRECTIONS_ORDER_DOC);
+        }
+
+        @Test
+        void shouldPrintGenerateDirectionOrderDocumentForRespondentWelshLip() {
+            CaseData caseData = CaseDataBuilder.builder().directionOrderApplication()
+                .isGaApplicantLip(YesOrNo.YES)
+                .applicationIsUncloakedOnce(YesOrNo.YES)
+                .isGaRespondentOneLip(YesOrNo.YES)
+                .respondentBilingualLanguagePreference(YesOrNo.YES)
+                .build();
+
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+            assertThat(updatedData.getPreTranslationGaDocuments().get(0).getValue())
+                .isEqualTo(PDFBuilder.DIRECTION_ORDER_DOCUMENT);
+            assertThat(updatedData.getPreTranslationGaDocumentType())
+                .isEqualTo(DIRECTIONS_ORDER_DOC);
+        }
+
+        @Test
+        void shouldNotPauseGenerateDirectionOrderDocumentForLip() {
+            CaseData caseData = CaseDataBuilder.builder().directionOrderApplication()
+                .isGaApplicantLip(YesOrNo.YES)
+                .applicationIsUncloakedOnce(YesOrNo.YES)
+                .isGaRespondentOneLip(YesOrNo.YES)
+                .respondentBilingualLanguagePreference(YesOrNo.YES)
+                .build();
+
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(featureToggleService.isGaForWelshEnabled()).thenReturn(false);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
             assertThat(updatedData.getPreTranslationGaDocuments()).isEmpty();
             assertThat(updatedData.getPreTranslationGaDocumentType()).isNull();
         }
