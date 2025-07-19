@@ -23,7 +23,9 @@ def versions = [
   lombok            : '1.18.28',
   springSecurity    : '6.0.8',
   pact              : '3.5.24',
-  camunda           : '7.20.0'
+  camunda           : '7.20.0',
+  pdfbox            : '3.0.5',
+  tika              : '2.9.4'
 ]
 
 group = 'uk.gov.hmcts.reform'
@@ -327,6 +329,9 @@ configurations.configureEach {
 }
 
 dependencies {
+  def withoutJunit4 = {
+    exclude group: 'junit', module: 'junit'
+  }
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
@@ -406,6 +411,13 @@ dependencies {
 
   implementation group: 'com.github.hmcts', name: 'auth-checker-lib', version: '3.1.1'
 
+  implementation group: 'org.apache.tika', name: 'tika-core', version: versions.tika
+
+  implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: versions.pdfbox
+  implementation group: 'org.apache.pdfbox', name: 'pdfbox-io', version: versions.pdfbox
+
+  testImplementation group: 'org.apache.pdfbox', name: 'pdfbox-io', version: versions.pdfbox
+  testImplementation group: 'org.apache.pdfbox', name: 'preflight', version: versions.pdfbox, withoutJunit4
   testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '5.1.1'
   testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.1.1'
   testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '5.1.1'
