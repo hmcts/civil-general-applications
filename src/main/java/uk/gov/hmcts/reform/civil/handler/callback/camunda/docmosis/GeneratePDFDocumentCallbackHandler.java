@@ -494,21 +494,32 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
-            List<Element<CaseDocument>> newRequestForInfoDocumentList =
-                ofNullable(caseData.getRequestForInformationDocument()).orElse(newArrayList());
+            if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicationBilingual()) {
+                setPreTranslationDocument(
+                    caseData,
+                    caseDataBuilder,
+                    decision,
+                    PreTranslationGaDocumentType.REQUEST_MORE_INFORMATION_ORDER_DOC
+                );
+            } else {
+                List<Element<CaseDocument>> newRequestForInfoDocumentList =
+                    ofNullable(caseData.getRequestForInformationDocument()).orElse(newArrayList());
 
-            newRequestForInfoDocumentList.addAll(wrapElements(decision));
+                newRequestForInfoDocumentList.addAll(wrapElements(decision));
 
-            assignCategoryId.assignCategoryIdToCollection(newRequestForInfoDocumentList,
-                                                          document -> document.getValue().getDocumentLink(),
-                                                          AssignCategoryId.APPLICATIONS
-            );
-
+                assignCategoryId.assignCategoryIdToCollection(
+                    newRequestForInfoDocumentList,
+                    document -> document.getValue().getDocumentLink(),
+                    AssignCategoryId.APPLICATIONS
+                );
+                caseDataBuilder.requestForInformationDocument(newRequestForInfoDocumentList);
+            }
             /*
             * Generate Judge Request for Information order document with LIP Applicant Post Address
             * */
 
-            if (gaForLipService.isLipApp(caseData)) {
+            if (gaForLipService.isLipApp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipApplicant = requestForInformationGenerator.generate(
                     civilCaseData,
                     caseData,
@@ -520,7 +531,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             /*
              * Generate Judge Request for Information order document with LIP Respondent Post Address
              * */
-            if (gaForLipService.isLipResp(caseData)) {
+            if (gaForLipService.isLipResp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipRespondent = requestForInformationGenerator.generate(
                     civilCaseData,
                     caseData,
@@ -529,7 +541,6 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 );
             }
 
-            caseDataBuilder.requestForInformationDocument(newRequestForInfoDocumentList);
         } else if (Objects.nonNull(caseData.getJudicialDecision())) {
             if (caseData.getJudicialDecision().getDecision().equals(GAJudgeDecisionOption.FREE_FORM_ORDER)) {
 
