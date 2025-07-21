@@ -257,7 +257,6 @@ public class UploadTranslatedDocumentServiceTest {
         assertThat(caseData.getPreTranslationGaDocuments().isEmpty()).isTrue();
     }
 
-
     @Test
     void shouldGetCorrectBusinessProcessForApplicationSummaryDraftDoc() {
         // Given
@@ -329,7 +328,6 @@ public class UploadTranslatedDocumentServiceTest {
         String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
         assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_JUDGE_DECISION");
     }
-
 
     @Test
     void shouldGetCorrectBusinessProcessForRequestMoreInformationDoc() {
