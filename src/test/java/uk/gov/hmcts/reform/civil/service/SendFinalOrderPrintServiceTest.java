@@ -163,7 +163,7 @@ class SendFinalOrderPrintServiceTest {
             .documentBinaryUrl("binaryUrl").build();
         CaseData caseData = buildCaseData();
         // when
-        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
+        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
 
         // then
         verifyNoInteractions(bulkPrintService);
@@ -188,7 +188,7 @@ class SendFinalOrderPrintServiceTest {
         CaseData caseData = buildCaseData();
         ReflectionTestUtils.setField(sendFinalOrderPrintService, "stitchEnabled", true);
         // when
-        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
+        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
 
         // then
         Party respondent = Party.builder()
@@ -216,7 +216,7 @@ class SendFinalOrderPrintServiceTest {
         ReflectionTestUtils.setField(sendFinalOrderPrintService, "stitchEnabled", true);
 
         // when
-        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT);
+        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT);
 
         // then
         Party applicant = Party.builder()
@@ -244,7 +244,7 @@ class SendFinalOrderPrintServiceTest {
         caseData = caseData.toBuilder().parentClaimantIsApplicant(YesOrNo.NO).build();
         ReflectionTestUtils.setField(sendFinalOrderPrintService, "stitchEnabled", true);
         // when
-        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
+        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
 
         // then
         Party applicant = Party.builder()
@@ -273,7 +273,7 @@ class SendFinalOrderPrintServiceTest {
         ReflectionTestUtils.setField(sendFinalOrderPrintService, "stitchEnabled", true);
 
         // when
-        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT);
+        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT);
 
         // then
         Party respondent = Party.builder()
