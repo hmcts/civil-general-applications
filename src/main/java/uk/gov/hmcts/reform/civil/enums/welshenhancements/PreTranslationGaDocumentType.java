@@ -9,4 +9,5 @@ public enum PreTranslationGaDocumentType {
     HEARING_NOTICE_DOC,
     REQUEST_MORE_INFORMATION_ORDER_DOC,
     HEARING_ORDER_DOC
+   
 }
