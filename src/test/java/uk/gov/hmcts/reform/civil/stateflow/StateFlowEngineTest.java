@@ -556,8 +556,7 @@ public class StateFlowEngineTest {
             .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
                              PROCEED_GENERAL_APPLICATION.fullName(),
                              APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
-                             ADDITIONAL_INFO.fullName()
-            );
+                             ADDITIONAL_INFO.fullName());
     }
 
     @Test
@@ -583,8 +582,7 @@ public class StateFlowEngineTest {
             .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
                              PROCEED_GENERAL_APPLICATION.fullName(),
                              APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
-                             ADDITIONAL_INFO.fullName()
-            );
+                             ADDITIONAL_INFO.fullName());
     }
 
     @Test
