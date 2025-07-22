@@ -721,7 +721,6 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
         }
 
-
         @Test
         void shouldGenerateWrittenRepresentationConcurrentDocument_whenAboutToSubmitEventIsCalledForRespondentWelshTranslation() {
             CaseData caseData =
@@ -742,7 +741,6 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(updatedData.getPreTranslationGaDocumentType())
                 .isEqualTo(WRITTEN_REPRESENTATION_ORDER_DOC);
         }
-
 
         @Test
         void shouldGenerateWrittenRepresentationSequentialDocument_whenAboutToSubmitEventIsCalledForWelshTranslation() {
@@ -877,7 +875,6 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
                 .isEqualTo(WRITTEN_REPRESENTATION_ORDER_DOC);
         }
 
-
         @Test
         void shouldGenerateWrittenRepresentationConcurrentDocument_whenAboutToSubmitEventIsCalledForNotRespondentWelshTranslation() {
             CaseData caseData =
@@ -897,8 +894,6 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(updatedData.getPreTranslationGaDocumentType()).isNull();
         }
 
-
-
         @Test
         void shouldGenerateWrittenRepresentationSequentialDocument_whenAboutToSubmitEventIsCalledForRespondentWelshTranslationWhenFlagOff() {
             CaseData caseData =
@@ -917,7 +912,7 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(updatedData.getPreTranslationGaDocuments()).isEmpty();
             assertThat(updatedData.getPreTranslationGaDocumentType()).isNull();
         }
-        
+
         @Test
         void shouldGenerateMadeDecisionFinalOrderDocument_whenAboutToSubmitEventIsCalledForWelshApplicantLip() {
             CaseData caseData = CaseDataBuilder.builder().finalOrderFreeForm()
