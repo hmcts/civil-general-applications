@@ -284,8 +284,7 @@ public class UploadTranslatedDocumentServiceTest {
         List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
         TranslatedDocument translatedDocument = TranslatedDocument.builder()
             .documentType(TranslatedDocumentType.WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL)
-           .file(mock(Document.class))
-            .build();
+            .file(mock(Document.class)).build();
         translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
         CaseData caseData = CaseData.builder()
             .translatedDocuments(translatedDocuments)
@@ -295,8 +294,8 @@ public class UploadTranslatedDocumentServiceTest {
         String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
         assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_JUDGE_DECISION");
     }
-  
- @Test
+
+    @Test
     void shouldGetCorrectBusinessProcessForRequestMoreInformationDoc() {
         // Given
         List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
