@@ -655,8 +655,8 @@ public class JudicialNotificationService implements NotificationData {
             .map(BusinessProcess::getCamundaEvent).orElse(null);
         return caseData.getCcdState().equals(APPLICATION_ADD_PAYMENT)
             || (Objects.nonNull(judicialDecision)
-                && caseData.getBusinessProcess().getCamundaEvent()
-                .equals("MAKE_DECISION")
+                && (caseData.getBusinessProcess().getCamundaEvent().equals("MAKE_DECISION")
+                    || caseData.getBusinessProcess().getCamundaEvent().equals("UPLOAD_TRANSLATED_DOCUMENT_JUDGE_DECISION"))
                 && caseData.getBusinessProcess().getActivityId()
                 .equals("StartRespondentNotificationProcessMakeDecision"));
     }
