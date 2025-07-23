@@ -227,7 +227,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             /*
              * Generate Judge Request for Information order document with LIP Applicant Post Address
              * */
-            if (gaForLipService.isLipApp(caseData)) {
+            if (gaForLipService.isLipApp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipApplicant = generalOrderGenerator.generate(civilCaseData,
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString(), FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT
@@ -237,7 +238,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             /*
              * Generate Judge Request for Information order document with LIP Respondent Post Address
              * */
-            if (gaForLipService.isLipResp(caseData)) {
+            if (gaForLipService.isLipResp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipRespondent = generalOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -245,11 +247,22 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                               FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT
                 );
             }
+            if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicationBilingual()) {
+                setPreTranslationDocument(
+                    caseData,
+                    caseDataBuilder,
+                    decision,
+                    PreTranslationGaDocumentType.GENERAL_ORDER_DOC
+                );
+            } else {
 
-            assignCategoryId.assignCategoryIdToCaseDocument(decision,
-                                                            AssignCategoryId.ORDER_DOCUMENTS);
+                assignCategoryId.assignCategoryIdToCaseDocument(
+                    decision,
+                    AssignCategoryId.ORDER_DOCUMENTS
+                );
 
-            caseDataBuilder.generalOrderDocument(wrapElements(decision));
+                caseDataBuilder.generalOrderDocument(wrapElements(decision));
+            }
         } else if (isDirectionOrder(caseData)) {
             decision = directionOrderGenerator.generate(
                 caseDataBuilder.build(),
@@ -547,7 +560,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 /*
                  * Generate Judge Request for Information order document with LIP Respondent Post Address
                  * */
-                if (gaForLipService.isLipResp(caseData)) {
+                if (gaForLipService.isLipResp(caseData)
+                    && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
 
                     postJudgeOrderToLipRespondent = generateFreeFormSendLetterDocForRespondent(
                         civilCaseData,
@@ -558,7 +572,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                 /*
                  * Generate Judge Request for Information order document with LIP Applicant Post Address
                  * */
-                if (gaForLipService.isLipApp(caseData)) {
+                if (gaForLipService.isLipApp(caseData)
+                    && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
 
                     postJudgeOrderToLipApplicant = generateFreeFormSendLetterDocForApplicant(
                         civilCaseData,
@@ -573,15 +588,22 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                     caseDataBuilder.build(),
                     callbackParams.getParams().get(BEARER_TOKEN).toString()
                 );
-
-                documentList.addAll(wrapElements(decision));
-                assignCategoryId.assignCategoryIdToCollection(
-                    documentList,
-                    document -> document.getValue().getDocumentLink(),
-                    AssignCategoryId.ORDER_DOCUMENTS
-                );
-                caseDataBuilder.generalOrderDocument(documentList);
-
+                if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicationBilingual()) {
+                    setPreTranslationDocument(
+                        caseData,
+                        caseDataBuilder,
+                        decision,
+                        PreTranslationGaDocumentType.GENERAL_ORDER_DOC
+                    );
+                } else {
+                    documentList.addAll(wrapElements(decision));
+                    assignCategoryId.assignCategoryIdToCollection(
+                        documentList,
+                        document -> document.getValue().getDocumentLink(),
+                        AssignCategoryId.ORDER_DOCUMENTS
+                    );
+                    caseDataBuilder.generalOrderDocument(documentList);
+                }
             }
         }
 

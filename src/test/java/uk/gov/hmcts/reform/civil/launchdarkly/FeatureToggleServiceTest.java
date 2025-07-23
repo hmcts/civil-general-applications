@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -14,7 +15,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -131,6 +138,38 @@ class FeatureToggleServiceTest {
 
         assertThat(featureToggleService.isOrganisationOnboarded("someId")).isTrue();
         verifyBoolVariationCalled(organisationOnboardedFeatureKey, List.of("timestamp", "environment", "orgId"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldReturnCorrectValue_whenPublicQueryEnabledLr(Boolean toggleStat) {
+        var lrPublicQuery = "public-query-management";
+        givenToggle(lrPublicQuery, toggleStat);
+
+        CaseData caseData = CaseDataBuilder.builder().withNoticeDraftAppCaseData();
+
+        assertThat(featureToggleService.isPublicQueryManagementEnabled(caseData)).isEqualTo(toggleStat);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "true,NO,YES,NO",
+        "true,YES,NO,NO",
+        "true,YES,YES,YES",
+        "false,NO,NO,NO",
+    })
+    void shouldReturnCorrectValue_whenPublicQueryEnabledLip(boolean toggleStat, String applicant1Represented,
+                                                            String respondent1Represented, String respondent2Represented) {
+        var multipartyFeatureKey = "cui-query-management";
+        givenToggle(multipartyFeatureKey, toggleStat);
+        CaseData caseData = CaseDataBuilder.builder().withNoticeDraftAppCaseData()
+            .toBuilder()
+            .isGaApplicantLip(Enum.valueOf(YesOrNo.class, applicant1Represented))
+            .isGaRespondentOneLip(Enum.valueOf(YesOrNo.class, respondent1Represented))
+            .mainCaseSubmittedDate(LocalDateTime.of(LocalDate.now(), LocalTime.NOON))
+            .build();
+
+        assertThat(featureToggleService.isPublicQueryManagementEnabled(caseData)).isEqualTo(toggleStat);
     }
 
     private void givenToggle(String feature, boolean state) {
