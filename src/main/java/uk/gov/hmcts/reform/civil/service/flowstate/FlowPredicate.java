@@ -15,6 +15,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_AN_O
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption.REQUEST_MORE_INFO;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.APPROVE_OR_EDIT;
+import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING;
 
 public class FlowPredicate {
@@ -67,6 +68,11 @@ public class FlowPredicate {
         caseData.getJudicialDecision() != null
             && caseData.getJudicialDecision().getDecision().equals(MAKE_ORDER_FOR_WRITTEN_REPRESENTATIONS);
 
+    public static final Predicate<CaseData> judgeMadeDismissalOrder = caseData ->
+        caseData.getJudicialDecision() != null
+            && caseData.getJudicialDecision().getDecision().equals(MAKE_AN_ORDER)
+            && caseData.getJudicialDecisionMakeOrder().getMakeAnOrder().equals(DISMISS_THE_APPLICATION);
+
     public static final Predicate<CaseData> isLipApplication = caseData -> caseData.getIsGaApplicantLip() == YES;
     public static final Predicate<CaseData> isLipRespondent = caseData -> caseData.getIsGaRespondentOneLip() == YES;
 
@@ -82,6 +88,7 @@ public class FlowPredicate {
 
     public static final Predicate<CaseData> isWelshJudgeDecision =
         caseData -> isWelshApplicant.test(caseData)
-            && (judgeMadeWrittenRep.test(caseData)
-            || judgeMadeDirections.test(caseData) || judgeRequestAdditionalInfo.test(caseData) || judgeMadeOrder.test(caseData));
+            && (judgeMadeWrittenRep.test(caseData) || judgeMadeDirections.test(caseData)
+            || judgeRequestAdditionalInfo.test(caseData) || judgeMadeOrder.test(caseData)
+            || judgeMadeDismissalOrder.test(caseData));
 }
