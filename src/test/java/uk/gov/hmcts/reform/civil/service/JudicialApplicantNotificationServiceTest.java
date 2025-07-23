@@ -60,6 +60,7 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.RE
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
+import static uk.gov.hmcts.reform.civil.utils.EmailFooterUtils.RAISE_QUERY_LR;
 import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isNotificationCriteriaSatisfied;
 
 @SpringBootTest(classes = {
@@ -123,6 +124,7 @@ class JudicialApplicantNotificationServiceTest {
     @BeforeEach
     void setup() {
         when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
         when(notificationsProperties.getWrittenRepConcurrentRepresentationRespondentEmailTemplate())
             .thenReturn(SAMPLE_TEMPLATE);
         when(notificationsProperties.getWrittenRepConcurrentRepresentationApplicantEmailTemplate())
@@ -192,6 +194,8 @@ class JudicialApplicantNotificationServiceTest {
         @BeforeEach
         public void setup() {
             when(gaForLipService.isLipApp(any())).thenReturn(true);
+            when(configuration.getSpecUnspecContact()).thenReturn("Email for Specified Claims: contactocmc@justice.gov.uk "
+                                                                      + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
         }
 
         public Map<String, String> customProp = new HashMap<>();
@@ -252,7 +256,7 @@ class JudicialApplicantNotificationServiceTest {
 
         @Test
         void notificationUncloakShouldSendForDismissal_ApplicantLIP() {
-
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForJudgeDismissal(NO, NO, NO, YES, NO));
             when(gaForLipService.isLipApp(any())).thenReturn(true);
@@ -269,7 +273,7 @@ class JudicialApplicantNotificationServiceTest {
 
         @Test
         void notificationCloakShouldSendForDismissal_ApplicantLIP() {
-
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataForJudgeDismissal(NO, NO, YES, YES, NO));
             when(gaForLipService.isLipApp(any())).thenReturn(true);
@@ -309,6 +313,7 @@ class JudicialApplicantNotificationServiceTest {
             CaseData caseData
                 = caseDataForJudicialDirectionOrderOfApplicationWhenRespondentsArePresentInList(NO,
                                                                                                 NO, YES, YES, YES, NO);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(gaForLipService.isLipApp(any())).thenReturn(true);
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
@@ -323,7 +328,7 @@ class JudicialApplicantNotificationServiceTest {
 
         @Test
         void notificationShouldSendSendToLipRespondent_IfApplicationUncloakedForApproveOrEdit() {
-
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(
                     YES, NO, NO));
@@ -342,7 +347,7 @@ class JudicialApplicantNotificationServiceTest {
 
         @Test
         void notificationShouldSendSendToLipRespondent_IfApplicationForApproveOrEdit() {
-
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseDataWithSolicitorDataOnlyForApplicationUncloakedJudgeApproveOrEdit(
                     YES, NO, YES));
@@ -2108,8 +2113,7 @@ class JudicialApplicantNotificationServiceTest {
             properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
             properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
             properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
-            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
-                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, RAISE_QUERY_LR);
             properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
             properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
             properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
@@ -2130,8 +2134,7 @@ class JudicialApplicantNotificationServiceTest {
             properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
             properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
             properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
-            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
-                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, RAISE_QUERY_LR);
             properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
             properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
             properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
@@ -2152,8 +2155,7 @@ class JudicialApplicantNotificationServiceTest {
             properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
             properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
             properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
-            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
-                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, RAISE_QUERY_LR);
             properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
             properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
             properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
@@ -2180,8 +2182,7 @@ class JudicialApplicantNotificationServiceTest {
             properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
             properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
             properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
-            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
-                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, RAISE_QUERY_LR);
             properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
             properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
             properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
@@ -2208,8 +2209,7 @@ class JudicialApplicantNotificationServiceTest {
             properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
             properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
             properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
-            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
-                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, RAISE_QUERY_LR);
             properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
             properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
             properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
@@ -2236,8 +2236,7 @@ class JudicialApplicantNotificationServiceTest {
             properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
             properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
             properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
-            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
-                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, RAISE_QUERY_LR);
             properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
             properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
             properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
@@ -2267,6 +2266,7 @@ class JudicialApplicantNotificationServiceTest {
                     SEND_APP_TO_OTHER_PARTY).toBuilder().isMultiParty(NO).build();
 
             when(time.now()).thenReturn(responseDate);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 
@@ -2288,6 +2288,7 @@ class JudicialApplicantNotificationServiceTest {
             CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, YES, NO, NO, NO,
                                                                                       REQUEST_MORE_INFORMATION);
 
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any())).thenReturn(caseData);
 
             judicialNotificationService.sendNotification(caseData, APPLICANT);
@@ -2310,6 +2311,7 @@ class JudicialApplicantNotificationServiceTest {
                 .ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION)
                 .build();
 
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 
@@ -2331,6 +2333,7 @@ class JudicialApplicantNotificationServiceTest {
                                                                                       REQUEST_MORE_INFORMATION);
             caseData = caseData.toBuilder().ccdState(CaseState.APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION).build();
 
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 
@@ -2353,6 +2356,7 @@ class JudicialApplicantNotificationServiceTest {
                 .isMultiParty(NO)
                 .generalAppRespondentSolicitors(Arrays.asList()).build();
 
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 
@@ -2372,6 +2376,8 @@ class JudicialApplicantNotificationServiceTest {
             CaseData caseData = caseDataForJudicialRequestForInformationOfApplication(NO, NO, NO, NO, NO,
                                                                                       SEND_APP_TO_OTHER_PARTY)
                 .toBuilder().isMultiParty(NO).build();
+
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
 
@@ -2528,8 +2534,7 @@ class JudicialApplicantNotificationServiceTest {
         properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
         properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
         properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
-        properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
-            + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+        properties.put(NotificationData.SPEC_UNSPEC_CONTACT, RAISE_QUERY_LR);
         properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
         properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
         properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "

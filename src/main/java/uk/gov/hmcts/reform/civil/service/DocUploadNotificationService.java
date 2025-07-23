@@ -46,7 +46,7 @@ public class DocUploadNotificationService implements NotificationData {
                     email,
                     gaForLipService.isLipApp(caseData) ? getLiPApplicantTemplate(caseData)
                         : notificationProperties.getEvidenceUploadTemplate(),
-                    addProperties(caseData),
+                    addProperties(caseData, civilCaseData),
                     String.format(
                             REFERENCE_TEMPLATE_DOC_UPLOAD,
                             caseData.getCcdCaseReference()
@@ -69,7 +69,7 @@ public class DocUploadNotificationService implements NotificationData {
                             gaForLipService.isLipResp(caseData)
                                 ? getLiPRespondentTemplate(caseData)
                                 : notificationProperties.getEvidenceUploadTemplate(),
-                            addProperties(caseData),
+                            addProperties(caseData, civilCaseData),
                             String.format(
                                     REFERENCE_TEMPLATE_DOC_UPLOAD,
                                     caseData.getCcdCaseReference()
@@ -91,7 +91,7 @@ public class DocUploadNotificationService implements NotificationData {
     }
 
     @Override
-    public Map<String, String> addProperties(CaseData caseData) {
+    public Map<String, String> addProperties(CaseData caseData, CaseData mainCaseData) {
 
         if (gaForLipService.isGaForLip(caseData)) {
             String caseTitle = getAllPartyNames(caseData);
@@ -122,9 +122,8 @@ public class DocUploadNotificationService implements NotificationData {
         customProps.put(PARTY_REFERENCE,
                         Objects.requireNonNull(getSolicitorReferences(caseData.getEmailPartyReference())));
         customProps.put(GENAPP_REFERENCE, String.valueOf(Objects.requireNonNull(caseData.getCcdCaseReference())));
-        addAllFooterItems(caseData, customProps, configuration,
-                           featureToggleService.isQueryManagementLRsEnabled(),
-                           featureToggleService.isLipQueryManagementEnabled(caseData));
+        addAllFooterItems(caseData, mainCaseData, customProps, configuration,
+                           featureToggleService.isPublicQueryManagementEnabled(caseData));
         return customProps;
     }
 
