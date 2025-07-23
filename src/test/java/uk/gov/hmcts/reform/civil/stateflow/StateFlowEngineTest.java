@@ -382,6 +382,210 @@ public class StateFlowEngineTest {
     }
 
     @Test
+    void shouldSetWelshFlag_Judge_Directions_WhenJudgeMadeDecision() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData caseData = CaseDataBuilder.builder().buildPaymentSuccessfulCaseData().toBuilder()
+            .judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build())
+            .isGaApplicantLip(YES)
+            .applicantBilingualLanguagePreference(YES)
+            .isGaRespondentOneLip(YES)
+            .judicialDecisionMakeOrder(
+                GAJudicialMakeAnOrder.builder().makeAnOrder(
+                    GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(YES).build())
+            .parentClaimantIsApplicant(YES)
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                               .hasAgreed(YES).build()).build();
+        StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
+
+        assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
+            .isEqualTo(JUDGE_DIRECTIONS.fullName());
+        assertThat(stateFlow.getFlags().get("WELSH_ENABLED_FOR_JUDGE_DECISION")).isTrue();
+        assertThat(stateFlow.getStateHistory()).hasSize(5)
+            .extracting(State::getName)
+            .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
+                             PROCEED_GENERAL_APPLICATION.fullName(),
+                             APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
+                             JUDGE_DIRECTIONS.fullName());
+    }
+
+    @Test
+    void shouldSetWelshFlagRespondentBilingual_Judge_Directions_WhenJudgeMadeDecision() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData caseData = CaseDataBuilder.builder().buildPaymentSuccessfulCaseData().toBuilder()
+            .judicialDecision(GAJudicialDecision.builder().decision(MAKE_AN_ORDER).build())
+            .isGaApplicantLip(YES)
+            .respondentBilingualLanguagePreference(YES)
+            .isGaRespondentOneLip(YES)
+            .judicialDecisionMakeOrder(
+                GAJudicialMakeAnOrder.builder().makeAnOrder(
+                    GAJudgeMakeAnOrderOption.GIVE_DIRECTIONS_WITHOUT_HEARING).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(YES).build())
+            .parentClaimantIsApplicant(YES)
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                               .hasAgreed(YES).build()).build();
+        StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
+
+        assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
+            .isEqualTo(JUDGE_DIRECTIONS.fullName());
+        assertThat(stateFlow.getFlags().get("WELSH_ENABLED_FOR_JUDGE_DECISION")).isTrue();
+        assertThat(stateFlow.getStateHistory()).hasSize(5)
+            .extracting(State::getName)
+            .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
+                             PROCEED_GENERAL_APPLICATION.fullName(),
+                             APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
+                             JUDGE_DIRECTIONS.fullName());
+    }
+
+    @Test
+    void shouldReturn_Judge_Order_Made_WhenJudgeMadeDecisionForWelshLip() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData caseData = CaseDataBuilder.builder()
+            .approveApplication()
+            .isGaApplicantLip(YES)
+            .isGaRespondentOneLip(YES)
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .paymentDetails(PaymentDetails.builder()
+                                        .status(PaymentStatus.SUCCESS)
+                                        .build()).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(YES).build())
+            .parentClaimantIsApplicant(YES)
+            .applicantBilingualLanguagePreference(YES)
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                               .hasAgreed(YES).build()).build();
+        StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
+
+        assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
+            .isEqualTo(ORDER_MADE.fullName());
+        assertThat(stateFlow.getFlags().get("WELSH_ENABLED_FOR_JUDGE_DECISION")).isTrue();
+        assertThat(stateFlow.getStateHistory()).hasSize(5)
+            .extracting(State::getName)
+            .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
+                             PROCEED_GENERAL_APPLICATION.fullName(),
+                             APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
+                             ORDER_MADE.fullName());
+    }
+
+    @Test
+    void shouldReturn_Judge_Order_Made_WhenJudgeMadeDecisionForRespondentWelshLip() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData caseData = CaseDataBuilder.builder()
+            .approveApplication()
+            .isGaApplicantLip(YES)
+            .isGaRespondentOneLip(YES)
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .paymentDetails(PaymentDetails.builder()
+                                        .status(PaymentStatus.SUCCESS)
+                                        .build()).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(YES).build())
+            .parentClaimantIsApplicant(YES)
+            .applicantBilingualLanguagePreference(YES)
+            .respondentBilingualLanguagePreference(YES)
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                               .hasAgreed(YES).build()).build();
+        StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
+
+        assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
+            .isEqualTo(ORDER_MADE.fullName());
+        assertThat(stateFlow.getFlags().get("WELSH_ENABLED_FOR_JUDGE_DECISION")).isTrue();
+        assertThat(stateFlow.getStateHistory()).hasSize(5)
+            .extracting(State::getName)
+            .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
+                             PROCEED_GENERAL_APPLICATION.fullName(),
+                             APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
+                             ORDER_MADE.fullName());
+    }
+
+    @Test
+    void shouldReturn_Judge_Order_Made_WhenJudgeMadeDecisionForNonWelshLip() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData caseData = CaseDataBuilder.builder()
+            .approveApplication()
+            .isGaApplicantLip(YES)
+            .isGaRespondentOneLip(YES)
+            .generalAppPBADetails(
+                GAPbaDetails.builder()
+                    .paymentDetails(PaymentDetails.builder()
+                                        .status(PaymentStatus.SUCCESS)
+                                        .build()).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(YES).build())
+            .parentClaimantIsApplicant(YES)
+            .applicantBilingualLanguagePreference(NO)
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                               .hasAgreed(YES).build()).build();
+        StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
+
+        assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
+            .isEqualTo(ORDER_MADE.fullName());
+        assertThat(stateFlow.getFlags().get("WELSH_ENABLED_FOR_JUDGE_DECISION")).isFalse();
+        assertThat(stateFlow.getStateHistory()).hasSize(5)
+            .extracting(State::getName)
+            .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
+                             PROCEED_GENERAL_APPLICATION.fullName(),
+                             APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
+                             ORDER_MADE.fullName());
+    }
+
+    @Test
+    void shouldReturn_Additional_Info_WhenJudgeMadeDecisionForApplicantWelsh() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData caseData = CaseDataBuilder.builder().buildPaymentSuccessfulCaseData().toBuilder()
+            .judicialDecision(GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(YES).build())
+            .parentClaimantIsApplicant(YES)
+            .isGaApplicantLip(YES)
+            .isGaRespondentOneLip(YES)
+            .applicantBilingualLanguagePreference(YES)
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                               .hasAgreed(YES).build()).build();
+        StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
+
+        assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
+            .isEqualTo(ADDITIONAL_INFO.fullName());
+        assertThat(stateFlow.getFlags().get("WELSH_ENABLED_FOR_JUDGE_DECISION")).isTrue();
+        assertThat(stateFlow.getStateHistory()).hasSize(5)
+            .extracting(State::getName)
+            .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
+                             PROCEED_GENERAL_APPLICATION.fullName(),
+                             APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
+                             ADDITIONAL_INFO.fullName());
+    }
+
+    @Test
+    void shouldReturn_Additional_Info_WhenJudgeMadeDecisionForRespondentWelsh() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData caseData = CaseDataBuilder.builder().buildPaymentSuccessfulCaseData().toBuilder()
+            .judicialDecision(GAJudicialDecision.builder().decision(REQUEST_MORE_INFO).build())
+            .generalAppInformOtherParty(GAInformOtherParty.builder()
+                                            .isWithNotice(YES).build())
+            .parentClaimantIsApplicant(YES)
+            .isGaApplicantLip(YES)
+            .isGaRespondentOneLip(YES)
+            .respondentBilingualLanguagePreference(YES)
+            .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
+                                               .hasAgreed(YES).build()).build();
+        StateFlow stateFlow = stateFlowEngine.evaluate(caseData);
+
+        assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
+            .isEqualTo(ADDITIONAL_INFO.fullName());
+        assertThat(stateFlow.getFlags().get("WELSH_ENABLED_FOR_JUDGE_DECISION")).isTrue();
+        assertThat(stateFlow.getStateHistory()).hasSize(5)
+            .extracting(State::getName)
+            .containsExactly(DRAFT.fullName(), APPLICATION_SUBMITTED.fullName(),
+                             PROCEED_GENERAL_APPLICATION.fullName(),
+                             APPLICATION_SUBMITTED_JUDICIAL_DECISION.fullName(),
+                             ADDITIONAL_INFO.fullName());
+    }
+
+    @Test
     void shouldReturnApplicationSubmittedWhenPBAPaymentIsSuccess_DontSetWelshFlowFlagForApplicantLip() {
         when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
         CaseData caseData =
