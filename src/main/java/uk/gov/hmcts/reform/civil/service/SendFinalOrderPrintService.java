@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentDownloadExce
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentDownloadService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
-import uk.gov.hmcts.reform.civil.service.stitching.CivilDocumentStitchingService;
+import uk.gov.hmcts.reform.civil.stitch.service.CivilStitchService;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -47,7 +47,7 @@ public class SendFinalOrderPrintService {
     private final CaseDetailsConverter caseDetailsConverter;
     private final CoreCaseDataService coreCaseDataService;
 
-    private final CivilDocumentStitchingService civilDocumentStitchingService;
+    private final CivilStitchService civilStitchService;
 
     private static final String FINAL_ORDER_PACK_LETTER_TYPE = "final-order-document-pack";
     private static final String TRANSLATED_ORDER_PACK_LETTER_TYPE = "translated-order-document-pack";
@@ -121,14 +121,9 @@ public class SendFinalOrderPrintService {
                                        CaseDocument coverLetterCaseDocument, CaseData civilCaseData) {
         List<DocumentMetaData> documentMetaDataList
             = stitchCoverLetterAndOrderDocuments(coverLetterCaseDocument, originalDocument, translatedDocument);
-
-        CaseDocument stitchedDocument = civilDocumentStitchingService.bundle(
-            documentMetaDataList,
-            authorisation,
-            coverLetterCaseDocument.getDocumentName(),
-            coverLetterCaseDocument.getDocumentName(),
-            caseData
-        );
+        CaseDocument stitchedDocument = civilStitchService.generateStitchedCaseDocument(
+            documentMetaDataList, coverLetterCaseDocument.getDocumentName(), caseData.getCcdCaseReference(),
+            DocumentType.POST_ORDER_COVER_LETTER_LIP, authorisation);
 
         String documentUrl = stitchedDocument.getDocumentLink().getDocumentUrl();
         String documentId = documentUrl.substring(documentUrl.lastIndexOf("/") + 1);
