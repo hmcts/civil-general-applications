@@ -63,7 +63,6 @@ import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SE
 import static uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType.DIRECTIONS_ORDER_DOC;
 import static uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType.GENERAL_ORDER_DOC;
 import static uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType.WRITTEN_REPRESENTATION_ORDER_DOC;
-import static uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType.GENERAL_ORDER_DOC;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
 @ExtendWith(SpringExtension.class)
@@ -939,72 +938,6 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
         }
 
         @Test
-        void shouldGenerateMadeDecisionFinalOrderDocument_whenAboutToSubmitEventIsCalledForWelshApplicantLip() {
-            CaseData caseData = CaseDataBuilder.builder().finalOrderFreeForm()
-                .isGaApplicantLip(YesOrNo.YES)
-                .isGaRespondentOneLip(YesOrNo.YES)
-                .applicantBilingualLanguagePreference(YesOrNo.YES)
-                .judicialDecision(GAJudicialDecision.builder()
-                                      .decision(GAJudgeDecisionOption.FREE_FORM_ORDER).build()).build();
-            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-            when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-
-            verify(freeFormOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
-
-            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
-
-            assertThat(updatedData.getPreTranslationGaDocuments().get(0).getValue())
-                .isEqualTo(PDFBuilder.GENERAL_ORDER_DOCUMENT);
-            assertThat(updatedData.getPreTranslationGaDocumentType())
-                .isEqualTo(GENERAL_ORDER_DOC);
-        }
-
-        @Test
-        void shouldGenerateMadeDecisionFinalOrderDocument_whenAboutToSubmitEventIsCalledForWelshRespondentLip() {
-            CaseData caseData = CaseDataBuilder.builder().finalOrderFreeForm()
-                .isGaApplicantLip(YesOrNo.YES)
-                .isGaRespondentOneLip(YesOrNo.YES)
-                .respondentBilingualLanguagePreference(YesOrNo.YES)
-                .judicialDecision(GAJudicialDecision.builder()
-                                      .decision(GAJudgeDecisionOption.FREE_FORM_ORDER).build()).build();
-            when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
-            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-
-            verify(freeFormOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
-
-            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
-
-            assertThat(updatedData.getPreTranslationGaDocuments().get(0).getValue())
-                .isEqualTo(PDFBuilder.GENERAL_ORDER_DOCUMENT);
-            assertThat(updatedData.getPreTranslationGaDocumentType())
-                .isEqualTo(GENERAL_ORDER_DOC);
-        }
-
-        @Test
-        void shouldGenerateMadeDecisionFinalOrderDocument_whenAboutToSubmitEventIsCalledForNonWelshRespondentLip() {
-            CaseData caseData = CaseDataBuilder.builder().finalOrderFreeForm()
-                .isGaApplicantLip(YesOrNo.YES)
-                .isGaRespondentOneLip(YesOrNo.YES)
-                .respondentBilingualLanguagePreference(YesOrNo.NO)
-                .judicialDecision(GAJudicialDecision.builder()
-                                      .decision(GAJudgeDecisionOption.FREE_FORM_ORDER).build()).build();
-            when(featureToggleService.isGaForWelshEnabled()).thenReturn(false);
-            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-
-            verify(freeFormOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
-
-            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
-
-            assertThat(updatedData.getPreTranslationGaDocuments()).isEmpty();
-            assertThat(updatedData.getPreTranslationGaDocumentType()).isNull();
-        }
-
-        @Test
         void shouldGenerateGeneralOrderDocument_whenAboutToSubmitEventIsCalledForWelshLip() {
             CaseData caseData = CaseDataBuilder.builder()
                 .generalOrderApplication()
@@ -1026,52 +959,6 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
                 .isEqualTo(PDFBuilder.GENERAL_ORDER_DOCUMENT);
             assertThat(updatedData.getPreTranslationGaDocumentType())
                 .isEqualTo(GENERAL_ORDER_DOC);
-        }
-
-        @Test
-        void shouldGenerateGeneralOrderDocument_whenAboutToSubmitEventIsCalledForRespondentWelshLip() {
-            CaseData caseData = CaseDataBuilder.builder()
-                .generalOrderApplication()
-                .isGaApplicantLip(YesOrNo.YES)
-                .isGaRespondentOneLip(YesOrNo.YES)
-                .parentClaimantIsApplicant(YesOrNo.YES)
-                .respondentBilingualLanguagePreference(YesOrNo.YES)
-                .build();
-            when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
-            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-
-            verify(generalOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
-
-            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
-
-            assertThat(updatedData.getPreTranslationGaDocuments().get(0).getValue())
-                .isEqualTo(PDFBuilder.GENERAL_ORDER_DOCUMENT);
-            assertThat(updatedData.getPreTranslationGaDocumentType())
-                .isEqualTo(GENERAL_ORDER_DOC);
-        }
-
-        @Test
-        void shouldGenerateGeneralOrderDocument_whenAboutToSubmitEventIsCalledForNonWelshLip() {
-            CaseData caseData = CaseDataBuilder.builder()
-                .generalOrderApplication()
-                .isGaApplicantLip(YesOrNo.YES)
-                .isGaRespondentOneLip(YesOrNo.YES)
-                .parentClaimantIsApplicant(YesOrNo.YES)
-                .respondentBilingualLanguagePreference(YesOrNo.NO)
-                .build();
-            when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
-            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-
-            verify(generalOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
-
-            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
-
-            assertThat(updatedData.getPreTranslationGaDocuments()).isEmpty();
-            assertThat(updatedData.getPreTranslationGaDocumentType()).isNull();
         }
 
         @Test
@@ -1138,30 +1025,6 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(updatedData.getPreTranslationGaDocuments()).isEmpty();
             assertThat(updatedData.getPreTranslationGaDocumentType()).isNull();
-        }
-
-        @Test
-        void shouldGenerateGeneralOrderDocument_whenAboutToSubmitEventIsCalledForWelshLip() {
-            CaseData caseData = CaseDataBuilder.builder()
-                .generalOrderApplication()
-                .isGaApplicantLip(YesOrNo.YES)
-                .isGaRespondentOneLip(YesOrNo.YES)
-                .parentClaimantIsApplicant(YesOrNo.YES)
-                .applicantBilingualLanguagePreference(YesOrNo.YES)
-                .build();
-            when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
-            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
-
-            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
-
-            verify(generalOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
-
-            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
-
-            assertThat(updatedData.getPreTranslationGaDocuments().get(0).getValue())
-                .isEqualTo(PDFBuilder.GENERAL_ORDER_DOCUMENT);
-            assertThat(updatedData.getPreTranslationGaDocumentType())
-                .isEqualTo(GENERAL_ORDER_DOC);
         }
 
         @Test
