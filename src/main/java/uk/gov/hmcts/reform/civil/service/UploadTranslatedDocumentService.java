@@ -27,6 +27,7 @@ import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.A
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.APPLICATION_SUMMARY_DOCUMENT_RESPONDED;
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.APPROVE_OR_EDIT_ORDER;
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.GENERAL_ORDER;
+import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.DISMISSAL_ORDER;
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL;
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.REQUEST_FOR_MORE_INFORMATION_ORDER;
 
@@ -171,6 +172,8 @@ public class UploadTranslatedDocumentService {
             ? newArrayList() : caseDataBuilder.build().getWrittenRepConcurrentDocument();
         List<Element<CaseDocument>> requestMoreInformationDocs = Objects.isNull(caseDataBuilder.build().getRequestForInformationDocument())
             ? newArrayList() : caseDataBuilder.build().getRequestForInformationDocument();
+        List<Element<CaseDocument>> dismissalOrderDocs = Objects.isNull(caseDataBuilder.build().getDismissalOrderDocument())
+            ? newArrayList() : caseDataBuilder.build().getDismissalOrderDocument();
 
         if (Objects.nonNull(translatedDocuments)) {
             translatedDocuments.forEach(document -> {
@@ -220,6 +223,15 @@ public class UploadTranslatedDocumentService {
                     preTranslationRequestMoreInformation.ifPresent(bulkPrintOriginalDocuments::add);
                     caseDataBuilder.requestForInformationDocument(requestMoreInformationDocs);
                     caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
+                } else if (document.getValue().getDocumentType().equals(DISMISSAL_ORDER)) {
+                    Optional<Element<CaseDocument>> preTranslationDismissalOrder = preTranslationGaDocuments.stream()
+                        .filter(item -> item.getValue().getDocumentType() == DocumentType.DISMISSAL_ORDER)
+                        .findFirst();
+                    preTranslationDismissalOrder.ifPresent(preTranslationGaDocuments::remove);
+                    preTranslationDismissalOrder.ifPresent(dismissalOrderDocs::add);
+                    preTranslationDismissalOrder.ifPresent(bulkPrintOriginalDocuments::add);
+                    caseDataBuilder.dismissalOrderDocument(dismissalOrderDocs);
+                    caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
                 }
             });
         }
@@ -238,9 +250,9 @@ public class UploadTranslatedDocumentService {
             && (translatedDocuments.get(0).getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL)
             || translatedDocuments.get(0).getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_CONCURRENT))
             || translatedDocuments.get(0).getValue().getDocumentType().equals(REQUEST_FOR_MORE_INFORMATION_ORDER)
+            || translatedDocuments.get(0).getValue().getDocumentType().equals(DISMISSAL_ORDER)
             || ((translatedDocuments.get(0).getValue().getDocumentType().equals(GENERAL_ORDER)
             || translatedDocuments.get(0).getValue().getDocumentType().equals(APPROVE_OR_EDIT_ORDER)) && Objects.isNull(caseData.getFinalOrderSelection()))) {
-
             return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_JUDGE_DECISION;
         }
         return UPLOAD_TRANSLATED_DOCUMENT_GA_LIP;

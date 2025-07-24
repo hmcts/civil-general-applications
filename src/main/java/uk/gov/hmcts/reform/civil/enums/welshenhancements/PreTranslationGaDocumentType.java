@@ -7,4 +7,5 @@ public enum PreTranslationGaDocumentType {
     DIRECTIONS_ORDER_DOC,
     GENERAL_ORDER_DOC,
     REQUEST_MORE_INFORMATION_ORDER_DOC
+    DISMISSAL_ORDER_DOC
 }
