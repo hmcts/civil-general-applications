@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.caseContainsLiP;
+
 @Slf4j
 @Service
 public class FeatureToggleService {
@@ -63,8 +65,11 @@ public class FeatureToggleService {
         return internalClient.boolVariation("generalApplicationsForWelshParty", createLDUser().build(), false);
     }
 
-    public boolean isQueryManagementLRsEnabled() {
-        return internalClient.boolVariation("query-management", createLDUser().build(), false);
+    public boolean isPublicQueryManagementEnabled(CaseData caseData) {
+        if (caseContainsLiP.test(caseData)) {
+            return isLipQueryManagementEnabled(caseData);
+        }
+        return internalClient.boolVariation("public-query-management", createLDUser().build(), false);
     }
 
     public boolean isLipQueryManagementEnabled(CaseData caseData) {
