@@ -69,9 +69,6 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = Collections.singletonList(GENERATE_JUDGES_FORM);
     private static final String TASK_ID = "CreatePDFDocument";
-    private static final String LIP_APPLICANT = "Applicant";
-    private static final String LIP_RESPONDENT = "Respondent";
-
     private final GeneralOrderGenerator generalOrderGenerator;
     private final RequestForInformationGenerator requestForInformationGenerator;
     private final DirectionOrderGenerator directionOrderGenerator;
@@ -372,7 +369,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             /*
              * Generate Judge Request for Information order document with LIP Applicant Post Address
              * */
-            if (gaForLipService.isLipApp(caseData)) {
+            if (gaForLipService.isLipApp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipApplicant = hearingOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -384,7 +382,8 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
              * Generate Judge Request for Information order document with LIP Respondent Post Address
              * if GA is with notice
              * */
-            if (gaForLipService.isLipResp(caseData)) {
+            if (gaForLipService.isLipResp(caseData)
+                && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
                 postJudgeOrderToLipRespondent = hearingOrderGenerator
                     .generate(civilCaseData,
                               caseDataBuilder.build(),
@@ -393,10 +392,21 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
                     );
             }
 
-            assignCategoryId.assignCategoryIdToCaseDocument(decision,
-                                                            AssignCategoryId.APPLICATIONS);
+            if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicationBilingual()) {
+                setPreTranslationDocument(
+                    caseData,
+                    caseDataBuilder,
+                    decision,
+                    PreTranslationGaDocumentType.HEARING_ORDER_DOC
+                );
+            } else {
 
-            caseDataBuilder.hearingOrderDocument(wrapElements(decision));
+                assignCategoryId.assignCategoryIdToCaseDocument(
+                    decision,
+                    AssignCategoryId.APPLICATIONS
+                );
+                caseDataBuilder.hearingOrderDocument(wrapElements(decision));
+            }
         } else if (isWrittenRepSeqOrder(caseData)) {
             decision = writtenRepresentationSequentailOrderGenerator.generate(
                     caseDataBuilder.build(),
