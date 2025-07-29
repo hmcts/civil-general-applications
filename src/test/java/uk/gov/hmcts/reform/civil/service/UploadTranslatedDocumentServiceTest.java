@@ -286,12 +286,11 @@ public class UploadTranslatedDocumentServiceTest {
             .build();
         //when
         uploadTranslatedDocumentService.updateGADocumentsWithOriginalDocuments(caseData.toBuilder());
-
         // Then
-       assertThat(caseData.getHearingOrderDocument().isEmpty()).isFalse();
-       assertThat(caseData.getPreTranslationGaDocuments().isEmpty()).isTrue();
+        assertThat(caseData.getHearingOrderDocument().isEmpty()).isFalse();
+        assertThat(caseData.getPreTranslationGaDocuments().isEmpty()).isTrue();
     }
-  
+
     @Test
     void updateGaDismissalOrderDocumentsWithTheOriginalDocuments() {
         // Given
@@ -451,7 +450,7 @@ public class UploadTranslatedDocumentServiceTest {
         String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
         assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_JUDGE_DECISION");
     }
-  
+
     @Test
     void shouldGetCorrectBusinessProcessForDismissalOrderDoc() {
         // Given
@@ -462,7 +461,7 @@ public class UploadTranslatedDocumentServiceTest {
             .build();
         translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
         CaseData caseData = CaseData.builder()
-            .translatedDocuments(translatedDocuments)        
+            .translatedDocuments(translatedDocuments)
             .preTranslationGaDocumentType(PreTranslationGaDocumentType.DISMISSAL_ORDER_DOC)
             .build();
         // When
