@@ -206,7 +206,7 @@ public class UploadTranslatedDocumentService {
                     caseDataBuilder.writtenRepConcurrentDocument(writtenRepsConcurrentDocs);
                     caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
                 } else if (document.getValue().getDocumentType().equals(GENERAL_ORDER)
-                || document.getValue().getDocumentType().equals(APPROVE_OR_EDIT_ORDER)) {
+                    || document.getValue().getDocumentType().equals(APPROVE_OR_EDIT_ORDER)) {
                     Optional<Element<CaseDocument>> preTranslationGeneralOrder = preTranslationGaDocuments.stream()
                         .filter(item -> item.getValue().getDocumentType() == DocumentType.GENERAL_ORDER)
                         .findFirst();
