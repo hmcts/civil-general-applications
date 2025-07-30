@@ -21,13 +21,13 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
-import static uk.gov.hmcts.reform.civil.callback.CaseEvent.REMOVE_APPLICATION_PAYMENT_DASHBOARD_NOTIFICATION;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.DELETE_APPLICATION_PAYMENT_DASHBOARD_NOTIFICATION;
 
 @ExtendWith(MockitoExtension.class)
-public class RemovePaymentDashboardNotificationHandlerTest  extends BaseCallbackHandlerTest {
+public class DeleteApplicationPaymentDashboardNotificationHandlerTest extends BaseCallbackHandlerTest {
 
     @InjectMocks
-    private RemovePaymentDashboardNotificationHandler handler;
+    private DeleteApplicationPaymentDashboardNotificationHandler handler;
 
     @Mock
     private DashboardApiClient dashboardApiClient;
@@ -38,7 +38,7 @@ public class RemovePaymentDashboardNotificationHandlerTest  extends BaseCallback
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
-        assertThat(handler.handledEvents()).contains(REMOVE_APPLICATION_PAYMENT_DASHBOARD_NOTIFICATION);
+        assertThat(handler.handledEvents()).contains(DELETE_APPLICATION_PAYMENT_DASHBOARD_NOTIFICATION);
     }
 
     @Nested
@@ -51,7 +51,7 @@ public class RemovePaymentDashboardNotificationHandlerTest  extends BaseCallback
             when(gaForLipService.isLipApp(caseData)).thenReturn(true);
             when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(REMOVE_APPLICATION_PAYMENT_DASHBOARD_NOTIFICATION.name()).build()
+                CallbackRequest.builder().eventId(DELETE_APPLICATION_PAYMENT_DASHBOARD_NOTIFICATION.name()).build()
             ).build();
 
             handler.handle(params);
@@ -69,7 +69,7 @@ public class RemovePaymentDashboardNotificationHandlerTest  extends BaseCallback
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             when(featureToggleService.isGaForWelshEnabled()).thenReturn(false);
             CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(REMOVE_APPLICATION_PAYMENT_DASHBOARD_NOTIFICATION.name()).build()
+                CallbackRequest.builder().eventId(DELETE_APPLICATION_PAYMENT_DASHBOARD_NOTIFICATION.name()).build()
             ).build();
 
             handler.handle(params);
