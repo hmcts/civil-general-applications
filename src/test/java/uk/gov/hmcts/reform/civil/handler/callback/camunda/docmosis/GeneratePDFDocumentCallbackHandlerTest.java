@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
+import uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
@@ -59,9 +60,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY;
-import static uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType.DIRECTIONS_ORDER_DOC;
 import static uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType.WRITTEN_REPRESENTATION_ORDER_DOC;
+import static uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType.DIRECTIONS_ORDER_DOC;
 import static uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType.GENERAL_ORDER_DOC;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
 
@@ -408,6 +410,27 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(updatedData.getHearingOrderDocument().get(0).getValue())
                 .isEqualTo(PDFBuilder.HEARING_ORDER_DOCUMENT);
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+        }
+
+        @Test
+        void shouldCopyHearingOrderDocInTempCollectionIfWelshParty() {
+            when(gaForLipService.isGaForLip(any())).thenReturn(true);
+            when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+            CaseData caseData = CaseDataBuilder.builder().hearingOrderApplication(YesOrNo.NO, YesOrNo.NO)
+                .applicantBilingualLanguagePreference(YesOrNo.YES)
+                .isGaApplicantLip(YES)
+                .build();
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(hearingOrderGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getPreTranslationGaDocuments().get(0).getValue())
+                .isEqualTo(PDFBuilder.HEARING_ORDER_DOCUMENT);
+            assertThat(updatedData.getPreTranslationGaDocumentType()).isEqualTo(PreTranslationGaDocumentType.HEARING_ORDER_DOC);
         }
 
         @Test
