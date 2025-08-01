@@ -454,13 +454,13 @@ public class UploadTranslatedDocumentServiceTest {
         // Given
         List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
         TranslatedDocument translatedDocument = TranslatedDocument.builder()
-            .documentType(TranslatedDocumentType.HEARING_ORDER)
+            .documentType(TranslatedDocumentType.REQUEST_FOR_MORE_INFORMATION_ORDER)
             .file(mock(Document.class))
             .build();
         translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
         CaseData caseData = CaseData.builder()
             .translatedDocuments(translatedDocuments)
-            .preTranslationGaDocumentType(PreTranslationGaDocumentType.HEARING_ORDER_DOC)
+            .preTranslationGaDocumentType(PreTranslationGaDocumentType.REQUEST_MORE_INFORMATION_ORDER_DOC)
             .build();
         // When
         String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
