@@ -168,10 +168,12 @@ public class UploadTranslatedDocumentService {
 
         List<Element<CaseDocument>> generalOrderDocs = Objects.isNull(caseDataBuilder.build().getGeneralOrderDocument())
             ? newArrayList() : caseDataBuilder.build().getGeneralOrderDocument();
-        List<Element<CaseDocument>> writtenRepsConcurrentDocs = Objects.isNull(caseDataBuilder.build().getWrittenRepConcurrentDocument())
-            ? newArrayList() : caseDataBuilder.build().getWrittenRepConcurrentDocument();
+
         List<Element<CaseDocument>> writtenRepsSequentialDocs = Objects.isNull(caseDataBuilder.build().getWrittenRepSequentialDocument())
             ? newArrayList() : caseDataBuilder.build().getWrittenRepSequentialDocument();
+        List<Element<CaseDocument>> writtenRepsConcurrentDocs = Objects.isNull(caseDataBuilder.build().getWrittenRepConcurrentDocument())
+            ? newArrayList() : caseDataBuilder.build().getWrittenRepConcurrentDocument();
+
         List<Element<CaseDocument>> hearingNoticeDocs = Objects.isNull(caseDataBuilder.build().getHearingNoticeDocument())
             ? newArrayList() : caseDataBuilder.build().getHearingNoticeDocument();
         List<Element<CaseDocument>> requestMoreInformationDocs = Objects.isNull(caseDataBuilder.build().getRequestForInformationDocument())
@@ -211,7 +213,8 @@ public class UploadTranslatedDocumentService {
                     preTranslationWrittenRepsConcurrent.ifPresent(bulkPrintOriginalDocuments::add);
                     caseDataBuilder.writtenRepConcurrentDocument(writtenRepsConcurrentDocs);
                     caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
-                } else if (document.getValue().getDocumentType().equals(GENERAL_ORDER)) {
+                } else if (document.getValue().getDocumentType().equals(GENERAL_ORDER)
+                    || document.getValue().getDocumentType().equals(APPROVE_OR_EDIT_ORDER)) {
                     Optional<Element<CaseDocument>> preTranslationGeneralOrder = preTranslationGaDocuments.stream()
                         .filter(item -> item.getValue().getDocumentType() == DocumentType.GENERAL_ORDER)
                         .findFirst();
@@ -255,15 +258,6 @@ public class UploadTranslatedDocumentService {
                     preTranslationDismissalOrder.ifPresent(bulkPrintOriginalDocuments::add);
                     caseDataBuilder.dismissalOrderDocument(dismissalOrderDocs);
                     caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
-                } else if (document.getValue().getDocumentType().equals(HEARING_ORDER)) {
-                    Optional<Element<CaseDocument>> preTranslationHearingOrder = preTranslationGaDocuments.stream()
-                        .filter(item -> item.getValue().getDocumentType() == DocumentType.HEARING_ORDER)
-                        .findFirst();
-                    preTranslationHearingOrder.ifPresent(preTranslationGaDocuments::remove);
-                    preTranslationHearingOrder.ifPresent(hearingOrders::add);
-                    preTranslationHearingOrder.ifPresent(bulkPrintOriginalDocuments::add);
-                    caseDataBuilder.hearingOrderDocument(hearingOrders);
-                    caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
                 }
             });
         }
@@ -281,11 +275,11 @@ public class UploadTranslatedDocumentService {
         } else if (Objects.nonNull(translatedDocuments)
             && (translatedDocuments.get(0).getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL)
             || translatedDocuments.get(0).getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_CONCURRENT))
-            || ((translatedDocuments.get(0).getValue().getDocumentType().equals(GENERAL_ORDER)
-            || translatedDocuments.get(0).getValue().getDocumentType().equals(APPROVE_OR_EDIT_ORDER)) && Objects.isNull(caseData.getFinalOrderSelection()))
             || translatedDocuments.get(0).getValue().getDocumentType().equals(REQUEST_FOR_MORE_INFORMATION_ORDER)
             || translatedDocuments.get(0).getValue().getDocumentType().equals(DISMISSAL_ORDER)
-            || translatedDocuments.get(0).getValue().getDocumentType().equals(HEARING_ORDER)) {
+            || ((translatedDocuments.get(0).getValue().getDocumentType().equals(GENERAL_ORDER)
+            || translatedDocuments.get(0).getValue().getDocumentType().equals(APPROVE_OR_EDIT_ORDER)) && Objects.isNull(caseData.getFinalOrderSelection())
+            || translatedDocuments.get(0).getValue().getDocumentType().equals(HEARING_ORDER))) {
             return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_JUDGE_DECISION;
         } else if (Objects.nonNull(translatedDocuments)
             && (translatedDocuments.get(0).getValue().getDocumentType().equals(HEARING_NOTICE))) {
