@@ -537,7 +537,7 @@ public class UploadTranslatedDocumentServiceTest {
             .build();
         // When
         String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
-        assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_GA_LIP")
+        assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_GA_LIP");
      }
 
     @Test
@@ -550,7 +550,7 @@ public class UploadTranslatedDocumentServiceTest {
             .build();
         translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
         CaseData caseData = CaseData.builder()
-            .translatedDocuments(translatedDocuments) 
+            .translatedDocuments(translatedDocuments)
             .preTranslationGaDocumentType(PreTranslationGaDocumentType.GENERAL_ORDER_DOC)
             .build();
         // When
