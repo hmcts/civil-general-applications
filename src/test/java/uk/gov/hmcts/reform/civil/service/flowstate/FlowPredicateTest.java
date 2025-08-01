@@ -5,6 +5,7 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
 
@@ -77,6 +78,26 @@ public class FlowPredicateTest {
             .judicialDecisionMakeOrder(GAJudicialMakeAnOrder.builder()
                                            .makeAnOrder(GAJudgeMakeAnOrderOption.DISMISS_THE_APPLICATION)
                                            .build()).build();
+
+        boolean result = FlowPredicate.isWelshJudgeDecision.test(caseData);
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    public void testIsWelshJudgeDecision_ListForHearing() {
+        CaseData caseData = CaseData.builder()
+            .isGaApplicantLip(YesOrNo.YES)
+            .applicantBilingualLanguagePreference(YesOrNo.YES)
+            .judicialDecision(GAJudicialDecision.builder()
+                                  .decision(GAJudgeDecisionOption.LIST_FOR_A_HEARING)
+                                  .build())
+            .judicialListForHearing(GAJudgesHearingListGAspec.builder()
+                                        .judgeHearingCourtLocationText1("test")
+                                        .judgeHearingTimeEstimateText1("test")
+                                        .hearingPreferencesPreferredTypeLabel1("test")
+                                        .judgeHearingSupportReqText1("test")
+                                        .build()).build();
 
         boolean result = FlowPredicate.isWelshJudgeDecision.test(caseData);
 
