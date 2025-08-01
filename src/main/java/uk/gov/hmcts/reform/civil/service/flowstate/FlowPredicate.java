@@ -90,6 +90,5 @@ public class FlowPredicate {
         caseData -> isWelshApplicant.test(caseData)
             && (judgeMadeWrittenRep.test(caseData) || judgeMadeDirections.test(caseData)
             || judgeRequestAdditionalInfo.test(caseData) || judgeMadeOrder.test(caseData)
-            || judgeMadeListingForHearing.test(caseData) || judgeMadeDismissalOrder.test(caseData));
-
+            || judgeMadeDismissalOrder.test(caseData) || judgeMadeListingForHearing.test(caseData));
 }
