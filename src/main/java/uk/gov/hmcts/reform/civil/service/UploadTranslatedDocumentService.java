@@ -165,7 +165,7 @@ public class UploadTranslatedDocumentService {
         } else {
             gaDraftDocument = caseDataBuilder.build().getGaDraftDocument();
         }
-      
+
         List<Element<CaseDocument>> generalOrderDocs = Objects.isNull(caseDataBuilder.build().getGeneralOrderDocument())
             ? newArrayList() : caseDataBuilder.build().getGeneralOrderDocument();
         List<Element<CaseDocument>> writtenRepsConcurrentDocs = Objects.isNull(caseDataBuilder.build().getWrittenRepConcurrentDocument())
@@ -176,9 +176,6 @@ public class UploadTranslatedDocumentService {
             ? newArrayList() : caseDataBuilder.build().getHearingNoticeDocument();
         List<Element<CaseDocument>> requestMoreInformationDocs = Objects.isNull(caseDataBuilder.build().getRequestForInformationDocument())
             ? newArrayList() : caseDataBuilder.build().getRequestForInformationDocument();
-        List<Element<CaseDocument>> hearingOrders = Objects.isNull(caseDataBuilder.build().getHearingOrderDocument())
-            ? newArrayList() : caseDataBuilder.build().getHearingOrderDocument();
-      
         List<Element<CaseDocument>> dismissalOrderDocs = Objects.isNull(caseDataBuilder.build().getDismissalOrderDocument())
             ? newArrayList() : caseDataBuilder.build().getDismissalOrderDocument();
         List<Element<CaseDocument>> hearingOrders = Objects.isNull(caseDataBuilder.build().getHearingOrderDocument())
@@ -288,7 +285,7 @@ public class UploadTranslatedDocumentService {
             || translatedDocuments.get(0).getValue().getDocumentType().equals(APPROVE_OR_EDIT_ORDER)) && Objects.isNull(caseData.getFinalOrderSelection()))
             || translatedDocuments.get(0).getValue().getDocumentType().equals(REQUEST_FOR_MORE_INFORMATION_ORDER)
             || translatedDocuments.get(0).getValue().getDocumentType().equals(DISMISSAL_ORDER)
-            || translatedDocuments.get(0).getValue().getDocumentType().equals(HEARING_ORDER))) {
+            || translatedDocuments.get(0).getValue().getDocumentType().equals(HEARING_ORDER)) {
             return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_JUDGE_DECISION;
         } else if (Objects.nonNull(translatedDocuments)
             && (translatedDocuments.get(0).getValue().getDocumentType().equals(HEARING_NOTICE))) {
