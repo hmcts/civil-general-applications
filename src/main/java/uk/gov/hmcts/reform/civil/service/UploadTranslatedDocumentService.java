@@ -265,7 +265,7 @@ public class UploadTranslatedDocumentService {
             || translatedDocuments.get(0).getValue().getDocumentType().equals(REQUEST_FOR_MORE_INFORMATION_ORDER)
             || translatedDocuments.get(0).getValue().getDocumentType().equals(DISMISSAL_ORDER)
             || ((translatedDocuments.get(0).getValue().getDocumentType().equals(GENERAL_ORDER)
-            || translatedDocuments.get(0).getValue().getDocumentType().equals(APPROVE_OR_EDIT_ORDER)) && Objects.isNull(caseData.getFinalOrderSelection()))) {
+            || translatedDocuments.get(0).getValue().getDocumentType().equals(APPROVE_OR_EDIT_ORDER)) && Objects.isNull(caseData.getFinalOrderSelection())
             || translatedDocuments.get(0).getValue().getDocumentType().equals(HEARING_ORDER))) {
             return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_JUDGE_DECISION;
         }
