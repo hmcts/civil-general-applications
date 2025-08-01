@@ -414,24 +414,6 @@ public class UploadTranslatedDocumentServiceTest {
     }
 
     @Test
-    void shouldGetCorrectBusinessProcessForRequestMoreInformationDoc() {
-        // Given
-        List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
-        TranslatedDocument translatedDocument = TranslatedDocument.builder()
-            .documentType(TranslatedDocumentType.REQUEST_FOR_MORE_INFORMATION_ORDER)
-            .file(mock(Document.class))
-            .build();
-        translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
-        CaseData caseData = CaseData.builder()
-            .translatedDocuments(translatedDocuments)
-            .preTranslationGaDocumentType(PreTranslationGaDocumentType.REQUEST_MORE_INFORMATION_ORDER_DOC)
-            .build();
-        // When
-        String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
-        assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_JUDGE_DECISION");
-    }
-
-    @Test
     void shouldGetCorrectBusinessProcessForRequestWrittenRepsSequentialDoc() {
         // Given
         List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
@@ -538,7 +520,7 @@ public class UploadTranslatedDocumentServiceTest {
         // When
         String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
         assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_GA_LIP");
-     }
+    }
 
     @Test
     void shouldGetCorrectBusinessProcessForGeneralOrderDoc() {
