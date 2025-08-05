@@ -59,8 +59,6 @@ public class TranslatedDocument {
                 return HEARING_ORDER;
             case HEARING_NOTICE:
                 return HEARING_NOTICE;
-            case WITHOUT_NOTICE_TO_WITH_NOTICE_DOCUMENT:
-                return SEND_APP_TO_OTHER_PARTY;
             case DISMISSAL_ORDER:
                 return DISMISSAL_ORDER;
             case WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL:

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
@@ -29,10 +30,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
-import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION;
-import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY;
-import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP;
-import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY_LIP;
+import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.*;
+import static uk.gov.hmcts.reform.civil.utils.DateUtils.formatDateInWelsh;
 
 @Slf4j
 @Service
@@ -43,6 +42,7 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
     private final DocumentGeneratorService documentGeneratorService;
     private final DocmosisService docmosisService;
     private final GaForLipService gaForLipService;
+    private final FeatureToggleService featureToggleService;
 
     public CaseDocument generate(CaseData caseData, String authorisation) {
         JudgeDecisionPdfDocument templateData = getTemplateData(null, caseData, authorisation, FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
@@ -100,7 +100,8 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
                 .submittedOn(LocalDate.now())
                 .dateBy(caseData.getJudicialDecisionRequestMoreInfo().getJudgeRequestMoreInfoByDate())
                 .additionalApplicationFee(getAdditionalApplicationFee(caseData))
-                .applicationCreatedDate(caseData.getCreatedDate().toLocalDate());
+                .applicationCreatedDate(caseData.getCreatedDate().toLocalDate())
+                .applicationCreatedDateCy((caseData.isApplicantBilingual()) ? formatDateInWelsh(caseData.getCreatedDate().toLocalDate()) : null);
 
         if (List.of(FlowFlag.POST_JUDGE_ORDER_LIP_APPLICANT, FlowFlag.POST_JUDGE_ORDER_LIP_RESPONDENT).contains(userType)) {
             boolean parentClaimantIsApplicant = caseData.identifyParentClaimantIsApplicant(caseData);
@@ -126,8 +127,12 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
                 : POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP;
         }
 
-        if (gaForLipService.isLipApp(caseData) && gaJudgeRequestMoreInfoOption == GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY) {
-            return REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY;
+        if (gaForLipService.isLipApp(caseData)  && gaJudgeRequestMoreInfoOption == GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY) {
+            if (caseData.isApplicantBilingual()) {
+                return REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY_BILINGUAL;
+            } else {
+                return REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY;
+            }
         }
         return REQUEST_FOR_INFORMATION;
     }
