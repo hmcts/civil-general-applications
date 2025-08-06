@@ -358,5 +358,37 @@ class RequestForInformationGeneratorTest {
                 () -> assertEquals(templateData.getAdditionalApplicationFee(), "£275")
             );
         }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetRequestForInformationData_LIP_Send_to_other_partyWelshParty() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").welshExternalShortName("Manceinion").build());
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication().build().toBuilder()
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .judgeRecitalText("test")
+                                                     .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
+                                                     .judgeRequestMoreInfoByDate(now()).build())
+                .caseManagementLocation(GACaseLocation.builder().baseLocation("3").build())
+                .applicantBilingualLanguagePreference(YES)
+                .build();
+
+            var templateData =
+                requestForInformationGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+
+            Assertions.assertAll(
+                "Request For Information Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getCourtName(), "Manchester"),
+                () -> assertEquals(templateData.getCourtNameCy(), "Manceinion"),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRecitalText()),
+                () -> assertEquals(templateData.getJudgeComments(), caseData.getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRequestMoreInfoText()),
+                () -> assertEquals(templateData.getApplicationCreatedDate(), caseData.getCreatedDate().toLocalDate()),
+                () -> assertEquals(templateData.getAdditionalApplicationFee(), "£275")
+            );
+        }
     }
 }

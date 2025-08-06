@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
 import uk.gov.hmcts.reform.civil.model.docmosis.judgedecisionpdfdocument.JudgeDecisionPdfDocument;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -27,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP;
@@ -85,7 +87,7 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
 
     @Override
     public JudgeDecisionPdfDocument getTemplateData(CaseData civilCaseData, CaseData caseData, String authorisation, FlowFlag userType) {
-
+        LocationRefData courtLocation  = docmosisService.getCaseManagementLocationVenueName(caseData, authorisation);
         JudgeDecisionPdfDocument.JudgeDecisionPdfDocumentBuilder judgeDecisionPdfDocumentBuilder =
             JudgeDecisionPdfDocument.builder()
                 .claimNumber(caseData.getCcdCaseReference().toString())
@@ -94,8 +96,9 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
                 .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)
                 .defendant1Name(caseData.getDefendant1PartyName())
                 .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
-                .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
-                .courtNameCy(caseData.isApplicantBilingual() ? docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getWelshSiteName() : null)
+                .courtName(courtLocation.getVenueName())
+                .courtNameCy(caseData.isApplicantBilingual() ? (Objects.nonNull(courtLocation.getWelshExternalShortName())
+                                 ? courtLocation.getWelshExternalShortName() : courtLocation.getVenueName()) : null)
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())
