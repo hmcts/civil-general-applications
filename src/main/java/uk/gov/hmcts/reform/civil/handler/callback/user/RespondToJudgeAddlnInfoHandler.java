@@ -127,7 +127,6 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
             element -> role.equals(element.getValue().getCreatedBy()) && "Additional information".equals(element.getValue().getDocumentName()));
     }
 
-
     @Override
     public List<CaseEvent> handledEvents() {
         return EVENTS;
