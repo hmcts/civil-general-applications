@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
@@ -34,6 +35,7 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO;
+import static uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType.MORE_INFO_RESPONSE_DOC;
 
 @Service
 @RequiredArgsConstructor
@@ -68,16 +70,33 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
         if (Objects.isNull(tobeAdded)) {
             tobeAdded = new ArrayList<>();
         }
+        boolean translationRequired = false;
+        PreTranslationGaDocumentType waDocumentType = null;
         if (Objects.nonNull(caseData.getGeneralAppAddlnInfoText())) {
+            if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicationBilingual()) {
+                translationRequired = true;
+                waDocumentType = MORE_INFO_RESPONSE_DOC;
+            }
             CaseDocument caseDocument = respondForInformationGenerator.generate(caseData,
                                                                                 callbackParams.getParams().get(
                                                                                     BEARER_TOKEN).toString(), role
             );
             tobeAdded.add(ElementUtils.element(caseDocument.getDocumentLink()));
         }
-        DocUploadUtils.addDocumentToAddl(caseData, caseDataBuilder,
-                                         tobeAdded, role, CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO, false
-        );
+        caseDataBuilder.preTranslationGaDocumentType(waDocumentType);
+        if (!translationRequired) {
+            DocUploadUtils.addDocumentToAddl(caseData, caseDataBuilder,
+                                             tobeAdded, role, CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO, false
+            );
+        } else {
+            DocUploadUtils.addDocumentToPreTranslation(
+                caseData,
+                caseDataBuilder,
+                tobeAdded,
+                role,
+                CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO
+            );
+        }
         if (featureToggleService.isGaForWelshEnabled()) {
             DocUploadUtils.setRespondedValues(caseDataBuilder, role);
         }
@@ -87,7 +106,10 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
 
         // Generate Dashboard Notification for Lip Party
         if (gaForLipService.isGaForLip(caseData)) {
-            docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken, false);
+            boolean sendDashboardNotificationToOtherParty = !(translationRequired || additionalInfoAwaitingTranslation(caseData, role));
+            if (sendDashboardNotificationToOtherParty) {
+                docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken, false);
+            }
         }
 
         CaseData updatedCaseData = caseDataBuilder.build();
@@ -96,6 +118,15 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
             .data(updatedCaseData.toMap(objectMapper))
             .build();
     }
+
+    private boolean additionalInfoAwaitingTranslation(CaseData caseData, String role) {
+        if (caseData.getPreTranslationGaDocuments() == null) {
+            return false;
+        }
+        return caseData.getPreTranslationGaDocuments().stream().anyMatch(
+            element -> role.equals(element.getValue().getCreatedBy()) && "Additional information".equals(element.getValue().getDocumentName()));
+    }
+
 
     @Override
     public List<CaseEvent> handledEvents() {

@@ -83,6 +83,24 @@ public class DocUploadUtils {
         caseDataBuilder.gaAddlDocStaff(addDocuments(tobeAdded, caseData.getGaAddlDocStaff()));
     }
 
+    public static void addDocumentToPreTranslation(CaseData caseData, CaseData.CaseDataBuilder caseDataBuilder,
+                                         List<Element<Document>> source, String role, CaseEvent event) {
+        if (Objects.isNull(source) || source.isEmpty()) {
+            return;
+        }
+        caseDataBuilder.isDocumentVisible(DocUploadUtils.isDocumentVisible(caseData));
+        List<Element<CaseDocument>> docs = prepareDocuments(source, role, event);
+        if (docs.size() > 1) {
+            addToAddl(caseData, caseDataBuilder, docs.subList(0, docs.size() - 1), role, false);
+        }
+        caseDataBuilder.preTranslationGaDocuments(addDocuments(docs.subList(docs.size() - 1, docs.size()), caseData.getPreTranslationGaDocuments()));
+        if (role.equals(APPLICANT)) {
+            caseDataBuilder.preTranslationGaDocsApplicant(addDocuments(docs.subList(docs.size() - 1, docs.size()), caseData.getPreTranslationGaDocsApplicant()));
+        } else if (role.equals(RESPONDENT_ONE)) {
+            caseDataBuilder.preTranslationGaDocsRespondent(addDocuments(docs.subList(docs.size() - 1, docs.size()), caseData.getPreTranslationGaDocsRespondent()));
+        }
+    }
+
     public static String getUserRole(CaseData caseData, String userId) {
         if (caseData.getParentClaimantIsApplicant().equals(YesOrNo.YES) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId)
                 || (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppApplnSolicitor().getId().equals(userId))

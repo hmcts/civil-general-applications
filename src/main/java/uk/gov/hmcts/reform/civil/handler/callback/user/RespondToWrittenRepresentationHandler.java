@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
@@ -35,6 +36,9 @@ import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_START;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION;
+import static uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType.WRITTEN_REPS_RESPONSE_DOC;
+import static uk.gov.hmcts.reform.civil.utils.DocUploadUtils.APPLICANT;
+import static uk.gov.hmcts.reform.civil.utils.DocUploadUtils.RESPONDENT_ONE;
 
 @Slf4j
 @Service
@@ -70,20 +74,38 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
         if (Objects.isNull(responseDocumentToBeAdded)) {
             responseDocumentToBeAdded = new ArrayList<>();
         }
+        boolean translationRequired = false;
+        PreTranslationGaDocumentType waDocumentType = null;
         if (Objects.nonNull(caseData.getGeneralAppWrittenRepText())) {
+            if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicationBilingual()) {
+                translationRequired = true;
+                waDocumentType = WRITTEN_REPS_RESPONSE_DOC;
+            }
             CaseDocument caseDocument = respondToWrittenRepresentation.generate(caseData,
                                                                                 callbackParams.getParams().get(
                                                                                     BEARER_TOKEN).toString(), role
             );
             responseDocumentToBeAdded.add(ElementUtils.element(caseDocument.getDocumentLink()));
         }
-        DocUploadUtils.addDocumentToAddl(caseData,
-                                         caseDataBuilder,
-                                         responseDocumentToBeAdded,
-                                         role,
-                                         CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
-                                         false
-        );
+        caseDataBuilder.preTranslationGaDocumentType(waDocumentType);
+        if (!translationRequired) {
+            DocUploadUtils.addDocumentToAddl(
+                caseData,
+                caseDataBuilder,
+                responseDocumentToBeAdded,
+                role,
+                CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,
+                false
+            );
+        } else {
+            DocUploadUtils.addDocumentToPreTranslation(
+                caseData,
+                caseDataBuilder,
+                responseDocumentToBeAdded,
+                role,
+                CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION
+            );
+        }
         if (featureToggleService.isGaForWelshEnabled()) {
             DocUploadUtils.setRespondedValues(caseDataBuilder, role);
         }
@@ -95,14 +117,29 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
         // Generate Dashboard Notification for Lip Party
         if (gaForLipService.isGaForLip(caseData)) {
             log.info("General dashboard notification for Lip party for caseId: {}", caseData.getCcdCaseReference());
-            docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken, false);
-            docUploadDashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", authToken);
-            docUploadDashboardNotificationService.createResponseDashboardNotification(caseData, "RESPONDENT", authToken);
+            boolean sendDashboardNotificationToOtherParty = !(translationRequired || writtenRepsAwaitingTranslation(caseData, role));
+            if (sendDashboardNotificationToOtherParty) {
+                docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken, false);
+            }
+            if (role.equals(APPLICANT) || sendDashboardNotificationToOtherParty) {
+                docUploadDashboardNotificationService.createResponseDashboardNotification(caseData, "APPLICANT", authToken);
+            }
+            if (role.equals(RESPONDENT_ONE) || sendDashboardNotificationToOtherParty) {
+                docUploadDashboardNotificationService.createResponseDashboardNotification(caseData, "RESPONDENT", authToken);
+            }
         }
 
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
             .build();
+    }
+
+    private boolean writtenRepsAwaitingTranslation(CaseData caseData, String role) {
+        if (caseData.getPreTranslationGaDocuments() == null) {
+            return false;
+        }
+        return caseData.getPreTranslationGaDocuments().stream().anyMatch(
+            element -> role.equals(element.getValue().getCreatedBy()) && "Written representation".equals(element.getValue().getDocumentName()));
     }
 
     @Override

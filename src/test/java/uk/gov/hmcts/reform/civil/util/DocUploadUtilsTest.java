@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.util;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder.STRING_CONSTANT;
@@ -234,5 +235,53 @@ public class DocUploadUtilsTest {
         DocUploadUtils.setRespondedValues(builder, DocUploadUtils.RESPONDENT_ONE);
         caseData = builder.build();
         assertThat(caseData.getIsRespondentResponded()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    public void should_addToPreTranslation() {
+        CaseData caseData = CaseData.builder().build();
+        CaseData.CaseDataBuilder builder = caseData.toBuilder();
+
+        List<Element<Document>> tobeAdded = new ArrayList<>();
+        tobeAdded.add(element(Document.builder()
+                                  .documentFileName("witness_document.pdf")
+                                  .documentUrl("http://dm-store:8080")
+                                  .documentBinaryUrl("http://dm-store:8080/documents").build()));
+        tobeAdded.add(element(Document.builder()
+                                  .documentFileName("witness_document.pdf")
+                                  .documentUrl("http://dm-store:8080")
+                                  .documentBinaryUrl("http://dm-store:8080/documents").build()));
+
+        DocUploadUtils.addDocumentToPreTranslation(caseData, builder, tobeAdded, DocUploadUtils.APPLICANT, RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION);
+        caseData = builder.build();
+        assertThat(caseData.getGaAddlDocClaimant().size()).isEqualTo(1);
+        assertThat(caseData.getPreTranslationGaDocuments().size()).isEqualTo(1);
+    }
+
+    @Test
+    public void should_notAddToAddlDocs_ifOnlyOneDoc() {
+        CaseData caseData = CaseData.builder().build();
+        CaseData.CaseDataBuilder builder = caseData.toBuilder();
+
+        List<Element<Document>> tobeAdded = new ArrayList<>();
+        tobeAdded.add(element(Document.builder()
+                                  .documentFileName("witness_document.pdf")
+                                  .documentUrl("http://dm-store:8080")
+                                  .documentBinaryUrl("http://dm-store:8080/documents").build()));
+        DocUploadUtils.addDocumentToPreTranslation(caseData, builder, tobeAdded, DocUploadUtils.APPLICANT, RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION);
+        caseData = builder.build();
+        assertThat(caseData.getGaAddlDocClaimant()).isNull();
+        assertThat(caseData.getPreTranslationGaDocuments().size()).isEqualTo(1);
+    }
+
+    @Test
+    public void should_notAddToPreTranslation_ifEmptySource() {
+        CaseData caseData = CaseData.builder().build();
+        CaseData.CaseDataBuilder builder = caseData.toBuilder();
+
+        List<Element<Document>> tobeAdded = new ArrayList<>();
+        DocUploadUtils.addDocumentToPreTranslation(caseData, builder, tobeAdded, DocUploadUtils.APPLICANT, RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION);
+        caseData = builder.build();
+        assertThat(caseData.getPreTranslationGaDocuments().size()).isEqualTo(0);
     }
 }
