@@ -41,6 +41,7 @@ import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUE
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_REQUEST_FOR_INFORMATION_ORDER_LIP;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.POST_JUDGE_REQUEST_FOR_INFORMATION_SEND_TO_OTHER_PARTY_LIP;
+import static uk.gov.hmcts.reform.civil.utils.DateUtils.formatDateInWelsh;
 
 @ExtendWith(MockitoExtension.class)
 class RequestForInformationGeneratorTest {
@@ -360,7 +361,7 @@ class RequestForInformationGeneratorTest {
         }
 
         @Test
-        void whenJudgeMakeDecision_ShouldGetRequestForInformationData_LIP_Send_to_other_partyWelshParty() {
+        void whenJudgeMakeDecision_ShouldGetRequestForInformationData_LIP_Send_to_other_WelshParty() {
             when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
                 .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").welshExternalShortName("Manceinion").build());
             CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication().build().toBuilder()
@@ -387,6 +388,40 @@ class RequestForInformationGeneratorTest {
                 () -> assertEquals(templateData.getJudgeComments(), caseData.getJudicialDecisionRequestMoreInfo()
                     .getJudgeRequestMoreInfoText()),
                 () -> assertEquals(templateData.getApplicationCreatedDate(), caseData.getCreatedDate().toLocalDate()),
+                () -> assertEquals(templateData.getApplicationCreatedDateCy(), formatDateInWelsh(caseData.getCreatedDate().toLocalDate())),
+                () -> assertEquals(templateData.getAdditionalApplicationFee(), "£275")
+            );
+        }
+
+        @Test
+        void whenJudgeMakeDecision_ShouldGetRequestForInformationData_LIP_Send_to_other_WelshParty_EnglishCourtName() {
+            when(docmosisService.getCaseManagementLocationVenueName(any(), any()))
+                .thenReturn(LocationRefData.builder().epimmsId("2").venueName("Manchester").welshExternalShortName(null).build());
+            CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication().build().toBuilder()
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder()
+                                                     .judgeRecitalText("test")
+                                                     .requestMoreInfoOption(SEND_APP_TO_OTHER_PARTY)
+                                                     .judgeRequestMoreInfoByDate(now()).build())
+                .caseManagementLocation(GACaseLocation.builder().baseLocation("3").build())
+                .applicantBilingualLanguagePreference(YES)
+                .build();
+
+            var templateData =
+                requestForInformationGenerator.getTemplateData(null, caseData, "auth", FlowFlag.ONE_RESPONDENT_REPRESENTATIVE);
+
+            Assertions.assertAll(
+                "Request For Information Document data should be as expected",
+                () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+                () -> assertEquals(templateData.getClaimant1Name(), caseData.getClaimant1PartyName()),
+                () -> assertEquals(templateData.getCourtName(), "Manchester"),
+                () -> assertEquals(templateData.getCourtNameCy(), "Manchester"),
+                () -> assertEquals(templateData.getDefendant1Name(), caseData.getDefendant1PartyName()),
+                () -> assertEquals(templateData.getJudgeRecital(), caseData.getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRecitalText()),
+                () -> assertEquals(templateData.getJudgeComments(), caseData.getJudicialDecisionRequestMoreInfo()
+                    .getJudgeRequestMoreInfoText()),
+                () -> assertEquals(templateData.getApplicationCreatedDate(), caseData.getCreatedDate().toLocalDate()),
+                () -> assertEquals(templateData.getApplicationCreatedDateCy(), formatDateInWelsh(caseData.getCreatedDate().toLocalDate())),
                 () -> assertEquals(templateData.getAdditionalApplicationFee(), "£275")
             );
         }
