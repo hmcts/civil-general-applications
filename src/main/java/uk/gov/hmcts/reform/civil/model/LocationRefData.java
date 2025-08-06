@@ -26,6 +26,7 @@ public class LocationRefData {
     private String venueName;
     private String locationType;
     private String parentLocation;
+    private String welshSiteName;
 
     @JsonCreator
     LocationRefData(@JsonProperty("court_venue_id") String courtVenueId,
@@ -44,7 +45,8 @@ public class LocationRefData {
                     @JsonProperty("court_name") String courtName,
                     @JsonProperty("venue_name") String venueName,
                     @JsonProperty("location_type") String locationType,
-                    @JsonProperty("parent_location") String parentLocation) {
+                    @JsonProperty("parent_location") String parentLocation,
+                    @JsonProperty("welsh_site_name") String welshSiteName) {
         this.courtVenueId = courtVenueId;
         this.epimmsId = epimmsId;
         this.siteName = siteName;
@@ -62,5 +64,6 @@ public class LocationRefData {
         this.venueName = venueName;
         this.locationType = locationType;
         this.parentLocation = parentLocation;
+        this.welshSiteName = welshSiteName;
     }
 }

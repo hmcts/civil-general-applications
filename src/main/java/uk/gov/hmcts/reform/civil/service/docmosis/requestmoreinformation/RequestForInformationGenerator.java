@@ -95,6 +95,7 @@ public class RequestForInformationGenerator implements TemplateDataGenerator<Jud
                 .defendant1Name(caseData.getDefendant1PartyName())
                 .defendant2Name(caseData.getDefendant2PartyName() != null ? caseData.getDefendant2PartyName() : null)
                 .courtName(docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getVenueName())
+                .courtNameCy(caseData.isApplicantBilingual() ? docmosisService.getCaseManagementLocationVenueName(caseData, authorisation).getWelshSiteName() : null)
                 .siteName(caseData.getCaseManagementLocation().getSiteName())
                 .address(caseData.getCaseManagementLocation().getAddress())
                 .postcode(caseData.getCaseManagementLocation().getPostcode())
