@@ -512,12 +512,15 @@ public class GeneratePDFDocumentCallbackHandler extends CallbackHandler {
             }
 
         } else if (isRequestMoreInfo(caseData) || isRequestMoreInfoAndSendAppToOtherParty(caseData)) {
+            GAJudgeRequestMoreInfoOption gaJudgeRequestMoreInfoOption = Optional.ofNullable(caseData.getJudicialDecisionRequestMoreInfo()).map(
+                GAJudicialRequestMoreInfo::getRequestMoreInfoOption).orElse(null);
             decision = requestForInformationGenerator.generate(
                 caseDataBuilder.build(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
             );
 
-            if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicationBilingual()) {
+            if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicationBilingual()
+                && gaJudgeRequestMoreInfoOption != GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY) {
                 setPreTranslationDocument(
                     caseData,
                     caseDataBuilder,
