@@ -117,7 +117,8 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
         // Generate Dashboard Notification for Lip Party
         if (gaForLipService.isGaForLip(caseData)) {
             log.info("General dashboard notification for Lip party for caseId: {}", caseData.getCcdCaseReference());
-            boolean sendDashboardNotificationToOtherParty = !(translationRequired || writtenRepsAwaitingTranslation(caseData, role));
+            boolean sendDashboardNotificationToOtherParty =
+                !(translationRequired || DocUploadUtils.uploadedDocumentAwaitingTranslation(caseData, role, "Written representation"));
             if (sendDashboardNotificationToOtherParty) {
                 docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken, false);
             }
@@ -132,14 +133,6 @@ public class RespondToWrittenRepresentationHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
             .build();
-    }
-
-    private boolean writtenRepsAwaitingTranslation(CaseData caseData, String role) {
-        if (caseData.getPreTranslationGaDocuments() == null) {
-            return false;
-        }
-        return caseData.getPreTranslationGaDocuments().stream().anyMatch(
-            element -> role.equals(element.getValue().getCreatedBy()) && "Written representation".equals(element.getValue().getDocumentName()));
     }
 
     @Override

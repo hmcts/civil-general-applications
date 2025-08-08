@@ -106,7 +106,8 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
 
         // Generate Dashboard Notification for Lip Party
         if (gaForLipService.isGaForLip(caseData)) {
-            boolean sendDashboardNotificationToOtherParty = !(translationRequired || additionalInfoAwaitingTranslation(caseData, role));
+            boolean sendDashboardNotificationToOtherParty =
+                !(translationRequired || DocUploadUtils.uploadedDocumentAwaitingTranslation(caseData, role, "Additional information"));
             if (sendDashboardNotificationToOtherParty) {
                 docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken, false);
             }
@@ -117,14 +118,6 @@ public class RespondToJudgeAddlnInfoHandler extends CallbackHandler {
         return AboutToStartOrSubmitCallbackResponse.builder()
             .data(updatedCaseData.toMap(objectMapper))
             .build();
-    }
-
-    private boolean additionalInfoAwaitingTranslation(CaseData caseData, String role) {
-        if (caseData.getPreTranslationGaDocuments() == null) {
-            return false;
-        }
-        return caseData.getPreTranslationGaDocuments().stream().anyMatch(
-            element -> role.equals(element.getValue().getCreatedBy()) && "Additional information".equals(element.getValue().getDocumentName()));
     }
 
     @Override

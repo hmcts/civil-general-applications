@@ -195,4 +195,12 @@ public class DocUploadUtils {
             caseDataBuilder.isApplicantResponded(null);
         }
     }
+
+    public static boolean uploadedDocumentAwaitingTranslation(CaseData caseData, String role, String documentName) {
+        if (caseData.getPreTranslationGaDocuments() == null) {
+            return false;
+        }
+        return caseData.getPreTranslationGaDocuments().stream().anyMatch(
+            element -> role.equals(element.getValue().getCreatedBy()) && documentName.equals(element.getValue().getDocumentName()));
+    }
 }
