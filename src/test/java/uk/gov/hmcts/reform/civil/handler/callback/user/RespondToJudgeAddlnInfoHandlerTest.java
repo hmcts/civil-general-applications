@@ -41,6 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.RESPOND_TO_JUDGE_ADDITIONAL_INFO;
@@ -249,6 +250,64 @@ public class RespondToJudgeAddlnInfoHandlerTest extends BaseCallbackHandlerTest 
 
         handler.handle(params);
         verify(docUploadDashboardNotificationService).createDashboardNotification(any(CaseData.class), anyString(), anyString(), anyBoolean());
+    }
+
+    @Test
+    void shouldNotCreateDashboardNotificationIfTranslationRequired() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        List<Element<Document>> generalAppAddlnInfoUpload = new ArrayList<>();
+
+        Document document1 = Document.builder().documentFileName(TEST_STRING).documentUrl(TEST_STRING)
+            .documentBinaryUrl(TEST_STRING)
+            .documentHash(TEST_STRING).build();
+
+        Document document2 = Document.builder().documentFileName(TEST_STRING).documentUrl(TEST_STRING)
+            .documentBinaryUrl(TEST_STRING)
+            .documentHash(TEST_STRING).build();
+
+        generalAppAddlnInfoUpload.add(element(document1));
+        generalAppAddlnInfoUpload.add(element(document2));
+
+        CaseData caseData = getCase(generalAppAddlnInfoUpload, null, null);
+        caseData = caseData.toBuilder().isGaApplicantLip(YES).applicantBilingualLanguagePreference(YES)
+            .generalAppAddlnInfoText("test").build();
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+
+        handler.handle(params);
+        verify(docUploadDashboardNotificationService, never()).createDashboardNotification(any(CaseData.class), anyString(), anyString(), anyBoolean());
+    }
+
+    @Test
+    void shouldNotCreateDashboardNotificationIfTranslationAwaiting() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        List<Element<Document>> generalAppAddlnInfoUpload = new ArrayList<>();
+
+        Document document1 = Document.builder().documentFileName(TEST_STRING).documentUrl(TEST_STRING)
+            .documentBinaryUrl(TEST_STRING)
+            .documentHash(TEST_STRING).build();
+
+        Document document2 = Document.builder().documentFileName(TEST_STRING).documentUrl(TEST_STRING)
+            .documentBinaryUrl(TEST_STRING)
+            .documentHash(TEST_STRING).build();
+
+        generalAppAddlnInfoUpload.add(element(document1));
+        generalAppAddlnInfoUpload.add(element(document2));
+
+        CaseData caseData = getCase(generalAppAddlnInfoUpload, null, null);
+        caseData = caseData.toBuilder().isGaApplicantLip(YES).applicantBilingualLanguagePreference(YES)
+            .preTranslationGaDocuments(List.of(element(CaseDocument.builder().documentName("Additional information").createdBy("Applicant").build()))).build();
+
+        Map<String, Object> dataMap = objectMapper.convertValue(caseData, new TypeReference<>() {
+        });
+        CallbackParams params = callbackParamsOf(dataMap, CallbackType.ABOUT_TO_SUBMIT);
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+
+        handler.handle(params);
+        verify(docUploadDashboardNotificationService, never()).createDashboardNotification(any(CaseData.class), anyString(), anyString(), anyBoolean());
     }
 
     private CaseData getCaseData(AboutToStartOrSubmitCallbackResponse response) {
