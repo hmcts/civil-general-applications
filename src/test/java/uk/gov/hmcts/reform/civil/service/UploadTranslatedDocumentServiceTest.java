@@ -25,9 +25,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 public class UploadTranslatedDocumentServiceTest {
@@ -37,6 +39,12 @@ public class UploadTranslatedDocumentServiceTest {
 
     @Mock
     private AssignCategoryId assignCategoryId;
+
+    @Mock
+    private GaForLipService gaForLipService;
+
+    @Mock
+    private DocUploadDashboardNotificationService docUploadDashboardNotificationService;
 
     @InjectMocks
     private UploadTranslatedDocumentService uploadTranslatedDocumentService;
@@ -865,5 +873,81 @@ public class UploadTranslatedDocumentServiceTest {
         assertThat(result.getGaDraftDocument()).isNotNull();
         assertThat(result.getGeneralOrderDocument().get(0).getValue().getCreatedBy()).isEqualTo(translator);
         verify(assignCategoryId, times(9)).assignCategoryIdToCollection(anyList(), any(), any());
+    }
+
+    @Test
+    void shouldSendUserUploadNotificationWrittenRepsApplicant() {
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
+        TranslatedDocument translatedDocument = TranslatedDocument.builder()
+            .documentType(TranslatedDocumentType.WRITTEN_REPRESENTATIONS_APPLICANT)
+            .file(mock(Document.class))
+            .build();
+        translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
+        CaseData caseData = CaseData.builder()
+            .translatedDocuments(translatedDocuments).build();
+        CaseData updatedCaseData = CaseData.builder().build();
+
+        uploadTranslatedDocumentService.sendUserUploadNotification(caseData, updatedCaseData, "auth");
+
+        verify(docUploadDashboardNotificationService).createDashboardNotification(eq(caseData), eq("Applicant"), eq("auth"), eq(false));
+        verify(docUploadDashboardNotificationService).createResponseDashboardNotification(eq(caseData), eq("RESPONDENT"), eq("auth"));
+    }
+
+    @Test
+    void shouldSendUserUploadNotificationWrittenRepsRespondent() {
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
+        TranslatedDocument translatedDocument = TranslatedDocument.builder()
+            .documentType(TranslatedDocumentType.WRITTEN_REPRESENTATIONS_RESPONDENT)
+            .file(mock(Document.class))
+            .build();
+        translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
+        CaseData caseData = CaseData.builder()
+            .translatedDocuments(translatedDocuments).build();
+        CaseData updatedCaseData = CaseData.builder().build();
+
+        uploadTranslatedDocumentService.sendUserUploadNotification(caseData, updatedCaseData, "auth");
+
+        verify(docUploadDashboardNotificationService).createDashboardNotification(eq(caseData), eq("Respondent One"), eq("auth"), eq(false));
+        verify(docUploadDashboardNotificationService).createResponseDashboardNotification(eq(caseData), eq("APPLICANT"), eq("auth"));
+    }
+
+    @Test
+    void shouldSendUserUploadNotificationMoreInfoApplicant() {
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
+        TranslatedDocument translatedDocument = TranslatedDocument.builder()
+            .documentType(TranslatedDocumentType.REQUEST_MORE_INFORMATION_APPLICANT)
+            .file(mock(Document.class))
+            .build();
+        translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
+        CaseData caseData = CaseData.builder()
+            .translatedDocuments(translatedDocuments).build();
+        CaseData updatedCaseData = CaseData.builder().build();
+
+        uploadTranslatedDocumentService.sendUserUploadNotification(caseData, updatedCaseData, "auth");
+
+        verify(docUploadDashboardNotificationService).createDashboardNotification(eq(caseData), eq("Applicant"), eq("auth"), eq(false));
+        verify(docUploadDashboardNotificationService, never()).createResponseDashboardNotification(eq(caseData), eq("RESPONDENT"), eq("auth"));
+    }
+
+    @Test
+    void shouldSendUserUploadNotificationMoreInfoRespondent() {
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
+        TranslatedDocument translatedDocument = TranslatedDocument.builder()
+            .documentType(TranslatedDocumentType.REQUEST_MORE_INFORMATION_RESPONDENT)
+            .file(mock(Document.class))
+            .build();
+        translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
+        CaseData caseData = CaseData.builder()
+            .translatedDocuments(translatedDocuments).build();
+        CaseData updatedCaseData = CaseData.builder().build();
+
+        uploadTranslatedDocumentService.sendUserUploadNotification(caseData, updatedCaseData, "auth");
+
+        verify(docUploadDashboardNotificationService).createDashboardNotification(eq(caseData), eq("Respondent One"), eq("auth"), eq(false));
+        verify(docUploadDashboardNotificationService, never()).createResponseDashboardNotification(eq(caseData), eq("APPLICANT"), eq("auth"));
     }
 }
