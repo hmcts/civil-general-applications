@@ -298,7 +298,7 @@ public class UploadTranslatedDocumentService {
                         .findFirst();
                     preTranslationMoreInfoApplicant.ifPresent(preTranslationGaDocuments::remove);
                     preTranslationMoreInfoApplicant.ifPresent(element ->
-                                                                     DocUploadUtils.addToAddl(caseDataBuilder.build(), caseDataBuilder, List.of(element), DocUploadUtils.APPLICANT, false)
+                        DocUploadUtils.addToAddl(caseDataBuilder.build(), caseDataBuilder, List.of(element), DocUploadUtils.APPLICANT, false)
                     );
                     preTranslationMoreInfoApplicant.ifPresent(applicantPreTranslation::remove);
                     caseDataBuilder.preTranslationGaDocsApplicant(applicantPreTranslation);
@@ -309,7 +309,7 @@ public class UploadTranslatedDocumentService {
                         .findFirst();
                     preTranslationMoreInfoRespondent.ifPresent(preTranslationGaDocuments::remove);
                     preTranslationMoreInfoRespondent.ifPresent(element ->
-                                                                     DocUploadUtils.addToAddl(caseDataBuilder.build(), caseDataBuilder, List.of(element), DocUploadUtils.RESPONDENT_ONE, false)
+                        DocUploadUtils.addToAddl(caseDataBuilder.build(), caseDataBuilder, List.of(element), DocUploadUtils.RESPONDENT_ONE, false)
                     );
                     preTranslationMoreInfoRespondent.ifPresent(respondentPreTranslation::remove);
                     caseDataBuilder.preTranslationGaDocsRespondent(respondentPreTranslation);
@@ -374,6 +374,7 @@ public class UploadTranslatedDocumentService {
                     documentName = "Additional information";
                     role = DocUploadUtils.RESPONDENT_ONE;
                 }
+                default -> { }
             }
             if (documentName != null && !DocUploadUtils.uploadedDocumentAwaitingTranslation(updatedCaseData, role, documentName)) {
                 docUploadDashboardNotificationService.createDashboardNotification(caseData, role, authToken, false);
