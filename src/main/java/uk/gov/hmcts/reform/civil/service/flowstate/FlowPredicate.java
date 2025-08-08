@@ -91,4 +91,9 @@ public class FlowPredicate {
             && (judgeMadeWrittenRep.test(caseData) || judgeMadeDirections.test(caseData)
             || judgeRequestAdditionalInfo.test(caseData) || judgeMadeOrder.test(caseData)
             || judgeMadeDismissalOrder.test(caseData) || judgeMadeListingForHearing.test(caseData));
+
+    public static final Predicate<CaseData> isFreeFeeWelshApplication = caseData ->
+        isWelshApplicant.test(caseData) && (caseData.getGeneralAppPBADetails() != null
+            && (caseData.getGeneralAppPBADetails().getFee().getCode().equals("FREE")) && caseData.getGeneralAppType().getTypes()
+            .contains(GeneralApplicationTypes.ADJOURN_HEARING));
 }

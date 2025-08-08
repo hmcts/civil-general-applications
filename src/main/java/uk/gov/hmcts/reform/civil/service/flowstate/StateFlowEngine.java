@@ -10,20 +10,7 @@ import uk.gov.hmcts.reform.civil.stateflow.StateFlow;
 import uk.gov.hmcts.reform.civil.stateflow.StateFlowBuilder;
 import uk.gov.hmcts.reform.civil.stateflow.model.State;
 
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isLipApplication;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isLipRespondent;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isVaryJudgementAppByResp;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isWelshApplicant;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isWelshJudgeDecision;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeDecision;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeDirections;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeListingForHearing;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeWrittenRep;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeRequestAdditionalInfo;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.judgeMadeOrder;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.paymentSuccess;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.withNoticeApplication;
-import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.withOutNoticeApplication;
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.*;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.ADDITIONAL_INFO;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.APPLICATION_SUBMITTED;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowState.Main.APPLICATION_SUBMITTED_JUDICIAL_DECISION;
@@ -51,6 +38,7 @@ public class StateFlowEngine {
                     flags.put(FlowFlag.LIP_APPLICANT.name(), isLipApplication.test(c));
                     flags.put(FlowFlag.LIP_RESPONDENT.name(), isLipRespondent.test(c));
                     flags.put(FlowFlag.VARY_JUDGE_GA_BY_RESP.name(), isVaryJudgementAppByResp.test(c));
+                    flags.put(FlowFlag.FREE_FEE_WELSH_APPLICATION.name(), isFreeFeeWelshApplication.test(c));
                 })
             .state(APPLICATION_SUBMITTED)
                 .transitionTo(PROCEED_GENERAL_APPLICATION)
