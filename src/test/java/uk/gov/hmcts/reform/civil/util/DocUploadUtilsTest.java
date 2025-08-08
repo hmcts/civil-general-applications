@@ -238,7 +238,7 @@ public class DocUploadUtilsTest {
     }
 
     @Test
-    public void should_addToPreTranslation() {
+    public void should_addToPreTranslationApplicant() {
         CaseData caseData = CaseData.builder().build();
         CaseData.CaseDataBuilder builder = caseData.toBuilder();
 
@@ -254,7 +254,30 @@ public class DocUploadUtilsTest {
 
         DocUploadUtils.addDocumentToPreTranslation(caseData, builder, tobeAdded, DocUploadUtils.APPLICANT, RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION);
         caseData = builder.build();
+        assertThat(caseData.getPreTranslationGaDocsApplicant().size()).isEqualTo(1);
         assertThat(caseData.getGaAddlDocClaimant().size()).isEqualTo(1);
+        assertThat(caseData.getPreTranslationGaDocuments().size()).isEqualTo(1);
+    }
+
+    @Test
+    public void should_addToPreTranslationRespondent() {
+        CaseData caseData = CaseData.builder().build();
+        CaseData.CaseDataBuilder builder = caseData.toBuilder();
+
+        List<Element<Document>> tobeAdded = new ArrayList<>();
+        tobeAdded.add(element(Document.builder()
+                                  .documentFileName("witness_document.pdf")
+                                  .documentUrl("http://dm-store:8080")
+                                  .documentBinaryUrl("http://dm-store:8080/documents").build()));
+        tobeAdded.add(element(Document.builder()
+                                  .documentFileName("witness_document.pdf")
+                                  .documentUrl("http://dm-store:8080")
+                                  .documentBinaryUrl("http://dm-store:8080/documents").build()));
+
+        DocUploadUtils.addDocumentToPreTranslation(caseData, builder, tobeAdded, DocUploadUtils.RESPONDENT_ONE, RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION);
+        caseData = builder.build();
+        assertThat(caseData.getPreTranslationGaDocsRespondent().size()).isEqualTo(1);
+        assertThat(caseData.getGaAddlDocRespondentSol().size()).isEqualTo(1);
         assertThat(caseData.getPreTranslationGaDocuments().size()).isEqualTo(1);
     }
 
