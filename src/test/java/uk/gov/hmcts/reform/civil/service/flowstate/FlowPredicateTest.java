@@ -1,13 +1,17 @@
 package uk.gov.hmcts.reform.civil.service.flowstate;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
+import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
-import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
+import uk.gov.hmcts.reform.civil.model.Fee;
+import uk.gov.hmcts.reform.civil.model.PaymentDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.*;
+
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -102,5 +106,37 @@ public class FlowPredicateTest {
         boolean result = FlowPredicate.isWelshJudgeDecision.test(caseData);
 
         assertThat(result).isTrue();
+    }
+
+    @Test
+    public void testIsFreeApplication() {
+        CaseData caseData = CaseData.builder()
+            .isGaApplicantLip(YesOrNo.YES)
+            .generalAppType(GAApplicationType.builder().types(Collections.singletonList(GeneralApplicationTypes.ADJOURN_HEARING)).build())
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                        .paymentDetails(PaymentDetails.builder()
+                                                            .status(PaymentStatus.SUCCESS).build())
+                                        .fee(Fee.builder().code("FREE").build()).build())
+            .applicantBilingualLanguagePreference(YesOrNo.YES).build();
+
+        boolean result = FlowPredicate.isFreeFeeWelshApplication.test(caseData);
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    public void testIsNotFreeApplication() {
+        CaseData caseData = CaseData.builder()
+            .isGaApplicantLip(YesOrNo.YES)
+            .generalAppType(GAApplicationType.builder().types(Collections.singletonList(GeneralApplicationTypes.ADJOURN_HEARING)).build())
+            .generalAppPBADetails(GAPbaDetails.builder()
+                                      .paymentDetails(PaymentDetails.builder()
+                                                          .status(PaymentStatus.SUCCESS).build())
+                                      .fee(Fee.builder().code("Not_Free").build()).build())
+            .applicantBilingualLanguagePreference(YesOrNo.YES).build();
+
+        boolean result = FlowPredicate.isFreeFeeWelshApplication.test(caseData);
+
+        assertThat(result).isFalse();
     }
 }
