@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocument;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentUploadException;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
@@ -75,8 +76,9 @@ public class UploadTranslatedDocumentService {
             TranslatedDocument translatedDocument = translatedDocumentElement.getValue();
             DocumentType documentType =
                 translatedDocument.getCorrespondingDocumentType(translatedDocument.getDocumentType());
+            Document translatedDocumentFile = Document.toDocument(translatedDocument.getFile(), documentType);
             CaseDocument caseDocument = CaseDocument.toCaseDocument(
-                translatedDocument.getFile(),
+                translatedDocumentFile,
                 documentType,
                 translator
             );
