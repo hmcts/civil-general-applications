@@ -13,7 +13,7 @@ def product = "civil"
 def component = "general-applications"
 def camundaBranch = "master"
 def generalappCCDBranch = "master"
-def ccddefbranch = "master"
+def ccddefbranch = "feat/civ-17326"
 def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
 
 AppPipelineConfig pipelineConf
@@ -151,7 +151,7 @@ withPipeline(type, product, component) {
     env.SERVICE_AUTH_PROVIDER_API_BASE_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
     env.CCD_DATA_STORE_URL = "https://ccd-data-store-api-civil-general-applications-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     env.DM_STORE_URL = "http://dm-store-aat.service.core-compute-aat.internal"
-    
+
     copyPrevFailedAndNotExecutedTestFilesJson();
   }
 
