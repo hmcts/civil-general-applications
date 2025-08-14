@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
@@ -1094,6 +1095,63 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
 
             assertThat(updatedData.getPreTranslationGaDocuments()).isEmpty();
             assertThat(updatedData.getPreTranslationGaDocumentType()).isNull();
+        }
+
+        @Test
+        void shouldGenerateGeneralOrderDocument_whenAboutToSubmitEventIsCalledForWelshLipButDontHideIt() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .requestForInformationApplication()
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
+                GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY).build())
+                .isGaApplicantLip(YES)
+                .isGaRespondentOneLip(YES)
+                .applicantBilingualLanguagePreference(YES)
+                .parentClaimantIsApplicant(YES)
+                .build();
+            caseData = caseData.toBuilder().judicialDecision(GAJudicialDecision.builder()
+                                                     .decision(GAJudgeDecisionOption.REQUEST_MORE_INFO)
+                                                     .build()).build();
+            when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(requestForInformationGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getPreTranslationGaDocuments()).isEmpty();
+            assertThat(updatedData.getPreTranslationGaDocumentType()).isNull();
+            assertThat(updatedData.getRequestForInformationDocument()).isNotEmpty();
+        }
+
+        @Test
+        void shouldGenerateGeneralOrderDocument_whenAboutToSubmitEventIsCalledForWelshLipButHideIt() {
+            CaseData caseData = CaseDataBuilder.builder()
+                .requestForInformationApplication()
+                .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
+                    GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION).judgeRequestMoreInfoByDate(LocalDate.now().minusDays(1))
+                .judgeRequestMoreInfoText("test").build())
+                .isGaApplicantLip(YES)
+                .isGaRespondentOneLip(YES)
+                .parentClaimantIsApplicant(YES)
+                .applicantBilingualLanguagePreference(YES)
+                .build();
+            caseData = caseData.toBuilder().judicialDecision(GAJudicialDecision.builder()
+                                                                 .decision(GAJudgeDecisionOption.REQUEST_MORE_INFO)
+                                                                 .build()).build();
+            when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            verify(requestForInformationGenerator).generate(any(CaseData.class), eq("BEARER_TOKEN"));
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getPreTranslationGaDocuments()).isNotEmpty();
+            assertThat(updatedData.getPreTranslationGaDocumentType()).isEqualTo(PreTranslationGaDocumentType.REQUEST_MORE_INFORMATION_ORDER_DOC);
+            assertThat(updatedData.getRequestForInformationDocument()).isEmpty();
         }
 
         @Test
