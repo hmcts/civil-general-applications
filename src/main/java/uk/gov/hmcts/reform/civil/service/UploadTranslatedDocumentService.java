@@ -194,8 +194,8 @@ public class UploadTranslatedDocumentService {
                             .filter(item -> item.getValue().getDocumentType() == DocumentType.GENERAL_APPLICATION_DRAFT)
                             .findFirst();
                         if (document.getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT)) {
-                            caseDataBuilder.generalAppNotificationDeadlineDate
-                                (deadlinesCalculator.calculateApplicantResponseDeadline(LocalDateTime.now(), 5));
+                            caseDataBuilder.generalAppNotificationDeadlineDate(deadlinesCalculator
+                                                                                   .calculateApplicantResponseDeadline(LocalDateTime.now(), 5));
                         }
                         preTranslationGADraftDocument.ifPresent(preTranslationGaDocuments::remove);
                         preTranslationGADraftDocument.ifPresent(gaDraftDocument::add);

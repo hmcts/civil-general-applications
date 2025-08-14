@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,9 +28,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 public class UploadTranslatedDocumentServiceTest {
@@ -42,6 +44,10 @@ public class UploadTranslatedDocumentServiceTest {
 
     @InjectMocks
     private UploadTranslatedDocumentService uploadTranslatedDocumentService;
+
+    @Mock
+    DeadlinesCalculator deadlinesCalculator;
+    LocalDateTime deadline = LocalDateTime.now().plusDays(5);
 
     @BeforeEach
     void setUp() {
@@ -111,6 +117,8 @@ public class UploadTranslatedDocumentServiceTest {
         List<Element<CaseDocument>> preTranslationGaDocuments = new ArrayList<>(List.of(
             element(originalDocument)
         ));
+        when(deadlinesCalculator.calculateApplicantResponseDeadline(
+            any(LocalDateTime.class), any(Integer.class))).thenReturn(deadline);
         CaseData caseData = CaseData.builder()
             .translatedDocuments(translatedDocuments)
             .preTranslationGaDocuments(preTranslationGaDocuments)
