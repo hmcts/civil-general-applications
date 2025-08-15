@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.launchdarkly;
 
 import com.google.common.collect.ImmutableList;
+import com.launchdarkly.sdk.LDContext;
 import com.launchdarkly.sdk.LDUser;
 import com.launchdarkly.sdk.server.interfaces.LDClientInterface;
 import org.junit.jupiter.api.BeforeEach;
@@ -117,7 +118,8 @@ class FeatureToggleServiceTest {
     @ValueSource(booleans = {true, false})
     void shouldCallBoolVariation_whenGaForLipNro(Boolean toggleStat) {
         var gaCuiNroKey = "cui-ga-nro";
-        givenToggle(gaCuiNroKey, toggleStat);
+        when(ldClient.boolVariation(eq(gaCuiNroKey), any(LDContext.class), anyBoolean()))
+            .thenReturn(toggleStat);
 
         assertThat(featureToggleService.isCuiGaNroEnabled()).isEqualTo(toggleStat);
     }

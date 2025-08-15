@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.launchdarkly;
 
+import com.launchdarkly.sdk.LDContext;
 import com.launchdarkly.sdk.LDUser;
 import com.launchdarkly.sdk.server.interfaces.LDClientInterface;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +38,7 @@ public class FeatureToggleService {
     }
 
     public boolean isGaForLipsEnabled() {
-        return internalClient.boolVariation("GaForLips", createLDUser().build(), false);
+        return true;
     }
 
     public boolean isOrganisationOnboarded(String orgId) {
@@ -57,12 +58,16 @@ public class FeatureToggleService {
         return internalClient.boolVariation("case-file-view", createLDUser().build(), false);
     }
 
+    public boolean isDashboardServiceEnabled() {
+        return true;
+    }
+
     public boolean isCoSCEnabled() {
         return internalClient.boolVariation("isCoSCEnabled", createLDUser().build(), false);
     }
 
     public boolean isGaForWelshEnabled() {
-        return internalClient.boolVariation("generalApplicationsForWelshParty", createLDUser().build(), false);
+        return true;
     }
 
     public boolean isPublicQueryManagementEnabled(CaseData caseData) {
@@ -101,6 +106,6 @@ public class FeatureToggleService {
     }
 
     public boolean isCuiGaNroEnabled() {
-        return internalClient.boolVariation("cui-ga-nro", createLDUser().build(), false);
+        return internalClient.boolVariation("cui-ga-nro", LDContext.fromUser(createLDUser().build()), false);
     }
 }
