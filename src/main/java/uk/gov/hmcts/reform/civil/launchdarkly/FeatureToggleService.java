@@ -38,7 +38,7 @@ public class FeatureToggleService {
     }
 
     public boolean isGaForLipsEnabled() {
-        return true;
+        return internalClient.boolVariation("GaForLips", createLDUser().build(), false);
     }
 
     public boolean isOrganisationOnboarded(String orgId) {
@@ -58,16 +58,12 @@ public class FeatureToggleService {
         return internalClient.boolVariation("case-file-view", createLDUser().build(), false);
     }
 
-    public boolean isDashboardServiceEnabled() {
-        return true;
-    }
-
     public boolean isCoSCEnabled() {
         return internalClient.boolVariation("isCoSCEnabled", createLDUser().build(), false);
     }
 
     public boolean isGaForWelshEnabled() {
-        return true;
+        return internalClient.boolVariation("generalApplicationsForWelshParty", createLDUser().build(), false);
     }
 
     public boolean isPublicQueryManagementEnabled(CaseData caseData) {
