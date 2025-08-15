@@ -9,14 +9,17 @@ import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocument;
 import uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,9 +28,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
 
 public class UploadTranslatedDocumentServiceTest {
@@ -40,6 +44,10 @@ public class UploadTranslatedDocumentServiceTest {
 
     @InjectMocks
     private UploadTranslatedDocumentService uploadTranslatedDocumentService;
+
+    @Mock
+    DeadlinesCalculator deadlinesCalculator;
+    LocalDateTime deadline = LocalDateTime.now().plusDays(5);
 
     @BeforeEach
     void setUp() {
@@ -109,6 +117,8 @@ public class UploadTranslatedDocumentServiceTest {
         List<Element<CaseDocument>> preTranslationGaDocuments = new ArrayList<>(List.of(
             element(originalDocument)
         ));
+        when(deadlinesCalculator.calculateApplicantResponseDeadline(
+            any(LocalDateTime.class), any(Integer.class))).thenReturn(deadline);
         CaseData caseData = CaseData.builder()
             .translatedDocuments(translatedDocuments)
             .preTranslationGaDocuments(preTranslationGaDocuments)
@@ -370,11 +380,31 @@ public class UploadTranslatedDocumentServiceTest {
         translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
         CaseData caseData = CaseData.builder()
             .translatedDocuments(translatedDocuments)
+            .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().code("F1234").build()).build())
             .preTranslationGaDocumentType(PreTranslationGaDocumentType.APPLICATION_SUMMARY_DOC)
             .build();
         // When
         String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
         assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_GA_SUMMARY_DOC");
+    }
+
+    @Test
+    void shouldGetCorrectBusinessProcessForFreeFeeApplicationSummaryDraftDoc() {
+        // Given
+        List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
+        TranslatedDocument translatedDocument = TranslatedDocument.builder()
+            .documentType(TranslatedDocumentType.APPLICATION_SUMMARY_DOCUMENT)
+            .file(mock(Document.class))
+            .build();
+        translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
+        CaseData caseData = CaseData.builder()
+            .translatedDocuments(translatedDocuments)
+            .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().code("FREE").build()).build())
+            .preTranslationGaDocumentType(PreTranslationGaDocumentType.APPLICATION_SUMMARY_DOC)
+            .build();
+        // When
+        String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
+        assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_FOR_FREE_FEE_APPLICATION");
     }
 
     @Test
