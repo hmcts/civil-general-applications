@@ -115,6 +115,15 @@ class FeatureToggleServiceTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
+    void shouldCallBoolVariation_whenGaForLipNro(Boolean toggleStat) {
+        var gaCuiNroKey = "cui-ga-nro";
+        givenToggle(gaCuiNroKey, toggleStat);
+
+        assertThat(featureToggleService.isCuiGaNroEnabled()).isEqualTo(toggleStat);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
     void shouldCallBoolVariation_whenCoscIsInvoked(Boolean toggleStat) {
         var isCoscEnabed = "isCoSCEnabled";
         givenToggle(isCoscEnabed, toggleStat);

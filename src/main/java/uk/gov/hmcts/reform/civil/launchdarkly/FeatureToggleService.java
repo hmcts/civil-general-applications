@@ -100,4 +100,7 @@ public class FeatureToggleService {
         return internalClient.boolVariation(feature, createLDUser().custom("timestamp", date).build(), defaultValue);
     }
 
+    public boolean isCuiGaNroEnabled() {
+        return internalClient.boolVariation("cui-ga-nro", createLDUser().build(), false);
+    }
 }
