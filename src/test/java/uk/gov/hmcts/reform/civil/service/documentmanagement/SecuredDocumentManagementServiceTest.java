@@ -179,6 +179,38 @@ class SecuredDocumentManagementServiceTest {
         }
 
         @Test
+        void shouldDownloadDocumentFromDocumentManagementAmApi() throws JsonProcessingException {
+
+            Document document = mapper.readValue(
+                readString("document-management/download.success.json"),
+                Document.class
+            );
+            String documentPath = URI.create(document.links.self.href).getPath();
+            String documentBinary = URI.create(document.links.binary.href).getPath().replaceFirst("/", "");
+            UUID documentId = getDocumentIdFromSelfHref(documentPath);
+
+            when(caseDocumentClientApi.getMetadataForDocument(
+                     anyString(),
+                     anyString(),
+                     eq(documentId)
+                 )
+            ).thenReturn(document);
+
+            when(responseEntity.getBody()).thenReturn(new ByteArrayResource("test".getBytes()));
+
+            when(caseDocumentClientApi.getDocumentBinary(anyString(), anyString(), eq(UUID.fromString("85d97996-22a5-40d7-882e-3a382c8ae1b4"))))
+                .thenReturn(responseEntity);
+
+            byte[] pdf = documentManagementService.downloadDocument(BEARER_TOKEN, documentPath);
+
+            assertNotNull(pdf);
+            assertArrayEquals("test".getBytes(), pdf);
+
+            verify(caseDocumentClientApi)
+                .getDocumentBinary(anyString(), anyString(), eq(UUID.fromString("85d97996-22a5-40d7-882e-3a382c8ae1b4")));
+        }
+
+        @Test
         void shouldThrow_whenDocumentDownloadFails() throws JsonProcessingException {
             Document document = mapper.readValue(
                 readString("document-management/download.success.json"),
