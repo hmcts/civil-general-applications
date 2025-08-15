@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import uk.gov.hmcts.reform.civil.enums.dq.FinalOrderSelection;
 import uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
@@ -156,6 +157,40 @@ public class UploadTranslatedDocumentServiceTest {
     }
 
     @Test
+    void updateGaHearingNoticeDocumentsWithTheOriginalDocuments() {
+        // Given
+        List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
+        TranslatedDocument translatedDocument = TranslatedDocument.builder()
+            .documentType(TranslatedDocumentType.HEARING_NOTICE)
+            .file(mock(Document.class))
+            .build();
+        translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
+
+        CaseDocument originalDocument = CaseDocument
+            .builder()
+            .documentType(DocumentType.HEARING_NOTICE)
+            .documentLink(Document.builder().documentFileName("hearing_notice.pdf")
+                              .categoryID("applications").build())
+            .documentName("hearing_notice.pdf")
+            .build();
+
+        List<Element<CaseDocument>> preTranslationGaDocuments = new ArrayList<>(List.of(
+            element(originalDocument)
+        ));
+        CaseData caseData = CaseData.builder()
+            .translatedDocuments(translatedDocuments)
+            .preTranslationGaDocuments(preTranslationGaDocuments)
+            .preTranslationGaDocumentType(PreTranslationGaDocumentType.HEARING_NOTICE_DOC)
+            .build();
+        //when
+        uploadTranslatedDocumentService.updateGADocumentsWithOriginalDocuments(caseData.toBuilder());
+
+        // Then
+        assertThat(caseData.getHearingNoticeDocument().isEmpty()).isFalse();
+        assertThat(caseData.getPreTranslationGaDocuments().isEmpty()).isTrue();
+    }
+
+    @Test
     void updateGaWrittenRepresentationSequentialDocumentsWithTheOriginalDocuments() {
         // Given
         List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
@@ -220,6 +255,73 @@ public class UploadTranslatedDocumentServiceTest {
 
         // Then
         assertThat(caseData.getRequestForInformationDocument().isEmpty()).isFalse();
+        assertThat(caseData.getPreTranslationGaDocuments().isEmpty()).isTrue();
+    }
+
+    @Test
+    void copyHearingOrderDocumentFromTempToOriginalCollection() {
+        // Given
+        List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
+        TranslatedDocument translatedDocument = TranslatedDocument.builder()
+            .documentType(TranslatedDocumentType.HEARING_ORDER)
+            .file(mock(Document.class))
+            .build();
+        translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
+
+        CaseDocument originalDocument = CaseDocument
+            .builder()
+            .documentType(DocumentType.HEARING_ORDER)
+            .documentLink(Document.builder().documentFileName("hearing_order.pdf")
+                              .categoryID("applications").build())
+            .documentName("hearing_order.pdf")
+            .build();
+
+        List<Element<CaseDocument>> preTranslationGaDocuments = new ArrayList<>(List.of(
+            element(originalDocument)
+        ));
+        CaseData caseData = CaseData.builder()
+            .translatedDocuments(translatedDocuments)
+            .preTranslationGaDocuments(preTranslationGaDocuments)
+            .preTranslationGaDocumentType(PreTranslationGaDocumentType.HEARING_ORDER_DOC)
+            .build();
+        //when
+        uploadTranslatedDocumentService.updateGADocumentsWithOriginalDocuments(caseData.toBuilder());
+        // Then
+        assertThat(caseData.getHearingOrderDocument().isEmpty()).isFalse();
+        assertThat(caseData.getPreTranslationGaDocuments().isEmpty()).isTrue();
+    }
+
+    @Test
+    void updateGaGeneralOrderDocumentsWithTheOriginalDocuments() {
+        // Given
+        List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
+        TranslatedDocument translatedDocument = TranslatedDocument.builder()
+            .documentType(TranslatedDocumentType.GENERAL_ORDER)
+            .file(mock(Document.class))
+            .build();
+        translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
+
+        CaseDocument originalDocument = CaseDocument
+            .builder()
+            .documentType(DocumentType.GENERAL_ORDER)
+            .documentLink(Document.builder().documentFileName("general_order.pdf")
+                              .categoryID("applications").build())
+            .documentName("general_order.pdf")
+            .build();
+
+        List<Element<CaseDocument>> preTranslationGaDocuments = new ArrayList<>(List.of(
+            element(originalDocument)
+        ));
+        CaseData caseData = CaseData.builder()
+            .translatedDocuments(translatedDocuments)
+            .preTranslationGaDocuments(preTranslationGaDocuments)
+            .preTranslationGaDocumentType(PreTranslationGaDocumentType.GENERAL_ORDER_DOC)
+            .build();
+        //when
+        uploadTranslatedDocumentService.updateGADocumentsWithOriginalDocuments(caseData.toBuilder());
+
+        // Then
+        assertThat(caseData.getGeneralOrderDocument().isEmpty()).isFalse();
         assertThat(caseData.getPreTranslationGaDocuments().isEmpty()).isTrue();
     }
 
@@ -330,6 +432,24 @@ public class UploadTranslatedDocumentServiceTest {
     }
 
     @Test
+    void shouldGetCorrectBusinessProcessForHearingOrderDoc() {
+        // Given
+        List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
+        TranslatedDocument translatedDocument = TranslatedDocument.builder()
+            .documentType(TranslatedDocumentType.HEARING_ORDER)
+            .file(mock(Document.class))
+            .build();
+        translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
+        CaseData caseData = CaseData.builder()
+            .translatedDocuments(translatedDocuments)
+            .preTranslationGaDocumentType(PreTranslationGaDocumentType.HEARING_ORDER_DOC)
+            .build();
+        // When
+        String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
+        assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_JUDGE_DECISION");
+    }
+
+    @Test
     void shouldGetCorrectBusinessProcessForRequestMoreInformationDoc() {
         // Given
         List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
@@ -341,6 +461,24 @@ public class UploadTranslatedDocumentServiceTest {
         CaseData caseData = CaseData.builder()
             .translatedDocuments(translatedDocuments)
             .preTranslationGaDocumentType(PreTranslationGaDocumentType.REQUEST_MORE_INFORMATION_ORDER_DOC)
+            .build();
+        // When
+        String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
+        assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_JUDGE_DECISION");
+    }
+
+    @Test
+    void shouldGetCorrectBusinessProcessForApproveEditOrder() {
+        // Given
+        List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
+        TranslatedDocument translatedDocument = TranslatedDocument.builder()
+            .documentType(TranslatedDocumentType.APPROVE_OR_EDIT_ORDER)
+            .file(mock(Document.class))
+            .build();
+        translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
+        CaseData caseData = CaseData.builder()
+            .translatedDocuments(translatedDocuments)
+            .preTranslationGaDocumentType(PreTranslationGaDocumentType.GENERAL_ORDER_DOC)
             .build();
         // When
         String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
@@ -366,6 +504,43 @@ public class UploadTranslatedDocumentServiceTest {
     }
 
     @Test
+    void shouldNotReturnBusinessProcessForApproveEditOrderWhenFinalDecision() {
+        // Given
+        List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
+        TranslatedDocument translatedDocument = TranslatedDocument.builder()
+            .documentType(TranslatedDocumentType.APPROVE_OR_EDIT_ORDER)
+            .file(mock(Document.class))
+            .build();
+        translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
+        CaseData caseData = CaseData.builder()
+            .translatedDocuments(translatedDocuments)
+            .finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .preTranslationGaDocumentType(PreTranslationGaDocumentType.GENERAL_ORDER_DOC)
+            .build();
+        // When
+        String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
+        assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_GA_LIP");
+    }
+
+    @Test
+    void shouldGetCorrectBusinessProcessForGeneralOrderDoc() {
+        // Given
+        List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
+        TranslatedDocument translatedDocument = TranslatedDocument.builder()
+            .documentType(TranslatedDocumentType.GENERAL_ORDER)
+            .file(mock(Document.class))
+            .build();
+        translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
+        CaseData caseData = CaseData.builder()
+            .translatedDocuments(translatedDocuments)
+            .preTranslationGaDocumentType(PreTranslationGaDocumentType.GENERAL_ORDER_DOC)
+            .build();
+        // When
+        String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
+        assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_JUDGE_DECISION");
+    }
+
+    @Test
     void shouldGetCorrectBusinessProcessForOtherDoc() {
         // Given
         List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
@@ -381,6 +556,24 @@ public class UploadTranslatedDocumentServiceTest {
         // When
         String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
         assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_JUDGE_DECISION");
+    }
+
+    @Test
+    void shouldGetCorrectBusinessProcessForHearingNoticeDoc() {
+        // Given
+        List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
+        TranslatedDocument translatedDocument = TranslatedDocument.builder()
+            .documentType(TranslatedDocumentType.HEARING_NOTICE)
+            .file(mock(Document.class))
+            .build();
+        translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
+        CaseData caseData = CaseData.builder()
+            .translatedDocuments(translatedDocuments)
+            .preTranslationGaDocumentType(null)
+            .build();
+        // When
+        String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
+        assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_HEARING_SCHEDULED");
     }
 
     @Test
