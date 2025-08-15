@@ -5,6 +5,7 @@ import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeDecisionOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeMakeAnOrderOption;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
@@ -13,6 +14,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GAApplicationType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialDecision;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialMakeAnOrder;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAJudicialRequestMoreInfo;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 
 import java.util.Collections;
@@ -110,6 +112,38 @@ public class FlowPredicateTest {
         boolean result = FlowPredicate.isWelshJudgeDecision.test(caseData);
 
         assertThat(result).isTrue();
+    }
+
+    @Test
+    public void testIsWelshJudgeDecision_RequestForMoreInfo() {
+        CaseData caseData = CaseData.builder()
+            .isGaApplicantLip(YesOrNo.YES)
+            .applicantBilingualLanguagePreference(YesOrNo.YES)
+            .judicialDecision(GAJudicialDecision.builder()
+                                  .decision(GAJudgeDecisionOption.REQUEST_MORE_INFO)
+                                  .build())
+            .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
+                GAJudgeRequestMoreInfoOption.REQUEST_MORE_INFORMATION).build()).build();
+
+        boolean result = FlowPredicate.isWelshJudgeDecision.test(caseData);
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    public void testIsWelshJudgeDecision_JudgeUncloaksApplication() {
+        CaseData caseData = CaseData.builder()
+            .isGaApplicantLip(YesOrNo.YES)
+            .applicantBilingualLanguagePreference(YesOrNo.YES)
+            .judicialDecision(GAJudicialDecision.builder()
+                                  .decision(GAJudgeDecisionOption.REQUEST_MORE_INFO)
+                                  .build())
+            .judicialDecisionRequestMoreInfo(GAJudicialRequestMoreInfo.builder().requestMoreInfoOption(
+                GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY).build()).build();
+
+        boolean result = FlowPredicate.isWelshJudgeDecision.test(caseData);
+
+        assertThat(result).isFalse();
     }
 
     @Test
