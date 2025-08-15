@@ -276,7 +276,7 @@ public class UploadTranslatedDocumentService {
             && translatedDocuments.get(0).getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT)
             && (Objects.nonNull(caseData.getGeneralAppPBADetails())
             && caseData.getGeneralAppPBADetails().getFee().getCode().equals("FREE"))) {
-            return CaseEvent.UPLOAD_TRANSLATED_FREE_GA_SUMMARY_DOC;
+            return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_FOR_FREE_FEE_APPLICATION;
         } else if (Objects.nonNull(translatedDocuments)
             && translatedDocuments.get(0).getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT)) {
             return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_GA_SUMMARY_DOC;
