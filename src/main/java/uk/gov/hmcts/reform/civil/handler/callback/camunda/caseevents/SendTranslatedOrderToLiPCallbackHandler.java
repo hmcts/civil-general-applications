@@ -80,7 +80,7 @@ public class SendTranslatedOrderToLiPCallbackHandler extends CallbackHandler {
     private CallbackResponse sendTranslatedOrderLetter(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         CaseEvent caseEvent = CaseEvent.valueOf(callbackParams.getRequest().getEventId());
-        if (printServiceEnabled && shouldPrintTranslatedDocument(caseData, caseEvent)) {
+        if (printServiceEnabled && isDocumentCorrectType(caseData)) {
             CaseDocument originalCaseDocument = caseData.getOriginalDocumentsBulkPrint().get(caseData.getOriginalDocumentsBulkPrint().size() - 1).getValue();
             TranslatedDocument translatedCaseDocument = caseData.getTranslatedDocumentsBulkPrint().get(caseData.getTranslatedDocumentsBulkPrint().size() - 1)
                 .getValue();
@@ -115,10 +115,6 @@ public class SendTranslatedOrderToLiPCallbackHandler extends CallbackHandler {
         return caseDetailsConverter.toCaseData(caseDetails);
     }
 
-    private boolean shouldPrintTranslatedDocument(CaseData caseData, CaseEvent caseEvent) {
-        return isWithNoticeIfRespondent(caseData, caseEvent) && isDocumentCorrectType(caseData);
-    }
-
     private boolean isDocumentCorrectType(CaseData caseData) {
         List<Element<TranslatedDocument>> translatedDocuments = caseData.getTranslatedDocumentsBulkPrint();
         if (translatedDocuments == null || translatedDocuments.size() == 0) {
@@ -126,12 +122,5 @@ public class SendTranslatedOrderToLiPCallbackHandler extends CallbackHandler {
         }
         TranslatedDocumentType documentType = translatedDocuments.get(translatedDocuments.size() - 1).getValue().getDocumentType();
         return POST_TRANSLATED_DOCUMENT_TYPES.contains(documentType);
-    }
-
-    private boolean isWithNoticeIfRespondent(CaseData caseData, CaseEvent caseEvent) {
-        if (caseEvent == SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT) {
-            return true;
-        }
-        return isWithNotice(caseData);
     }
 }
