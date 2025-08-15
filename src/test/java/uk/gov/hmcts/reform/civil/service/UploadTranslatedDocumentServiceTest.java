@@ -404,7 +404,7 @@ public class UploadTranslatedDocumentServiceTest {
             .build();
         // When
         String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
-        assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_FREE_GA_SUMMARY_DOC");
+        assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_FOR_FREE_FEE_APPLICATION");
     }
 
     @Test
