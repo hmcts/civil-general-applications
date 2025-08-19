@@ -177,6 +177,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     @Test
     void buildResponseConfirmationReturnsCorrectMessageWhenGaHasLip() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(false);
         when(gaForLipService.isGaForLip(any())).thenReturn(true);
         CallbackParams params = callbackParamsOf(getCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION),
                                                  CallbackType.SUBMITTED);
@@ -189,6 +190,7 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
 
     @Test
     void buildResponseConfirmationReturnsCorrectMessageWhenGaHasLipAndVaryJudgeApppLipVLip() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(false);
         when(gaForLipService.isGaForLip(any())).thenReturn(true);
         when(gaForLipService.isLipApp(any())).thenReturn(true);
         when(gaForLipService.isLipResp(any())).thenReturn(true);
@@ -211,6 +213,51 @@ public class RespondToApplicationHandlerTest extends BaseCallbackHandlerTest {
         var response = (SubmittedCallbackResponse) handler.handle(params);
         verifyNoInteractions(dashboardNotificationService);
 
+        assertThat(response).isNotNull();
+    }
+
+    @Test
+    void buildResponseConfirmationReturnsCorrectMessageWhenWelshFlagEnabledAndApplicantBilingual() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        when(gaForLipService.isLipApp(any())).thenReturn(true);
+        when(gaForLipService.isLipResp(any())).thenReturn(false);
+        CaseData casedata = getVaryCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION).toBuilder()
+            .isGaApplicantLip(YES).applicantBilingualLanguagePreference(YES).build();
+
+        CallbackParams params = callbackParamsOf(casedata, CallbackType.SUBMITTED);
+        var response = (SubmittedCallbackResponse) handler.handle(params);
+        verifyNoInteractions(dashboardNotificationService);
+
+        assertThat(response).isNotNull();
+    }
+
+    @Test
+    void buildResponseConfirmationReturnsCorrectMessageWhenWelshFlagEnabledAndApplicantNotBilingual() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData casedata = getVaryCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION).toBuilder().build();
+
+        CallbackParams params = callbackParamsOf(casedata, CallbackType.SUBMITTED);
+        var response = (SubmittedCallbackResponse) handler.handle(params);
+        verifyNoInteractions(dashboardNotificationService);
+
+        assertThat(response).isNotNull();
+    }
+
+    @Test
+    void buildResponseConfirmationReturnsCorrectMessageWhenWelshFlagDisabledAndApplicantNotBilingual() {
+        when(featureToggleService.isGaForWelshEnabled()).thenReturn(false);
+        when(gaForLipService.isGaForLip(any())).thenReturn(true);
+        when(gaForLipService.isLipApp(any())).thenReturn(true);
+        when(gaForLipService.isLipResp(any())).thenReturn(true);
+        CaseData casedata = getVaryCase(APPLICATION_SUBMITTED_AWAITING_JUDICIAL_DECISION).toBuilder()
+            .isGaApplicantLip(YES).applicantBilingualLanguagePreference(YES).build();
+
+        CallbackParams params = callbackParamsOf(casedata, CallbackType.SUBMITTED);
+
+        var response = (SubmittedCallbackResponse) handler.handle(params);
+        verify(dashboardNotificationService, times(2))
+            .createOfflineResponseDashboardNotification(any(), any(), anyString());
         assertThat(response).isNotNull();
     }
 
