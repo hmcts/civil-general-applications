@@ -58,7 +58,7 @@ public class FeatureToggleService {
     }
 
     public boolean isCoSCEnabled() {
-        return internalClient.boolVariation("isCoSCEnabled", createLDUser().build(), false);
+        return true;
     }
 
     public boolean isGaForWelshEnabled() {
