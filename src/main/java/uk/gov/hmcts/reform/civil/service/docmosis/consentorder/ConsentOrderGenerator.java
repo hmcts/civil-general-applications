@@ -37,7 +37,7 @@ public class ConsentOrderGenerator implements TemplateDataGenerator<ConsentOrder
 
         ConsentOrderForm.ConsentOrderFormBuilder consentOrderFormBuilder =
             ConsentOrderForm.builder()
-                .claimNumber(caseData.getCcdCaseReference().toString())
+                .claimNumber(caseData.getGeneralAppParentCaseLink().getCaseReference())
                 .isMultiParty(caseData.getIsMultiParty())
                 .claimant1Name(caseData.getClaimant1PartyName())
                 .claimant2Name(caseData.getClaimant2PartyName() != null ? caseData.getClaimant2PartyName() : null)

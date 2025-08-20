@@ -526,7 +526,7 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
     private void assertThatApplicantFieldsAreCorrect_DraftApp(GADraftForm templateData, CaseData caseData) {
         Assertions.assertAll(
             "DraftApplication data should be as expected",
-            () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+            () -> assertEquals(templateData.getClaimNumber(), caseData.getGeneralAppParentCaseLink().getCaseReference()),
             () -> assertEquals(templateData.getClaimantName(), getClaimants(caseData)),
             () -> assertEquals(templateData.getDefendantName(), getDefendants(caseData))
         );
@@ -535,7 +535,7 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
     private void assertThatRespondentFieldsAreCorrect_DraftApp(GADraftForm templateData, CaseData caseData) {
         Assertions.assertAll(
             "DraftApplication data should be as expected",
-            () -> assertEquals(templateData.getClaimNumber(), caseData.getCcdCaseReference().toString()),
+            () -> assertEquals(templateData.getClaimNumber(), caseData.getGeneralAppParentCaseLink().getCaseReference()),
             () -> assertEquals(templateData.getClaimantName(), getClaimants(caseData)),
             () -> assertEquals(templateData.getDefendantName(), getDefendants(caseData))
         );
