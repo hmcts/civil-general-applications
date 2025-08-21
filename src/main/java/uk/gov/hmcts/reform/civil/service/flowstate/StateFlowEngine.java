@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.civil.stateflow.StateFlow;
 import uk.gov.hmcts.reform.civil.stateflow.StateFlowBuilder;
 import uk.gov.hmcts.reform.civil.stateflow.model.State;
 
+import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isFreeFeeWelshApplication;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isLipApplication;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isLipRespondent;
 import static uk.gov.hmcts.reform.civil.service.flowstate.FlowPredicate.isVaryJudgementAppByResp;
@@ -51,6 +52,7 @@ public class StateFlowEngine {
                     flags.put(FlowFlag.LIP_APPLICANT.name(), isLipApplication.test(c));
                     flags.put(FlowFlag.LIP_RESPONDENT.name(), isLipRespondent.test(c));
                     flags.put(FlowFlag.VARY_JUDGE_GA_BY_RESP.name(), isVaryJudgementAppByResp.test(c));
+                    flags.put(FlowFlag.FREE_FEE_WELSH_APPLICATION.name(), isFreeFeeWelshApplication.test(c));
                 })
             .state(APPLICATION_SUBMITTED)
                 .transitionTo(PROCEED_GENERAL_APPLICATION)
