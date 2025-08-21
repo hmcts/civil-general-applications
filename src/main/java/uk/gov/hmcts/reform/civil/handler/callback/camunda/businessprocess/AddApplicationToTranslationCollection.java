@@ -19,13 +19,11 @@ import java.util.Map;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ADD_APPLICATION_TO_TRANSLATION_COLLECTION;
 
-
 @Service
 @RequiredArgsConstructor
 public class AddApplicationToTranslationCollection extends CallbackHandler {
+
     private static final List<CaseEvent> EVENTS = Collections.singletonList(ADD_APPLICATION_TO_TRANSLATION_COLLECTION);
-
-
     private final ParentCaseUpdateHelper parentCaseUpdateHelper;
 
     @Override
