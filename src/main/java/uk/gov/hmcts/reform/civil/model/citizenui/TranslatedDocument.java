@@ -20,7 +20,6 @@ import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.JUDGES_DIRE
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.REQUEST_FOR_INFORMATION;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.REQUEST_MORE_INFORMATION_APPLICANT_TRANSLATED;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.REQUEST_MORE_INFORMATION_RESPONDENT_TRANSLATED;
-import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.SEND_APP_TO_OTHER_PARTY;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.UPLOADED_DOCUMENT_APPLICANT;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.UPLOADED_DOCUMENT_RESPONDENT;
 import static uk.gov.hmcts.reform.civil.model.documents.DocumentType.WRITTEN_REPRESENTATION_RESPONDENT_TRANSLATED;
@@ -59,8 +58,6 @@ public class TranslatedDocument {
                 return HEARING_ORDER;
             case HEARING_NOTICE:
                 return HEARING_NOTICE;
-            case WITHOUT_NOTICE_TO_WITH_NOTICE_DOCUMENT:
-                return SEND_APP_TO_OTHER_PARTY;
             case DISMISSAL_ORDER:
                 return DISMISSAL_ORDER;
             case WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL:
