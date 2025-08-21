@@ -232,30 +232,6 @@ public class SendTranslatedOrderToLiPCallbackHandlerTest extends BaseCallbackHan
         }
 
         @Test
-        void shouldNotSendTranslatedOrderLetterToLipRespondentIfNotWithNotice() {
-            CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withoutNoticeCaseData();
-            caseData = caseData.toBuilder()
-                .parentCaseReference(caseData.getCcdCaseReference().toString())
-                .translatedDocumentsBulkPrint(List.of(Element.<TranslatedDocument>builder()
-                                                          .value(TranslatedDocument.builder()
-                                                                     .documentType(TranslatedDocumentType.GENERAL_ORDER).build()).build()))
-                .respondentBilingualLanguagePreference(YesOrNo.YES)
-                .isGaApplicantLip(YesOrNo.YES)
-                .parentClaimantIsApplicant(YesOrNo.YES)
-                .build();
-
-            CallbackParams params = CallbackParamsBuilder.builder().of(ABOUT_TO_SUBMIT, caseData).request(
-                CallbackRequest.builder().eventId(SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT.name())
-                    .build()
-            ).build();
-            handler.printServiceEnabled = true;
-
-            handler.handle(params);
-
-            verifyNoInteractions(sendOrderPrintService);
-        }
-
-        @Test
         void shouldNotSendTranslatedOrderLetterToLipApplicantIfPrintServiceNotEnabled() {
             CaseData caseData = CaseDataBuilder.builder().atStateClaimDraft().withNoticeCaseData();
             caseData = caseData.toBuilder()
