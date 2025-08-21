@@ -470,7 +470,6 @@ public class ParentCaseUpdateHelper {
         coreCaseDataService.submitUpdate(parentCaseId, caseDataContent);
     }
 
-
     public void updateCollectionForWelshApplication(CaseData generalAppCaseData) {
         String applicationId = generalAppCaseData.getCcdCaseReference().toString();
         String parentCaseId = generalAppCaseData.getGeneralAppParentCaseLink().getCaseReference();

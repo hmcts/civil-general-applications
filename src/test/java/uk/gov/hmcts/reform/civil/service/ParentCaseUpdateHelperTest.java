@@ -564,11 +564,8 @@ class ParentCaseUpdateHelperTest {
         assertThat(mapCaptor.getValue().get("gaEvidenceDocStaff")).isNull();
     }
 
-
     @Test
     void should_addClaimantApplicationDetails_and_submit_when_parentClaimantIsApplicantIsYes() {
-
-        CaseData gaCase = getGaVaryCaseDataForCollection("Claimant", AWAITING_APPLICATION_PAYMENT, NO, YES, NO);
 
         CaseData civilCase = getVaryMainCaseDataForCollectionAfterPayment("Claimant");
         civilCase.getClaimantGaAppDetails().add(Element.<GeneralApplicationsDetails>builder()
@@ -576,9 +573,11 @@ class ParentCaseUpdateHelperTest {
                                                                .caseLink(CaseLink.builder()
                                                                              .caseReference(CaseDataBuilder.CASE_ID.toString())
                                                                              .build()).build()).build());
+
         when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
         when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCase);
         when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData gaCase = getGaVaryCaseDataForCollection("Claimant", AWAITING_APPLICATION_PAYMENT, NO, YES, NO);
         parentCaseUpdateHelper.updateCollectionForWelshApplication(gaCase);
         verify(coreCaseDataService, times(1))
             .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
@@ -587,7 +586,6 @@ class ParentCaseUpdateHelperTest {
 
     @Test
     void should_updateJudgeOrClaimantFromRespCollection_and_submit_when_parentClaimantIsApplicantIsNo() {
-        CaseData gaCase = getGaVaryCaseDataForCollection("RespondentSol", AWAITING_APPLICATION_PAYMENT, NO, YES, NO);
 
         CaseData civilCase = getVaryMainCaseDataForCollectionAfterPayment("RespondentSol");
         civilCase.getRespondentSolGaAppDetails().add(Element.<GADetailsRespondentSol>builder()
@@ -598,6 +596,7 @@ class ParentCaseUpdateHelperTest {
         when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
         when(caseDetailsConverter.toCaseData(any())).thenReturn(civilCase);
         when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+        CaseData gaCase = getGaVaryCaseDataForCollection("RespondentSol", AWAITING_APPLICATION_PAYMENT, NO, YES, NO);
         parentCaseUpdateHelper.updateCollectionForWelshApplication(gaCase);
         verify(coreCaseDataService, times(1))
             .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
@@ -606,7 +605,7 @@ class ParentCaseUpdateHelperTest {
 
     @Test
     void should_removeTheApplicationFromTranslationCollectionAfterPaymentAndUnpause() {
-        CaseData gaCase = getGaVaryCaseDataForCollection("Claimant", AWAITING_APPLICATION_PAYMENT, NO, YES, NO);
+
         CaseData civilCase = getVaryMainCaseDataForCollectionAfterPayment("Claimant");
         List<Element<GeneralApplicationsDetails>> translationList = new ArrayList<>();
         translationList.add(Element.<GeneralApplicationsDetails>builder()
@@ -618,7 +617,7 @@ class ParentCaseUpdateHelperTest {
         when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
         when(caseDetailsConverter.toCaseData(any())).thenReturn(updatedCaseData);
         when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
-
+        CaseData gaCase = getGaVaryCaseDataForCollection("Claimant", AWAITING_APPLICATION_PAYMENT, NO, YES, NO);
         parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(gaCase);
         verify(coreCaseDataService, times(1))
             .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
@@ -628,7 +627,7 @@ class ParentCaseUpdateHelperTest {
 
     @Test
     void should_removeTheApplicationFromTranslationCollectionAfterHwfApprovalAndUnpause() {
-        CaseData gaCase = getGaVaryCaseDataForCollection("RespondentSol", AWAITING_APPLICATION_PAYMENT, NO, YES, NO);
+
         CaseData civilCase = getVaryMainCaseDataForCollectionAfterPayment("RespondentSol");
         List<Element<GeneralApplicationsDetails>> translationList = new ArrayList<>();
         translationList.add(Element.<GeneralApplicationsDetails>builder()
@@ -637,10 +636,11 @@ class ParentCaseUpdateHelperTest {
                                                          .caseReference(CaseDataBuilder.CASE_ID.toString())
                                                          .build()).build()).build());
         CaseData updatedCaseData = civilCase.toBuilder().gaDetailsTranslationCollection(translationList).build();
+
         when(coreCaseDataService.startUpdate(any(), any())).thenReturn(getStartEventResponse(YES, NO));
         when(caseDetailsConverter.toCaseData(any())).thenReturn(updatedCaseData);
         when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
-
+        CaseData gaCase = getGaVaryCaseDataForCollection("RespondentSol", AWAITING_APPLICATION_PAYMENT, NO, YES, NO);
         parentCaseUpdateHelper.updateMasterCollectionForHwf(gaCase);
         verify(coreCaseDataService, times(1))
             .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());

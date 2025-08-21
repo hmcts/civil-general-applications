@@ -18,9 +18,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.ADD_APPLICATION_TO_TRANSLATION_COLLECTION;
 
-
 @ExtendWith(MockitoExtension.class)
 public class AddApplicationToTranslationCollectionTest extends BaseCallbackHandlerTest {
+
     private AddApplicationToTranslationCollection handler;
 
     @Mock
