@@ -255,6 +255,7 @@ public class UploadTranslatedDocumentService {
                     preTranslationHearingOrder.ifPresent(hearingOrders::add);
                     preTranslationHearingOrder.ifPresent(bulkPrintOriginalDocuments::add);
                     caseDataBuilder.hearingOrderDocument(hearingOrders);
+                    caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
                 } else if (document.getValue().getDocumentType().equals(DISMISSAL_ORDER)) {
                     Optional<Element<CaseDocument>> preTranslationDismissalOrder = preTranslationGaDocuments.stream()
                         .filter(item -> item.getValue().getDocumentType() == DocumentType.DISMISSAL_ORDER)
