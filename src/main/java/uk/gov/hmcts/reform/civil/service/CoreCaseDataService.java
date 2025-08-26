@@ -108,6 +108,7 @@ public class CoreCaseDataService {
     public CaseData submitUpdate(String caseId, CaseDataContent caseDataContent) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
         try {
+            log.info("case data content from {}", caseDataContent);
             return submitUpdate(caseId, caseDataContent, systemUpdateUser);
         } catch (Exception e) {
             log.info(e.getMessage());
@@ -274,7 +275,6 @@ public class CoreCaseDataService {
         StartEventResponse startEventResponse, Map<String, Object> contentModified) {
         var payload = new HashMap<>(startEventResponse.getCaseDetails().getData());
         payload.putAll(contentModified);
-
         return CaseDataContent.builder()
             .eventToken(startEventResponse.getToken())
             .event(Event.builder()

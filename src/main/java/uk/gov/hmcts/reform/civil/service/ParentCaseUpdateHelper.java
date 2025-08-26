@@ -212,6 +212,7 @@ public class ParentCaseUpdateHelper {
             && !generalAppCaseData.getGaDraftDocument().isEmpty())) {
             updateEvidence(updateMap, caseData, generalAppCaseData, docVisibilityRoles);
         }
+        log.info("[GA-WELSH] updateParentWithGAState data fromm this method");
         coreCaseDataService.submitUpdate(parentCaseId, coreCaseDataService.caseDataContentFromStartEventResponse(
             startEventResponse, updateMap));
     }
@@ -464,6 +465,7 @@ public class ParentCaseUpdateHelper {
                                                            gaDetailsRespondentSol2,
                                                            gaMasterDetails);
         removeApplicationFromTranslationCollection(parentCaseData, updateMap, applicationId);
+        log.info("[GA_WELSH] updated map object print {}", updateMap);
         CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
             startEventResponse, updateMap);
 
@@ -525,13 +527,16 @@ public class ParentCaseUpdateHelper {
         if (featureToggleService.isGaForWelshEnabled()) {
             List<Element<GeneralApplicationsDetails>> gaDetailsTranslationCollection = ofNullable(
                 parentCaseData.getGaDetailsTranslationCollection()).orElse(newArrayList());
-
+            log.info("[GA_WELSH] before filtration {}", gaDetailsTranslationCollection);
+            log.info("[GA_WELSH] ga application Id {}", applicationId);
             if (!gaDetailsTranslationCollection.isEmpty()) {
 
                 gaDetailsTranslationCollection.removeIf(
                     gaApplication -> applicationFilterCriteria(gaApplication, applicationId)
                 );
+                log.info("[GA_WELSH] after filtration {}", gaDetailsTranslationCollection);
                 var data = gaDetailsTranslationCollection.isEmpty() ? " " : gaDetailsTranslationCollection;
+                log.info("[GA_WELSH] selected data print {}", data);
                 updateMap.put(GENERAL_APPLICATIONS_DETAILS_FOR_WELSH, data);
             }
         }
