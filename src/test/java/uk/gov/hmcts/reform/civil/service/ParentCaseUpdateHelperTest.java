@@ -621,7 +621,9 @@ class ParentCaseUpdateHelperTest {
         parentCaseUpdateHelper.updateJudgeAndRespondentCollectionAfterPayment(gaCase);
         verify(coreCaseDataService, times(1))
             .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
-        assertThat(mapCaptor.getValue().get("gaDetailsTranslationCollection")).asList().hasSize(0);
+        assertThat(mapCaptor.getValue())
+            .extracting("gaDetailsTranslationCollection")
+            .isEqualTo(" ");
         assertThat(mapCaptor.getValue().get("gaDetailsMasterCollection")).asList().hasSize(1);
     }
 
@@ -644,7 +646,10 @@ class ParentCaseUpdateHelperTest {
         parentCaseUpdateHelper.updateMasterCollectionForHwf(gaCase);
         verify(coreCaseDataService, times(1))
             .caseDataContentFromStartEventResponse(any(), mapCaptor.capture());
-        assertThat(mapCaptor.getValue().get("gaDetailsTranslationCollection")).asList().hasSize(0);
+
+        assertThat(mapCaptor.getValue())
+            .extracting("gaDetailsTranslationCollection")
+            .isEqualTo(" ");
         assertThat(mapCaptor.getValue().get("gaDetailsMasterCollection")).asList().hasSize(1);
     }
 

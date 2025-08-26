@@ -531,7 +531,8 @@ public class ParentCaseUpdateHelper {
                 gaDetailsTranslationCollection.removeIf(
                     gaApplication -> applicationFilterCriteria(gaApplication, applicationId)
                 );
-                updateMap.put(GENERAL_APPLICATIONS_DETAILS_FOR_WELSH, gaDetailsTranslationCollection);
+                var data = gaDetailsTranslationCollection.isEmpty() ? " " : gaDetailsTranslationCollection;
+                updateMap.put(GENERAL_APPLICATIONS_DETAILS_FOR_WELSH, data);
             }
         }
     }
