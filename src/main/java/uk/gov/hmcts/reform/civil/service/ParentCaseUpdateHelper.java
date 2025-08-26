@@ -464,7 +464,6 @@ public class ParentCaseUpdateHelper {
                                                            gaDetailsRespondentSol2,
                                                            gaMasterDetails);
         removeApplicationFromTranslationCollection(parentCaseData, updateMap, applicationId);
-        log.info("[GA_WELSH] updated map object print {}", updateMap);
         CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
             startEventResponse, updateMap);
 
