@@ -218,7 +218,7 @@ public class CoreCaseDataService {
                 GENERAL_APPLICATION_CASE_TYPE,
                 query.toString()
             );
-            
+
             aggregatedResults.getCases().addAll(currentPageResults.getCases());
             aggregatedResults.setTotal(currentPageResults.getTotal());
             startIndex += pageSize;
@@ -274,7 +274,7 @@ public class CoreCaseDataService {
         StartEventResponse startEventResponse, Map<String, Object> contentModified) {
         var payload = new HashMap<>(startEventResponse.getCaseDetails().getData());
         payload.putAll(contentModified);
-        
+
         return CaseDataContent.builder()
             .eventToken(startEventResponse.getToken())
             .event(Event.builder()
