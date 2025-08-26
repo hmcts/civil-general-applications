@@ -108,7 +108,6 @@ public class CoreCaseDataService {
     public CaseData submitUpdate(String caseId, CaseDataContent caseDataContent) {
         UserAuthContent systemUpdateUser = getSystemUpdateUser();
         try {
-            log.info("case data content from {}", caseDataContent);
             return submitUpdate(caseId, caseDataContent, systemUpdateUser);
         } catch (Exception e) {
             log.info(e.getMessage());
@@ -219,7 +218,6 @@ public class CoreCaseDataService {
                 GENERAL_APPLICATION_CASE_TYPE,
                 query.toString()
             );
-
             aggregatedResults.getCases().addAll(currentPageResults.getCases());
             aggregatedResults.setTotal(currentPageResults.getTotal());
             startIndex += pageSize;
