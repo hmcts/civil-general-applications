@@ -10,7 +10,9 @@ import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
+import uk.gov.hmcts.reform.civil.enums.welshenhancements.PreTranslationGaDocumentType;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
@@ -21,10 +23,12 @@ import uk.gov.hmcts.reform.civil.service.docmosis.hearingorder.HearingFormGenera
 import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.List; 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
@@ -49,6 +53,7 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
     private final CaseDetailsConverter caseDetailsConverter;
     private final CoreCaseDataService coreCaseDataService;
     private final SendFinalOrderPrintService sendFinalOrderPrintService;
+    private final FeatureToggleService featureToggleService;
 
     CaseDocument postJudgeOrderToLipApplicant = null;
     CaseDocument postJudgeOrderToLipRespondent = null;
@@ -81,18 +86,34 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
 
     private void buildDocument(CallbackParams callbackParams, CaseData.CaseDataBuilder caseDataBuilder,
                                CaseData caseData) {
-        List<Element<CaseDocument>> documents = ofNullable(caseData.getHearingNoticeDocument())
-                .orElse(newArrayList());
-        documents.addAll(wrapElements(hearingFormGenerator.generate(
+        if (featureToggleService.isGaForWelshEnabled() && caseData.isApplicationBilingual()) {
+            List<Element<CaseDocument>> preTranslatedDocuments =
+                Optional.ofNullable(caseData.getPreTranslationGaDocuments())
+                    .orElseGet(ArrayList::new);
+            preTranslatedDocuments.addAll(wrapElements(hearingFormGenerator.generate(
                 callbackParams.getCaseData(),
                 callbackParams.getParams().get(BEARER_TOKEN).toString()
-        )));
+            )));
+            assignCategoryId.assignCategoryIdToCollection(
+                preTranslatedDocuments,
+                document -> document.getValue().getDocumentLink(),
+                AssignCategoryId.APPLICATIONS
+            );
+            caseDataBuilder.preTranslationGaDocuments(preTranslatedDocuments);
+            caseDataBuilder.preTranslationGaDocumentType(PreTranslationGaDocumentType.HEARING_NOTICE_DOC);
+        } else {
+            List<Element<CaseDocument>> documents = ofNullable(caseData.getHearingNoticeDocument())
+                .orElse(newArrayList());
+            documents.addAll(wrapElements(hearingFormGenerator.generate(
+                callbackParams.getCaseData(),
+                callbackParams.getParams().get(BEARER_TOKEN).toString()
+            )));
 
-        assignCategoryId.assignCategoryIdToCollection(documents, document -> document.getValue().getDocumentLink(),
-                                                      AssignCategoryId.APPLICATIONS
-        );
+            assignCategoryId.assignCategoryIdToCollection(documents, document -> document.getValue().getDocumentLink(),
+                                                          AssignCategoryId.APPLICATIONS);
+            caseDataBuilder.hearingNoticeDocument(documents);
+        }
 
-        caseDataBuilder.hearingNoticeDocument(documents);
     }
 
     private void postHearingFormWithCoverLetterLip(CallbackParams callbackParams, CaseData caseData) {
@@ -107,7 +128,8 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
         /*
          * Generate Judge Request for Information order document with LIP Applicant Post Address
          * */
-        if (gaForLipService.isLipApp(caseData)) {
+        if (gaForLipService.isLipApp(caseData)
+            && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
             postJudgeOrderToLipApplicant = hearingFormGenerator.generate(
                 civilCaseData,
                 caseData,
@@ -120,7 +142,8 @@ public class GenerateHearingNoticeDocumentCallbackHandler extends CallbackHandle
          * Generate Judge Request for Information order document with LIP Respondent Post Address
          * if GA is with notice
          * */
-        if (gaForLipService.isLipResp(caseData)) {
+        if (gaForLipService.isLipResp(caseData)
+            && (!featureToggleService.isGaForWelshEnabled() || !caseData.isApplicationBilingual())) {
             postJudgeOrderToLipRespondent = hearingFormGenerator.generate(
                 civilCaseData,
                 caseData,

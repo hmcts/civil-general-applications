@@ -121,6 +121,7 @@ public class SendFinalOrderPrintService {
                                        CaseDocument coverLetterCaseDocument, CaseData civilCaseData) {
         List<DocumentMetaData> documentMetaDataList
             = stitchCoverLetterAndOrderDocuments(coverLetterCaseDocument, originalDocument, translatedDocument);
+
         CaseDocument stitchedDocument = civilStitchService.generateStitchedCaseDocument(
             documentMetaDataList, coverLetterCaseDocument.getDocumentName(), caseData.getCcdCaseReference(),
             DocumentType.POST_ORDER_COVER_LETTER_LIP, authorisation);
@@ -140,7 +141,6 @@ public class SendFinalOrderPrintService {
             throw new DocumentDownloadException(stitchedDocument.getDocumentLink().getDocumentFileName(), e);
         }
         List<String> recipients = getRecipients(caseData, caseEvent, civilCaseData);
-
         sendBulkPrint(letterContent, caseData, civilCaseData, recipients);
     }
 
