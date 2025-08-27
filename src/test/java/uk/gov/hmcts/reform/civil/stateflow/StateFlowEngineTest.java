@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.PaymentDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAInformOtherParty;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAJudgesHearingListGAspec;
@@ -116,7 +117,8 @@ public class StateFlowEngineTest {
                 GAPbaDetails.builder()
                     .paymentDetails(PaymentDetails.builder()
                                         .status(PaymentStatus.SUCCESS)
-                                        .build()).build())
+                                        .build())
+                    .fee(Fee.builder().code("FEE23").build()).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(YES).build())
             .parentClaimantIsApplicant(YES)
@@ -143,7 +145,8 @@ public class StateFlowEngineTest {
                 GAPbaDetails.builder()
                     .paymentDetails(PaymentDetails.builder()
                                         .status(PaymentStatus.SUCCESS)
-                                        .build()).build())
+                                        .build())
+                    .fee(Fee.builder().code("FEE23").build()).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(YES).build())
             .parentClaimantIsApplicant(YES)
@@ -298,7 +301,7 @@ public class StateFlowEngineTest {
 
         assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
             .isEqualTo(PROCEED_GENERAL_APPLICATION.fullName());
-        assertThat(stateFlow.getFlags()).hasSize(4);
+        assertThat(stateFlow.getFlags()).hasSize(5);
         assertThat(stateFlow.getFlags().get("WELSH_ENABLED")).isTrue();
         assertThat(stateFlow.getStateHistory()).hasSize(3)
             .extracting(State::getName)
@@ -321,7 +324,7 @@ public class StateFlowEngineTest {
 
         assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
             .isEqualTo(PROCEED_GENERAL_APPLICATION.fullName());
-        assertThat(stateFlow.getFlags()).hasSize(4);
+        assertThat(stateFlow.getFlags()).hasSize(5);
         assertThat(stateFlow.getFlags().get("WELSH_ENABLED")).isTrue();
         assertThat(stateFlow.getStateHistory()).hasSize(3)
             .extracting(State::getName)
@@ -338,7 +341,8 @@ public class StateFlowEngineTest {
                 GAPbaDetails.builder()
                     .paymentDetails(PaymentDetails.builder()
                                         .status(PaymentStatus.SUCCESS)
-                                        .build()).build())
+                                        .build())
+                    .fee(Fee.builder().code("FEE23").build()).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(YES).build())
             .isGaApplicantLip(YES)
@@ -375,7 +379,7 @@ public class StateFlowEngineTest {
 
         assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
             .isEqualTo(PROCEED_GENERAL_APPLICATION.fullName());
-        assertThat(stateFlow.getFlags()).hasSize(4);
+        assertThat(stateFlow.getFlags()).hasSize(5);
         assertThat(stateFlow.getFlags().get("WELSH_ENABLED")).isFalse();
         assertThat(stateFlow.getStateHistory()).hasSize(3)
             .extracting(State::getName)
@@ -452,7 +456,8 @@ public class StateFlowEngineTest {
                 GAPbaDetails.builder()
                     .paymentDetails(PaymentDetails.builder()
                                         .status(PaymentStatus.SUCCESS)
-                                        .build()).build())
+                                        .build())
+                    .fee(Fee.builder().code("FEE23").build()).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(YES).build())
             .parentClaimantIsApplicant(YES)
@@ -483,7 +488,8 @@ public class StateFlowEngineTest {
                 GAPbaDetails.builder()
                     .paymentDetails(PaymentDetails.builder()
                                         .status(PaymentStatus.SUCCESS)
-                                        .build()).build())
+                                        .build())
+                    .fee(Fee.builder().code("FEE23").build()).build())
             .generalAppInformOtherParty(GAInformOtherParty.builder()
                                             .isWithNotice(YES).build())
             .parentClaimantIsApplicant(YES)
@@ -606,7 +612,7 @@ public class StateFlowEngineTest {
 
         assertThat(stateFlow.getState()).extracting(State::getName).isNotNull()
             .isEqualTo(PROCEED_GENERAL_APPLICATION.fullName());
-        assertThat(stateFlow.getFlags()).hasSize(4);
+        assertThat(stateFlow.getFlags()).hasSize(5);
         assertThat(stateFlow.getFlags().get("WELSH_ENABLED")).isFalse();
         assertThat(stateFlow.getStateHistory()).hasSize(3)
             .extracting(State::getName)
