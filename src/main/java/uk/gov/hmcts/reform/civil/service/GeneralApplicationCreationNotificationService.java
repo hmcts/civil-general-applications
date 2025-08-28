@@ -179,7 +179,6 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
         ));
         addAllFooterItems(caseData, mainCaseData, properties, configuration,
                            featureToggleService.isPublicQueryManagementEnabled(caseData));
-        log.info("**** Email party name: {} ****", lipRespName);
         return properties;
     }
 
