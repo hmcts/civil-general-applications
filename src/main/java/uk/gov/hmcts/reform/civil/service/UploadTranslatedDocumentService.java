@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentUploadExcept
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +40,7 @@ import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.D
 public class UploadTranslatedDocumentService {
 
     private final AssignCategoryId assignCategoryId;
+    private final DeadlinesCalculator deadlinesCalculator;
 
     public CaseData.CaseDataBuilder processTranslatedDocument(CaseData caseData, String translator) {
         List<Element<TranslatedDocument>> translatedDocuments = caseData.getTranslatedDocuments();
@@ -192,6 +194,10 @@ public class UploadTranslatedDocumentService {
                         Optional<Element<CaseDocument>> preTranslationGADraftDocument = preTranslationGaDocuments.stream()
                             .filter(item -> item.getValue().getDocumentType() == DocumentType.GENERAL_APPLICATION_DRAFT)
                             .findFirst();
+                        if (document.getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT)) {
+                            caseDataBuilder.generalAppNotificationDeadlineDate(deadlinesCalculator
+                                                                                   .calculateApplicantResponseDeadline(LocalDateTime.now(), 5));
+                        }
                         preTranslationGADraftDocument.ifPresent(preTranslationGaDocuments::remove);
                         preTranslationGADraftDocument.ifPresent(gaDraftDocument::add);
                         caseDataBuilder.gaDraftDocument(gaDraftDocument);
@@ -278,6 +284,11 @@ public class UploadTranslatedDocumentService {
         List<Element<TranslatedDocument>> translatedDocuments = caseData.getTranslatedDocuments();
 
         if (Objects.nonNull(translatedDocuments)
+            && translatedDocuments.get(0).getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT)
+            && (Objects.nonNull(caseData.getGeneralAppPBADetails())
+            && caseData.getGeneralAppPBADetails().getFee().getCode().equals("FREE"))) {
+            return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_FOR_FREE_FEE_APPLICATION;
+        } else if (Objects.nonNull(translatedDocuments)
             && translatedDocuments.get(0).getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT)) {
             return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_GA_SUMMARY_DOC;
         } else if (Objects.nonNull(translatedDocuments)
