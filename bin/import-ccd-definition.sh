@@ -8,7 +8,8 @@ params="$@"
 
 params="$1"
 branchName="$2"
-
+#remove the folder if it exists
+rm -rf ./civil-ccd-definition
 #Checkout specific branch pf  civil camunda bpmn definition
 git clone https://github.com/hmcts/civil-ccd-definition.git
 cd civil-ccd-definition
