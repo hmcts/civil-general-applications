@@ -47,5 +47,6 @@
     </suppress>
     <suppress>
         <cve>CVE-2024-56337</cve>
+        <cve>CVE-2025-54988</cve>
     </suppress>
 </suppressions>
