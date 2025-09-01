@@ -74,6 +74,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
             respondentSolicitor
                 .forEach((RS) ->
                              sendNotificationToGeneralAppRespondent(updatedCaseData,
+                                                                    civilCaseData,
                                                                     RS.getValue().getEmail(),
                                      getTemplate(updatedCaseData, false, civilCaseData)
                              ));
@@ -96,6 +97,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
                 .forEach((RS) ->
                              sendNotificationToGeneralAppRespondent(
                                  updatedCaseData,
+                                 civilCaseData,
                                  RS.getValue().getEmail(),
                                  getTemplate(updatedCaseData, true, civilCaseData)));
         }
@@ -134,7 +136,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
         }
     }
 
-    private void sendNotificationToGeneralAppRespondent(CaseData caseData, String recipient, String emailTemplate)
+    private void sendNotificationToGeneralAppRespondent(CaseData caseData, CaseData mainCaseData, String recipient, String emailTemplate)
         throws NotificationException {
         var caseReference = caseData.getCcdCaseReference();
         try {
@@ -142,7 +144,7 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
             notificationService.sendMail(
                 recipient,
                 emailTemplate,
-                addProperties(caseData),
+                addProperties(caseData, mainCaseData),
                 String.format(REFERENCE_TEMPLATE, caseData.getGeneralAppParentCaseLink().getCaseReference())
             );
             log.info("Notification sent successfully for Case ID: {}", caseReference);
@@ -153,12 +155,12 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
     }
 
     @Override
-    public Map<String, String> addProperties(CaseData caseData) {
+    public Map<String, String> addProperties(CaseData caseData, CaseData mainCaseData) {
         String lipRespName = "";
         String caseTitle = "";
         if (gaForLipService.isLipResp(caseData)) {
-
-            lipRespName = caseData.getDefendant1PartyName();
+            lipRespName = caseData.getParentClaimantIsApplicant().equals(YES) ? caseData.getDefendant1PartyName() :
+                caseData.getClaimant1PartyName();
             caseTitle = JudicialFinalDecisionHandler.getAllPartyNames(caseData);
 
         }
@@ -175,9 +177,8 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
 
             CASE_TITLE, Objects.requireNonNull(caseTitle)
         ));
-        addAllFooterItems(caseData, properties, configuration,
-                           featureToggleService.isQueryManagementLRsEnabled(),
-                           featureToggleService.isLipQueryManagementEnabled(caseData));
+        addAllFooterItems(caseData, mainCaseData, properties, configuration,
+                           featureToggleService.isPublicQueryManagementEnabled(caseData));
         return properties;
     }
 

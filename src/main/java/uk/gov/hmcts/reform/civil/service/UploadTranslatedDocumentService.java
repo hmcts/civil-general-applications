@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentUploadExcept
 import uk.gov.hmcts.reform.civil.utils.AssignCategoryId;
 import uk.gov.hmcts.reform.civil.utils.DocUploadUtils;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,16 +25,22 @@ import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_GA_LIP;
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.APPLICATION_SUMMARY_DOCUMENT_RESPONDED;
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.APPLICATION_SUMMARY_DOCUMENT;
-import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.DISMISSAL_ORDER;
+import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.APPROVE_OR_EDIT_ORDER;
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.GENERAL_ORDER;
+import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.HEARING_NOTICE;
+import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.JUDGES_DIRECTIONS_ORDER;
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.WRITTEN_REPRESENTATIONS_ORDER_CONCURRENT;
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL;
+import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.REQUEST_FOR_MORE_INFORMATION_ORDER;
+import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.HEARING_ORDER;
+import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.DISMISSAL_ORDER;
 
 @RequiredArgsConstructor
 @Service
 public class UploadTranslatedDocumentService {
 
     private final AssignCategoryId assignCategoryId;
+    private final DeadlinesCalculator deadlinesCalculator;
 
     public CaseData.CaseDataBuilder processTranslatedDocument(CaseData caseData, String translator) {
         List<Element<TranslatedDocument>> translatedDocuments = caseData.getTranslatedDocuments();
@@ -160,14 +167,25 @@ public class UploadTranslatedDocumentService {
         } else {
             gaDraftDocument = caseDataBuilder.build().getGaDraftDocument();
         }
+
+        List<Element<CaseDocument>> generalOrderDocs = Objects.isNull(caseDataBuilder.build().getGeneralOrderDocument())
+            ? newArrayList() : caseDataBuilder.build().getGeneralOrderDocument();
+
         List<Element<CaseDocument>> writtenRepsSequentialDocs = Objects.isNull(caseDataBuilder.build().getWrittenRepSequentialDocument())
             ? newArrayList() : caseDataBuilder.build().getWrittenRepSequentialDocument();
         List<Element<CaseDocument>> writtenRepsConcurrentDocs = Objects.isNull(caseDataBuilder.build().getWrittenRepConcurrentDocument())
             ? newArrayList() : caseDataBuilder.build().getWrittenRepConcurrentDocument();
+        List<Element<CaseDocument>> hearingNoticeDocs = Objects.isNull(caseDataBuilder.build().getHearingNoticeDocument())
+            ? newArrayList() : caseDataBuilder.build().getHearingNoticeDocument();
+        List<Element<CaseDocument>> requestMoreInformationDocs = Objects.isNull(caseDataBuilder.build().getRequestForInformationDocument())
+            ? newArrayList() : caseDataBuilder.build().getRequestForInformationDocument();
+        List<Element<CaseDocument>> directionOrder = Objects.isNull(caseDataBuilder.build().getDirectionOrderDocument())
+            ? newArrayList() : caseDataBuilder.build().getDirectionOrderDocument();
         List<Element<CaseDocument>> dismissalOrderDocs = Objects.isNull(caseDataBuilder.build().getDismissalOrderDocument())
             ? newArrayList() : caseDataBuilder.build().getDismissalOrderDocument();
-        List<Element<CaseDocument>> generalOrderDocs = Objects.isNull(caseDataBuilder.build().getGeneralOrderDocument())
-            ? newArrayList() : caseDataBuilder.build().getGeneralOrderDocument();
+        List<Element<CaseDocument>> hearingOrders = Objects.isNull(caseDataBuilder.build().getHearingOrderDocument())
+            ? newArrayList() : caseDataBuilder.build().getHearingOrderDocument();
+
         if (Objects.nonNull(translatedDocuments)) {
             translatedDocuments.forEach(document -> {
                 if (document.getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT)
@@ -176,6 +194,10 @@ public class UploadTranslatedDocumentService {
                         Optional<Element<CaseDocument>> preTranslationGADraftDocument = preTranslationGaDocuments.stream()
                             .filter(item -> item.getValue().getDocumentType() == DocumentType.GENERAL_APPLICATION_DRAFT)
                             .findFirst();
+                        if (document.getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT)) {
+                            caseDataBuilder.generalAppNotificationDeadlineDate(deadlinesCalculator
+                                                                                   .calculateApplicantResponseDeadline(LocalDateTime.now(), 5));
+                        }
                         preTranslationGADraftDocument.ifPresent(preTranslationGaDocuments::remove);
                         preTranslationGADraftDocument.ifPresent(gaDraftDocument::add);
                         caseDataBuilder.gaDraftDocument(gaDraftDocument);
@@ -198,6 +220,52 @@ public class UploadTranslatedDocumentService {
                     preTranslationWrittenRepsConcurrent.ifPresent(bulkPrintOriginalDocuments::add);
                     caseDataBuilder.writtenRepConcurrentDocument(writtenRepsConcurrentDocs);
                     caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
+                } else if (document.getValue().getDocumentType().equals(GENERAL_ORDER)
+                    || document.getValue().getDocumentType().equals(APPROVE_OR_EDIT_ORDER)) {
+                    Optional<Element<CaseDocument>> preTranslationGeneralOrder = preTranslationGaDocuments.stream()
+                        .filter(item -> item.getValue().getDocumentType() == DocumentType.GENERAL_ORDER)
+                        .findFirst();
+                    preTranslationGeneralOrder.ifPresent(preTranslationGaDocuments::remove);
+                    preTranslationGeneralOrder.ifPresent(generalOrderDocs::add);
+                    preTranslationGeneralOrder.ifPresent(bulkPrintOriginalDocuments::add);
+                    caseDataBuilder.generalOrderDocument(generalOrderDocs);
+                    caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
+                } else if (document.getValue().getDocumentType().equals(HEARING_NOTICE)) {
+                    Optional<Element<CaseDocument>> preTranslationHearingNotice = preTranslationGaDocuments.stream()
+                        .filter(item -> item.getValue().getDocumentType() == DocumentType.HEARING_NOTICE)
+                        .findFirst();
+                    preTranslationHearingNotice.ifPresent(preTranslationGaDocuments::remove);
+                    preTranslationHearingNotice.ifPresent(hearingNoticeDocs::add);
+                    preTranslationHearingNotice.ifPresent(bulkPrintOriginalDocuments::add);
+                    caseDataBuilder.hearingNoticeDocument(hearingNoticeDocs);
+                    caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
+                } else if (document.getValue().getDocumentType().equals(REQUEST_FOR_MORE_INFORMATION_ORDER)) {
+                    Optional<Element<CaseDocument>> preTranslationRequestMoreInformation = preTranslationGaDocuments.stream()
+                        .filter(item -> item.getValue().getDocumentType() == DocumentType.REQUEST_FOR_INFORMATION)
+                        .findFirst();
+                    preTranslationRequestMoreInformation.ifPresent(preTranslationGaDocuments::remove);
+                    preTranslationRequestMoreInformation.ifPresent(requestMoreInformationDocs::add);
+                    preTranslationRequestMoreInformation.ifPresent(bulkPrintOriginalDocuments::add);
+                    caseDataBuilder.requestForInformationDocument(requestMoreInformationDocs);
+                    caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
+                } else if (document.getValue().getDocumentType().equals(HEARING_ORDER)) {
+                    Optional<Element<CaseDocument>> preTranslationHearingOrder = preTranslationGaDocuments.stream()
+                        .filter(item -> item.getValue().getDocumentType() == DocumentType.HEARING_ORDER)
+                        .findFirst();
+                    preTranslationHearingOrder.ifPresent(preTranslationGaDocuments::remove);
+                    preTranslationHearingOrder.ifPresent(hearingOrders::add);
+                    preTranslationHearingOrder.ifPresent(bulkPrintOriginalDocuments::add);
+                    caseDataBuilder.hearingOrderDocument(hearingOrders);
+                    caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
+                } else if (document.getValue().getDocumentType().equals(JUDGES_DIRECTIONS_ORDER)) {
+                    Optional<Element<CaseDocument>> preTranslationDirectionOrder = preTranslationGaDocuments.stream()
+                        .filter(item -> item.getValue().getDocumentType() == DocumentType.DIRECTION_ORDER)
+                        .findFirst();
+                    preTranslationDirectionOrder.ifPresent(preTranslationGaDocuments::remove);
+                    preTranslationDirectionOrder.ifPresent(directionOrder::add);
+                    preTranslationDirectionOrder.ifPresent(bulkPrintOriginalDocuments::add);
+                    caseDataBuilder.directionOrderDocument(directionOrder);
+                    caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
                 } else if (document.getValue().getDocumentType().equals(DISMISSAL_ORDER)) {
                     Optional<Element<CaseDocument>> preTranslationDismissalOrder = preTranslationGaDocuments.stream()
                         .filter(item -> item.getValue().getDocumentType() == DocumentType.DISMISSAL_ORDER)
@@ -207,14 +275,6 @@ public class UploadTranslatedDocumentService {
                     preTranslationDismissalOrder.ifPresent(bulkPrintOriginalDocuments::add);
                     caseDataBuilder.dismissalOrderDocument(dismissalOrderDocs);
                     caseDataBuilder.originalDocumentsBulkPrint(bulkPrintOriginalDocuments);
-                } else if (document.getValue().getDocumentType().equals(GENERAL_ORDER)
-                    && caseDataBuilder.build().getFinalOrderSelection() != null) {
-                    Optional<Element<CaseDocument>> preTranslationDismissalOrder = preTranslationGaDocuments.stream()
-                        .filter(item -> item.getValue().getDocumentType() == DocumentType.GENERAL_ORDER)
-                        .findFirst();
-                    preTranslationDismissalOrder.ifPresent(preTranslationGaDocuments::remove);
-                    preTranslationDismissalOrder.ifPresent(generalOrderDocs::add);
-                    caseDataBuilder.generalOrderDocument(generalOrderDocs);
                 }
             });
         }
@@ -224,6 +284,11 @@ public class UploadTranslatedDocumentService {
         List<Element<TranslatedDocument>> translatedDocuments = caseData.getTranslatedDocuments();
 
         if (Objects.nonNull(translatedDocuments)
+            && translatedDocuments.get(0).getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT)
+            && (Objects.nonNull(caseData.getGeneralAppPBADetails())
+            && caseData.getGeneralAppPBADetails().getFee().getCode().equals("FREE"))) {
+            return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_FOR_FREE_FEE_APPLICATION;
+        } else if (Objects.nonNull(translatedDocuments)
             && translatedDocuments.get(0).getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT)) {
             return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_GA_SUMMARY_DOC;
         } else if (Objects.nonNull(translatedDocuments)
@@ -231,9 +296,17 @@ public class UploadTranslatedDocumentService {
             return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_GA_SUMMARY_RESPONSE_DOC;
         } else if (Objects.nonNull(translatedDocuments)
             && (translatedDocuments.get(0).getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL)
-            || translatedDocuments.get(0).getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_CONCURRENT)
-            || translatedDocuments.get(0).getValue().getDocumentType().equals(DISMISSAL_ORDER))) {
+            || translatedDocuments.get(0).getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_CONCURRENT))
+            || translatedDocuments.get(0).getValue().getDocumentType().equals(REQUEST_FOR_MORE_INFORMATION_ORDER)
+            || translatedDocuments.get(0).getValue().getDocumentType().equals(JUDGES_DIRECTIONS_ORDER)
+            || translatedDocuments.get(0).getValue().getDocumentType().equals(DISMISSAL_ORDER)
+            || ((translatedDocuments.get(0).getValue().getDocumentType().equals(GENERAL_ORDER)
+            || translatedDocuments.get(0).getValue().getDocumentType().equals(APPROVE_OR_EDIT_ORDER)) && Objects.isNull(caseData.getFinalOrderSelection())
+            || translatedDocuments.get(0).getValue().getDocumentType().equals(HEARING_ORDER))) {
             return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_JUDGE_DECISION;
+        } else if (Objects.nonNull(translatedDocuments)
+            && (translatedDocuments.get(0).getValue().getDocumentType().equals(HEARING_NOTICE))) {
+            return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_HEARING_SCHEDULED;
         } else if (Objects.nonNull(translatedDocuments)
             && translatedDocuments.get(0).getValue().getDocumentType().equals(GENERAL_ORDER)
             && caseData.getFinalOrderSelection() != null) {

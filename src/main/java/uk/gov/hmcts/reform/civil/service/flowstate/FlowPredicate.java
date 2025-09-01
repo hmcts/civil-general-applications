@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.civil.service.flowstate;
 
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.enums.dq.GAJudgeRequestMoreInfoOption;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 
@@ -75,12 +77,30 @@ public class FlowPredicate {
     public static final Predicate<CaseData> isLipApplication = caseData -> caseData.getIsGaApplicantLip() == YES;
     public static final Predicate<CaseData> isLipRespondent = caseData -> caseData.getIsGaRespondentOneLip() == YES;
 
+    public static final Predicate<CaseData> caseContainsLiP = caseData ->
+        YesOrNo.YES.equals(caseData.getIsGaApplicantLip())
+            || YesOrNo.YES.equals(caseData.getIsGaRespondentOneLip());
+
     public static final Predicate<CaseData> isVaryJudgementAppByResp = caseData -> caseData.getParentClaimantIsApplicant().equals(NO)
             && caseData.getGeneralAppType().getTypes().contains(GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT);
 
     public static final Predicate<CaseData> isWelshApplicant =
         caseData -> (caseData.isApplicationBilingual());
 
+    public static final Predicate<CaseData> judgeRequestForMoreInfo = caseData ->
+        caseData.getJudicialDecision() != null
+            && caseData.getJudicialDecision().getDecision().equals(REQUEST_MORE_INFO)
+            && (caseData.getJudicialDecisionRequestMoreInfo() != null
+            && caseData.getJudicialDecisionRequestMoreInfo().getRequestMoreInfoOption() != GAJudgeRequestMoreInfoOption.SEND_APP_TO_OTHER_PARTY);
+
     public static final Predicate<CaseData> isWelshJudgeDecision =
-        caseData -> isWelshApplicant.test(caseData) && (judgeMadeWrittenRep.test(caseData) || judgeMadeDismissalOrder.test(caseData));
+        caseData -> isWelshApplicant.test(caseData)
+            && (judgeMadeWrittenRep.test(caseData) || judgeMadeDirections.test(caseData)
+            || judgeRequestForMoreInfo.test(caseData) || judgeMadeOrder.test(caseData)
+            || judgeMadeDismissalOrder.test(caseData) || judgeMadeListingForHearing.test(caseData));
+
+    public static final Predicate<CaseData> isFreeFeeWelshApplication = caseData ->
+        isWelshApplicant.test(caseData) && (caseData.getGeneralAppPBADetails() != null
+            && (caseData.getGeneralAppPBADetails().getFee().getCode().equals("FREE")) && caseData.getGeneralAppType().getTypes()
+            .contains(GeneralApplicationTypes.ADJOURN_HEARING));
 }

@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.ccd.model.Organisation;
 import uk.gov.hmcts.reform.ccd.model.OrganisationPolicy;
 import uk.gov.hmcts.reform.civil.config.NotificationsSignatureConfiguration;
 import uk.gov.hmcts.reform.civil.config.properties.notification.NotificationsProperties;
+import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.dq.Language;
 import uk.gov.hmcts.reform.civil.handler.callback.camunda.notification.NotificationData;
@@ -52,6 +53,7 @@ import static uk.gov.hmcts.reform.civil.enums.BusinessProcessStatus.STARTED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.utils.ElementUtils.element;
+import static uk.gov.hmcts.reform.civil.utils.EmailFooterUtils.RAISE_QUERY_LR;
 
 @SpringBootTest(classes = {
     GeneralApplicationCreationNotificationService.class,
@@ -107,8 +109,6 @@ public class GeneralApplicationCreationNotificationServiceTest {
             when(configuration.getPhoneContact()).thenReturn("For anything related to hearings, call 0300 123 5577 "
                                                                  + "\n For all other matters, call 0300 123 7050");
             when(configuration.getOpeningHours()).thenReturn("Monday to Friday, 8.30am to 5pm");
-            when(configuration.getSpecUnspecContact()).thenReturn("Email for Specified Claims: contactocmc@justice.gov.uk "
-                                                                      + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
             when(configuration.getWelshContact()).thenReturn("E-bost: ymholiadaucymraeg@justice.gov.uk");
             when(configuration.getSpecContact()).thenReturn("Email: contactocmc@justice.gov.uk");
             when(configuration.getWelshHmctsSignature()).thenReturn("Hawliadau am Arian yn y Llys Sifil Ar-lein \n Gwasanaeth Llysoedd a Thribiwnlysoedd EF");
@@ -123,6 +123,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
                 .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().code("FREE").build()).build())
                 .build();
 
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation
                      .validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
@@ -141,7 +142,7 @@ public class GeneralApplicationCreationNotificationServiceTest {
                                           .paymentDetails(PaymentDetails.builder().status(
                     PaymentStatus.SUCCESS).build()).build())
                 .build();
-
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
             when(solicitorEmailValidation
                      .validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
@@ -183,16 +184,18 @@ public class GeneralApplicationCreationNotificationServiceTest {
         }
 
         @Test
-        void notificationShouldSendIfGa_Lip_WithNoticeAndFeePaid() {
+        void notificationShouldSendIfGa_Lip_WithNoticeAndFeePaid_defendantLipIsGaRespondent() {
             CaseData caseData = getCaseData(true).toBuilder()
                     .isGaRespondentOneLip(YES)
+                .parentClaimantIsApplicant(YES)
                 .ccdCaseReference(CASE_REFERENCE)
                 .generalAppPBADetails(GAPbaDetails.builder()
                             .fee(Fee.builder().code("PAID").build())
                             .paymentDetails(PaymentDetails.builder().status(
                                     PaymentStatus.SUCCESS).build()).build())
                     .build();
-
+            when(configuration.getSpecUnspecContact()).thenReturn("Email for Specified Claims: contactocmc@justice.gov.uk "
+                                                                      + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
             when(solicitorEmailValidation
                     .validateSolicitorEmail(any(), any()))
                     .thenReturn(caseData);
@@ -202,6 +205,31 @@ public class GeneralApplicationCreationNotificationServiceTest {
                     any(), eq("general-application-respondent-template-lip-id"), argumentCaptor.capture(), any()
             );
             assertThat(argumentCaptor.getValue().get("respondentName")).isEqualTo("DEF");
+            assertThat(argumentCaptor.getValue().get("ClaimantvDefendant")).isEqualTo("CL v DEF");
+        }
+
+        @Test
+        void notificationShouldSendIfGa_Lip_WithNoticeAndFeePaid_claimantLipIsGaRespondent() {
+            CaseData caseData = getCaseData(true).toBuilder()
+                .isGaRespondentOneLip(YES)
+                .parentClaimantIsApplicant(NO)
+                .ccdCaseReference(CASE_REFERENCE)
+                .generalAppPBADetails(GAPbaDetails.builder()
+                                          .fee(Fee.builder().code("PAID").build())
+                                          .paymentDetails(PaymentDetails.builder().status(
+                                              PaymentStatus.SUCCESS).build()).build())
+                .build();
+            when(configuration.getSpecUnspecContact()).thenReturn("Email for Specified Claims: contactocmc@justice.gov.uk "
+                                                                      + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            when(solicitorEmailValidation
+                     .validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
+            gaNotificationService.sendNotification(caseData);
+            verify(notificationService, times(2)).sendMail(
+                any(), eq("general-application-respondent-template-lip-id"), argumentCaptor.capture(), any()
+            );
+            assertThat(argumentCaptor.getValue().get("respondentName")).isEqualTo("CL");
             assertThat(argumentCaptor.getValue().get("ClaimantvDefendant")).isEqualTo("CL v DEF");
         }
 
@@ -216,7 +244,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
                                           .paymentDetails(PaymentDetails.builder().status(
                                               PaymentStatus.SUCCESS).build()).build())
                 .build();
-
+            when(configuration.getSpecUnspecContact()).thenReturn("Email for Specified Claims: contactocmc@justice.gov.uk "
+                                                                      + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
             when(solicitorEmailValidation
                      .validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
@@ -241,7 +270,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
                                           .paymentDetails(PaymentDetails.builder().status(
                                               PaymentStatus.SUCCESS).build()).build())
                 .build();
-
+            when(configuration.getSpecUnspecContact()).thenReturn("Email for Specified Claims: contactocmc@justice.gov.uk "
+                                                                      + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
             when(solicitorEmailValidation
                      .validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
@@ -261,6 +291,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
         void notificationShouldSendWhenInvoked() {
             CaseData caseData = getCaseData(true);
 
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
+
             when(solicitorEmailValidation
                      .validateSolicitorEmail(any(), any()))
                 .thenReturn(caseData);
@@ -276,6 +308,8 @@ public class GeneralApplicationCreationNotificationServiceTest {
         @Test
         void notificationShouldSendWhenInvokedTwice() {
             CaseData caseData = getCaseData(true);
+
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
 
             when(solicitorEmailValidation
                      .validateSolicitorEmail(any(), any()))
@@ -318,8 +352,12 @@ public class GeneralApplicationCreationNotificationServiceTest {
             properties.put(NotificationData.WELSH_OPENING_HOURS, "Dydd Llun i ddydd Iau, 9am – 5pm, dydd Gwener, 9am – 4.30pm");
             properties.put(NotificationData.WELSH_PHONE_CONTACT, "Ffôn: 0300 303 5174");
             properties.put(NotificationData.SPEC_CONTACT, "Email: contactocmc@justice.gov.uk");
-            properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
-                + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            if (isLip) {
+                properties.put(NotificationData.SPEC_UNSPEC_CONTACT, "Email for Specified Claims: contactocmc@justice.gov.uk "
+                    + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            } else {
+                properties.put(NotificationData.SPEC_UNSPEC_CONTACT, RAISE_QUERY_LR);
+            }
             properties.put(NotificationData.HMCTS_SIGNATURE, "Online Civil Claims \n HM Courts & Tribunal Service");
             properties.put(NotificationData.OPENING_HOURS, "Monday to Friday, 8.30am to 5pm");
             properties.put(NotificationData.PHONE_CONTACT, "For anything related to hearings, call 0300 123 5577 "
