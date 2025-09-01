@@ -295,6 +295,10 @@ public class UploadTranslatedDocumentService {
             && translatedDocuments.get(0).getValue().getDocumentType().equals(APPLICATION_SUMMARY_DOCUMENT_RESPONDED)) {
             return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_GA_SUMMARY_RESPONSE_DOC;
         } else if (Objects.nonNull(translatedDocuments)
+            && translatedDocuments.get(0).getValue().getDocumentType().equals(GENERAL_ORDER)
+            && caseData.getFinalOrderSelection() != null) {
+            return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_FINAL_ORDER;
+        } else if (Objects.nonNull(translatedDocuments)
             && (translatedDocuments.get(0).getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL)
             || translatedDocuments.get(0).getValue().getDocumentType().equals(WRITTEN_REPRESENTATIONS_ORDER_CONCURRENT))
             || translatedDocuments.get(0).getValue().getDocumentType().equals(REQUEST_FOR_MORE_INFORMATION_ORDER)
@@ -307,10 +311,6 @@ public class UploadTranslatedDocumentService {
         } else if (Objects.nonNull(translatedDocuments)
             && (translatedDocuments.get(0).getValue().getDocumentType().equals(HEARING_NOTICE))) {
             return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_HEARING_SCHEDULED;
-        } else if (Objects.nonNull(translatedDocuments)
-            && translatedDocuments.get(0).getValue().getDocumentType().equals(GENERAL_ORDER)
-            && caseData.getFinalOrderSelection() != null) {
-            return CaseEvent.UPLOAD_TRANSLATED_DOCUMENT_FINAL_ORDER;
         }
         return UPLOAD_TRANSLATED_DOCUMENT_GA_LIP;
     }
