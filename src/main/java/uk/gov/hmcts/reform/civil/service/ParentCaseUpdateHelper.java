@@ -71,6 +71,7 @@ public class ParentCaseUpdateHelper {
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL = "respondentSolGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO = "respondentSolTwoGaAppDetails";
     private static final String GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE = "gaDetailsMasterCollection";
+    private static final String GENERAL_APPLICATIONS_DETAILS_FOR_WELSH = "gaDetailsTranslationCollection";
     private static final String GA_DRAFT_FORM = "gaDraft";
     private static final String[] DOCUMENT_TYPES = {
         "generalOrder", "dismissalOrder",
@@ -337,6 +338,7 @@ public class ParentCaseUpdateHelper {
                                                            gaDetailsRespondentSol2,
                                                            gaMasterDetails
         );
+        removeApplicationFromTranslationCollection(parentCaseData, updateMap, applicationId);
 
         CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
             startEventResponse, updateMap);
@@ -367,18 +369,7 @@ public class ParentCaseUpdateHelper {
             parentCaseData.getRespondentSolTwoGaAppDetails()).orElse(newArrayList());
 
         if (generalAppCaseData.getParentClaimantIsApplicant().equals(YES)) {
-            Optional<Element<GeneralApplicationsDetails>> claimantCollection = gaClaimantDetails
-                .stream().filter(claimantApp -> applicationFilterCriteria(claimantApp, applicationId)).findAny();
-            claimantCollection.ifPresent(generalApplicationsDetailsElement -> gaMasterDetails.add(
-                element(
-                    GeneralApplicationsDetails.builder()
-                        .generalApplicationType(generalApplicationsDetailsElement.getValue().getGeneralApplicationType())
-                        .generalAppSubmittedDateGAspec(generalApplicationsDetailsElement.getValue()
-                                                           .getGeneralAppSubmittedDateGAspec())
-                        .caseLink(CaseLink.builder().caseReference(String.valueOf(
-                            generalAppCaseData.getCcdCaseReference())).build())
-                        .parentClaimantIsApplicant(generalApplicationsDetailsElement.getValue().getParentClaimantIsApplicant())
-                        .build())));
+            addClaimantApplicationDetails(generalAppCaseData, applicationId, gaMasterDetails, gaClaimantDetails);
             /**
              * When main claim's 1 V 2 Same Legal Representative happens,
              * Check if main claim "Respondent2SameLegalRespresentative" value is true,
@@ -472,11 +463,78 @@ public class ParentCaseUpdateHelper {
                                                            gaDetailsRespondentSol,
                                                            gaDetailsRespondentSol2,
                                                            gaMasterDetails);
-
+        removeApplicationFromTranslationCollection(parentCaseData, updateMap, applicationId);
         CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
             startEventResponse, updateMap);
 
         coreCaseDataService.submitUpdate(parentCaseId, caseDataContent);
+    }
+
+    public void updateCollectionForWelshApplication(CaseData generalAppCaseData) {
+        String applicationId = generalAppCaseData.getCcdCaseReference().toString();
+        String parentCaseId = generalAppCaseData.getGeneralAppParentCaseLink().getCaseReference();
+        StartEventResponse startEventResponse = coreCaseDataService.startUpdate(
+            parentCaseId,
+            UPDATE_CASE_WITH_GA_STATE
+        );
+        CaseData parentCaseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
+        List<Element<GeneralApplicationsDetails>> gaTranslationDetails = ofNullable(
+            parentCaseData.getGaDetailsTranslationCollection()).orElse(newArrayList());
+
+        if (generalAppCaseData.getParentClaimantIsApplicant().equals(YES)) {
+            List<Element<GeneralApplicationsDetails>> gaClaimantDetails = ofNullable(
+                parentCaseData.getClaimantGaAppDetails()).orElse(newArrayList());
+            addClaimantApplicationDetails(generalAppCaseData, applicationId, gaTranslationDetails, gaClaimantDetails);
+        } else {
+            List<Element<GADetailsRespondentSol>> gaDetailsRespondentSol = ofNullable(
+                parentCaseData.getRespondentSolGaAppDetails()).orElse(newArrayList());
+            updateJudgeOrClaimantFromRespCollection(
+                generalAppCaseData,
+                applicationId,
+                gaTranslationDetails,
+                gaDetailsRespondentSol
+            );
+        }
+        Map<String, Object> updateMap = getUpdateCaseDataForCollection(parentCaseData, gaTranslationDetails);
+        CaseDataContent caseDataContent = coreCaseDataService.caseDataContentFromStartEventResponse(
+            startEventResponse, updateMap);
+
+        coreCaseDataService.submitUpdate(parentCaseId, caseDataContent);
+    }
+
+    private void addClaimantApplicationDetails(CaseData generalAppCaseData, String applicationId,
+                                               List<Element<GeneralApplicationsDetails>> gaTranslationDetails,
+                                               List<Element<GeneralApplicationsDetails>> gaClaimantDetails) {
+        Optional<Element<GeneralApplicationsDetails>> claimantCollection = gaClaimantDetails
+            .stream().filter(claimantApp -> applicationFilterCriteria(claimantApp, applicationId)).findAny();
+        claimantCollection.ifPresent(generalApplicationsDetailsElement -> gaTranslationDetails.add(
+            element(
+                GeneralApplicationsDetails.builder()
+                    .generalApplicationType(generalApplicationsDetailsElement.getValue().getGeneralApplicationType())
+                    .generalAppSubmittedDateGAspec(generalApplicationsDetailsElement.getValue()
+                                                       .getGeneralAppSubmittedDateGAspec())
+                    .caseLink(CaseLink.builder().caseReference(String.valueOf(
+                        generalAppCaseData.getCcdCaseReference())).build())
+                    .parentClaimantIsApplicant(generalApplicationsDetailsElement.getValue()
+                                                   .getParentClaimantIsApplicant())
+                    .build())));
+    }
+
+    private void removeApplicationFromTranslationCollection(CaseData parentCaseData, Map<String, Object> updateMap,
+                                                            String applicationId) {
+        if (featureToggleService.isGaForWelshEnabled()) {
+            List<Element<GeneralApplicationsDetails>> gaDetailsTranslationCollection = ofNullable(
+                parentCaseData.getGaDetailsTranslationCollection()).orElse(newArrayList());
+            
+            if (!gaDetailsTranslationCollection.isEmpty()) {
+
+                gaDetailsTranslationCollection.removeIf(
+                    gaApplication -> applicationFilterCriteria(gaApplication, applicationId)
+                );
+                var data = gaDetailsTranslationCollection.isEmpty() ? " " : gaDetailsTranslationCollection;
+                updateMap.put(GENERAL_APPLICATIONS_DETAILS_FOR_WELSH, data);
+            }
+        }
     }
 
     private void updateRespCollectionForMultiParty(CaseData generalAppCaseData, String applicationId,
@@ -979,6 +1037,14 @@ public class ParentCaseUpdateHelper {
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL, respondentSolGaAppDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_RESP_SOL_TWO, respondentSolTwoGaAppDetails);
         output.put(GENERAL_APPLICATIONS_DETAILS_FOR_JUDGE, gaDetailsMasterCollection);
+        return output;
+    }
+
+    private Map<String, Object> getUpdateCaseDataForCollection(CaseData caseData,
+                                                               List<Element<GeneralApplicationsDetails>>
+                                                                   gaDetailsTranslationCollection) {
+        Map<String, Object> output = caseData.toMap(mapper);
+        output.put(GENERAL_APPLICATIONS_DETAILS_FOR_WELSH, gaDetailsTranslationCollection);
         return output;
     }
 
