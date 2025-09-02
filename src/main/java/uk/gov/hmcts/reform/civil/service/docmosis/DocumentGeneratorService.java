@@ -33,7 +33,7 @@ public class DocumentGeneratorService {
     public DocmosisDocument generateDocmosisDocument(Map<String, Object> templateData, DocmosisTemplates template) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-
+        log.info("Generating docmosis document for template: {}", template.getTemplate());
         DocmosisRequest requestBody = DocmosisRequest.builder()
             .templateName(template.getTemplate())
             .data(templateData)

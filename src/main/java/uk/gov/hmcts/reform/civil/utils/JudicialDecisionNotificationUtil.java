@@ -37,6 +37,7 @@ public class JudicialDecisionNotificationUtil {
     }
 
     private static final String JUDGES_DECISION = "MAKE_DECISION";
+    private static final String UPLOAD_TRANSLATED_JUDGES_DECISION = "UPLOAD_TRANSLATED_DOCUMENT_JUDGE_DECISION";
 
     public static NotificationCriterion notificationCriterion(CaseData caseData) {
 
@@ -187,8 +188,8 @@ public class JudicialDecisionNotificationUtil {
             .map(BusinessProcess::getCamundaEvent).orElse(null);
         return
             Objects.nonNull(judicialDecision)
-            && caseData.getBusinessProcess().getCamundaEvent()
-            .equals(JUDGES_DECISION);
+            && (caseData.getBusinessProcess().getCamundaEvent().equals(JUDGES_DECISION)
+                || caseData.getBusinessProcess().getCamundaEvent().equals(UPLOAD_TRANSLATED_JUDGES_DECISION));
     }
 
     private static boolean isApplicantPresent(GASolicitorDetailsGAspec gaSolicitorDetailsGAspec) {

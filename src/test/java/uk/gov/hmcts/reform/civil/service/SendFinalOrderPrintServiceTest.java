@@ -24,7 +24,7 @@ import uk.gov.hmcts.reform.civil.service.docmosis.DocumentGeneratorService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentDownloadService;
 import uk.gov.hmcts.reform.civil.service.documentmanagement.DocumentManagementService;
 import uk.gov.hmcts.reform.civil.service.flowstate.FlowFlag;
-import uk.gov.hmcts.reform.civil.service.stitching.CivilDocumentStitchingService;
+import uk.gov.hmcts.reform.civil.stitch.service.CivilStitchService;
 
 import java.util.List;
 
@@ -49,7 +49,7 @@ class SendFinalOrderPrintServiceTest {
     @Mock
     private CoreCaseDataService coreCaseDataService;
     @Mock
-    private CivilDocumentStitchingService civilDocumentStitchingService;
+    private CivilStitchService civilStitchService;
 
     @Mock
     private BulkPrintService bulkPrintService;
@@ -163,7 +163,7 @@ class SendFinalOrderPrintServiceTest {
             .documentBinaryUrl("binaryUrl").build();
         CaseData caseData = buildCaseData();
         // when
-        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
+        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
 
         // then
         verifyNoInteractions(bulkPrintService);
@@ -178,7 +178,7 @@ class SendFinalOrderPrintServiceTest {
         given(documentGeneratorService.generateDocmosisDocument(any(PostOrderCoverLetter.class), eq(POST_ORDER_COVER_LETTER_LIP))).willReturn(
             DocmosisDocument.builder().build());
         given(documentManagementService.uploadDocument(any(), any())).willReturn(CaseDocument.builder().build());
-        given(civilDocumentStitchingService.bundle(any(), any(), any(), any(), any())).willReturn(CaseDocument.builder()
+        given(civilStitchService.generateStitchedCaseDocument(any(), any(), any(), any(), any())).willReturn(CaseDocument.builder()
                                                                                                       .documentLink(Document.builder()
                                                                                                                         .documentUrl("/test").build()).build());
         given(documentDownloadService.downloadDocument(any(), any()))
@@ -188,7 +188,7 @@ class SendFinalOrderPrintServiceTest {
         CaseData caseData = buildCaseData();
         ReflectionTestUtils.setField(sendFinalOrderPrintService, "stitchEnabled", true);
         // when
-        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
+        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
 
         // then
         Party respondent = Party.builder()
@@ -205,7 +205,7 @@ class SendFinalOrderPrintServiceTest {
         given(documentGeneratorService.generateDocmosisDocument(any(PostOrderCoverLetter.class), eq(POST_ORDER_COVER_LETTER_LIP))).willReturn(
             DocmosisDocument.builder().build());
         given(documentManagementService.uploadDocument(any(), any())).willReturn(CaseDocument.builder().build());
-        given(civilDocumentStitchingService.bundle(any(), any(), any(), any(), any())).willReturn(CaseDocument.builder()
+        given(civilStitchService.generateStitchedCaseDocument(any(), any(), any(), any(), any())).willReturn(CaseDocument.builder()
                                                                                                       .documentLink(Document.builder()
                                                                                                                         .documentUrl("/test").build()).build());
         given(documentDownloadService.downloadDocument(any(), any()))
@@ -216,7 +216,7 @@ class SendFinalOrderPrintServiceTest {
         ReflectionTestUtils.setField(sendFinalOrderPrintService, "stitchEnabled", true);
 
         // when
-        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT);
+        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT);
 
         // then
         Party applicant = Party.builder()
@@ -233,7 +233,7 @@ class SendFinalOrderPrintServiceTest {
         given(documentGeneratorService.generateDocmosisDocument(any(PostOrderCoverLetter.class), eq(POST_ORDER_COVER_LETTER_LIP))).willReturn(
             DocmosisDocument.builder().build());
         given(documentManagementService.uploadDocument(any(), any())).willReturn(CaseDocument.builder().build());
-        given(civilDocumentStitchingService.bundle(any(), any(), any(), any(), any())).willReturn(CaseDocument.builder()
+        given(civilStitchService.generateStitchedCaseDocument(any(), any(), any(), any(), any())).willReturn(CaseDocument.builder()
                                                                                                       .documentLink(Document.builder()
                                                                                                                         .documentUrl("/test").build()).build());
         given(documentDownloadService.downloadDocument(any(), any()))
@@ -244,7 +244,7 @@ class SendFinalOrderPrintServiceTest {
         caseData = caseData.toBuilder().parentClaimantIsApplicant(YesOrNo.NO).build();
         ReflectionTestUtils.setField(sendFinalOrderPrintService, "stitchEnabled", true);
         // when
-        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
+        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
 
         // then
         Party applicant = Party.builder()
@@ -261,7 +261,7 @@ class SendFinalOrderPrintServiceTest {
         given(documentGeneratorService.generateDocmosisDocument(any(PostOrderCoverLetter.class), eq(POST_ORDER_COVER_LETTER_LIP))).willReturn(
             DocmosisDocument.builder().build());
         given(documentManagementService.uploadDocument(any(), any())).willReturn(CaseDocument.builder().build());
-        given(civilDocumentStitchingService.bundle(any(), any(), any(), any(), any())).willReturn(CaseDocument.builder()
+        given(civilStitchService.generateStitchedCaseDocument(any(), any(), any(), any(), any())).willReturn(CaseDocument.builder()
                                                                                                       .documentLink(Document.builder()
                                                                                                                         .documentUrl("/test").build()).build());
         given(documentDownloadService.downloadDocument(any(), any()))
@@ -273,7 +273,7 @@ class SendFinalOrderPrintServiceTest {
         ReflectionTestUtils.setField(sendFinalOrderPrintService, "stitchEnabled", true);
 
         // when
-        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT);
+        sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(BEARER_TOKEN, document, document, caseData, CaseEvent.SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT);
 
         // then
         Party respondent = Party.builder()

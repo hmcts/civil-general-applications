@@ -49,6 +49,6 @@ public interface NotificationData {
     String SPEC_CONTACT = "specContact";
     String WELSH_CONTACT = "welshContact";
 
-    Map<String, String> addProperties(CaseData caseData);
+    Map<String, String> addProperties(CaseData caseData, CaseData mainCaseData);
 
 }

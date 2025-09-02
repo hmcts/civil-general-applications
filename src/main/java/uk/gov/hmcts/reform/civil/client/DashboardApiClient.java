@@ -25,10 +25,17 @@ public interface DashboardApiClient {
     );
 
     @DeleteMapping(path = "notifications/{ccd-case-identifier}/role/{role-type}")
-   ResponseEntity<Void> deleteNotificationsForCaseIdentifierAndRole(
+    ResponseEntity<Void> deleteNotificationsForCaseIdentifierAndRole(
         @PathVariable("ccd-case-identifier") String ccdCaseIdentifier,
         @PathVariable("role-type") String roleType,
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation
     );
 
+    @DeleteMapping(path = "notifications/{ccd-case-identifier}/role/{role-type}/{template-name}")
+    ResponseEntity<Void> deleteTemplateNotificationsForCaseIdentifierAndRole(
+        @PathVariable("ccd-case-identifier") String ccdCaseIdentifier,
+        @PathVariable("role-type") String roleType,
+        @PathVariable("template-name") String templateName,
+        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation
+    );
 }

@@ -847,7 +847,6 @@ public class JudicialDecisionHandler extends CallbackHandler {
     private CallbackResponse setJudgeBusinessProcess(CallbackParams callbackParams) {
         CaseData.CaseDataBuilder dataBuilder = getSharedData(callbackParams);
         CaseData caseData = callbackParams.getCaseData();
-        String caseId = caseData.getCcdCaseReference().toString();
 
         if (caseData.getJudicialDecision().getDecision().name().equals(JUDICIAL_DECISION_LIST_FOR_HEARING)
             && caseData.getJudicialListForHearing().getHearingPreferredLocation() != null) {
@@ -860,7 +859,7 @@ public class JudicialDecisionHandler extends CallbackHandler {
             caseData = updatedCaseData;
             dataBuilder = updatedCaseData.toBuilder();
         }
-
+        String caseId = caseData.getCcdCaseReference().toString();
         dataBuilder.businessProcess(BusinessProcess.ready(MAKE_DECISION)).build();
 
         var isApplicationUncloaked = isApplicationContinuesCloakedAfterJudicialDecision(caseData);

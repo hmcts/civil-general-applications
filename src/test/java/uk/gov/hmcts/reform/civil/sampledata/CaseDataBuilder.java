@@ -168,6 +168,7 @@ public class CaseDataBuilder {
     protected GAJudicialMakeAnOrder judicialMakeAnOrder;
     protected GAApplicationType generalAppType;
     protected GAApproveConsentOrder  approveConsentOrder;
+    private  GACaseLocation caseManagementLocation;
 
     protected Party respondent1;
     protected Party applicant1;
@@ -368,6 +369,11 @@ public class CaseDataBuilder {
         return this;
     }
 
+    public CaseDataBuilder caseManagementLocation(GACaseLocation caseManagementLocation) {
+        this.caseManagementLocation = caseManagementLocation;
+        return this;
+    }
+
     public static CaseDataBuilder builder() {
         return new CaseDataBuilder();
     }
@@ -437,6 +443,7 @@ public class CaseDataBuilder {
             .judicialDecisionMakeOrder(judicialMakeAnOrder)
             .generalAppType(generalAppType)
             .approveConsentOrder(approveConsentOrder)
+            .caseManagementLocation(caseManagementLocation)
             .build();
     }
 
@@ -987,6 +994,11 @@ public class CaseDataBuilder {
             .claimant1PartyName("Test Claimant1 Name")
             .claimant2PartyName("Test Claimant2 Name")
             .judgeTitle("John Doe")
+            .generalAppParentCaseLink(
+                GeneralAppParentCaseLink
+                    .builder()
+                    .caseReference(CASE_REFERENCE.toString())
+                    .build())
             .judicialListForHearing(GAJudgesHearingListGAspec.builder()
                                         .hearingPreferredLocation(DynamicList.builder()
                                                                       .value(selectedLocation).listItems(listItems)

@@ -5,15 +5,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.ccd.client.model.CallbackResponse;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.civil.callback.Callback;
 import uk.gov.hmcts.reform.civil.callback.CallbackHandler;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.callback.CaseEvent;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
+import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocument;
 import uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType;
 import uk.gov.hmcts.reform.civil.model.common.Element;
+import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
+import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.SendFinalOrderPrintService;
 
 import java.util.List;
@@ -32,7 +37,6 @@ import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.J
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.REQUEST_FOR_MORE_INFORMATION_ORDER;
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.WRITTEN_REPRESENTATIONS_ORDER_CONCURRENT;
 import static uk.gov.hmcts.reform.civil.model.citizenui.TranslatedDocumentType.WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL;
-import static uk.gov.hmcts.reform.civil.utils.JudicialDecisionNotificationUtil.isWithNotice;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +44,13 @@ public class SendTranslatedOrderToLiPCallbackHandler extends CallbackHandler {
 
     private static final List<CaseEvent> EVENTS = List.of(SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT, SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT);
 
+    private final CoreCaseDataService coreCaseDataService;
+    private final CaseDetailsConverter caseDetailsConverter;
     private final SendFinalOrderPrintService sendFinalOrderPrintService;
+
+    private static final List<String> ENGLISH_TYPES = List.of("ENGLISH", "BOTH");
+    private static final List<String> WELSH_TYPES = List.of("WELSH", "BOTH");
+
     private static final List<TranslatedDocumentType> POST_TRANSLATED_DOCUMENT_TYPES = List.of(
         REQUEST_FOR_MORE_INFORMATION_ORDER,
         HEARING_ORDER,
@@ -69,12 +79,17 @@ public class SendTranslatedOrderToLiPCallbackHandler extends CallbackHandler {
     private CallbackResponse sendTranslatedOrderLetter(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         CaseEvent caseEvent = CaseEvent.valueOf(callbackParams.getRequest().getEventId());
-        if (printServiceEnabled && shouldPrintTranslatedDocument(caseData, caseEvent)) {
-            TranslatedDocument translatedDocument = caseData.getTranslatedDocumentsBulkPrint().get(caseData.getTranslatedDocumentsBulkPrint().size() - 1)
+        if (printServiceEnabled && isDocumentCorrectType(caseData)) {
+            CaseDocument originalCaseDocument = caseData.getOriginalDocumentsBulkPrint().get(caseData.getOriginalDocumentsBulkPrint().size() - 1).getValue();
+            TranslatedDocument translatedCaseDocument = caseData.getTranslatedDocumentsBulkPrint().get(caseData.getTranslatedDocumentsBulkPrint().size() - 1)
                 .getValue();
+            CaseData parentCaseData = getParentCaseData(caseData);
+            Document originalDocument = shouldPrintInLanguage(caseData, parentCaseData, caseEvent, ENGLISH_TYPES) ? originalCaseDocument.getDocumentLink() : null;
+            Document translatedDocument = shouldPrintInLanguage(caseData, parentCaseData, caseEvent, WELSH_TYPES) ? translatedCaseDocument.getFile() : null;
             sendFinalOrderPrintService.sendJudgeTranslatedOrderToPrintForLIP(
                 callbackParams.getParams().get(BEARER_TOKEN).toString(),
-                translatedDocument.getFile(),
+                originalDocument,
+                translatedDocument,
                 caseData,
                 caseEvent);
         }
@@ -82,14 +97,21 @@ public class SendTranslatedOrderToLiPCallbackHandler extends CallbackHandler {
             .build();
     }
 
-    private boolean shouldPrintTranslatedDocument(CaseData caseData, CaseEvent caseEvent) {
-        boolean isUserBilingual = caseEvent == SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT
-            ? caseData.getApplicantBilingualLanguagePreference() == YesOrNo.YES
-            : caseData.getRespondentBilingualLanguagePreference() == YesOrNo.YES;
-        if (isUserBilingual && isWithNoticeIfRespondent(caseData, caseEvent) && isDocumentCorrectType(caseData)) {
-            return true;
+    private boolean shouldPrintInLanguage(CaseData caseData, CaseData parentCaseData, CaseEvent caseEvent, List<String> languageTypes) {
+        boolean isClaimant = (caseEvent == SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT && caseData.getParentClaimantIsApplicant() == YesOrNo.YES)
+            || (caseEvent == SEND_TRANSLATED_ORDER_TO_LIP_RESPONDENT && caseData.getParentClaimantIsApplicant() == YesOrNo.NO);
+        String claimantLanguage = parentCaseData.getClaimantBilingualLanguagePreference() != null ? parentCaseData.getClaimantBilingualLanguagePreference() : "ENGLISH";
+        String defendantLanguage = parentCaseData.getDefendantBilingualLanguagePreference() != null ? parentCaseData.getDefendantBilingualLanguagePreference() : "ENGLISH";
+        if (isClaimant) {
+            return languageTypes.contains(claimantLanguage);
+        } else {
+            return languageTypes.contains(defendantLanguage);
         }
-        return false;
+    }
+
+    protected CaseData getParentCaseData(CaseData caseData) {
+        CaseDetails caseDetails = coreCaseDataService.getCase(Long.parseLong(caseData.getParentCaseReference()));
+        return caseDetailsConverter.toCaseData(caseDetails);
     }
 
     private boolean isDocumentCorrectType(CaseData caseData) {
@@ -99,12 +121,5 @@ public class SendTranslatedOrderToLiPCallbackHandler extends CallbackHandler {
         }
         TranslatedDocumentType documentType = translatedDocuments.get(translatedDocuments.size() - 1).getValue().getDocumentType();
         return POST_TRANSLATED_DOCUMENT_TYPES.contains(documentType);
-    }
-
-    private boolean isWithNoticeIfRespondent(CaseData caseData, CaseEvent caseEvent) {
-        if (caseEvent == SEND_TRANSLATED_ORDER_TO_LIP_APPLICANT) {
-            return true;
-        }
-        return isWithNotice(caseData);
     }
 }

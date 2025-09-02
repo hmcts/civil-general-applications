@@ -130,6 +130,7 @@ public class CaseData implements MappableObject {
     private final String generalAppRespondConsentReason;
     private List<Element<TranslatedDocument>> translatedDocuments;
     private List<Element<TranslatedDocument>> translatedDocumentsBulkPrint;
+    private final List<Element<CaseDocument>> originalDocumentsBulkPrint;
     private final List<Element<Document>> generalAppRespondDocument;
     private final List<Element<Document>> generalAppRespondConsentDocument;
     private final List<Element<Document>> generalAppRespondDebtorDocument;
@@ -159,6 +160,7 @@ public class CaseData implements MappableObject {
     private final List<Element<GeneralApplication>> generalApplications;
     private final List<Element<GeneralApplicationsDetails>> claimantGaAppDetails;
     private final List<Element<GeneralApplicationsDetails>> gaDetailsMasterCollection;
+    private final List<Element<GeneralApplicationsDetails>> gaDetailsTranslationCollection;
     private final List<Element<GADetailsRespondentSol>> respondentSolGaAppDetails;
     private final List<Element<GADetailsRespondentSol>> respondentSolTwoGaAppDetails;
     private final GAJudicialDecision judicialDecision;
@@ -580,5 +582,18 @@ public class CaseData implements MappableObject {
             )
             .filter(Objects::nonNull)
             .findFirst().orElse(null);
+    }
+
+    @JsonIgnore
+    public boolean isApplicationBilingual() {
+        return ((this.getIsGaApplicantLip() == YES && this.isApplicantBilingual())
+            || (this.getIsGaRespondentOneLip() == YES && this.isRespondentBilingual()));
+    }
+
+    @JsonIgnore
+    public String getDefendantBilingualLanguagePreference() {
+        return Optional.ofNullable(getRespondent1LiPResponse())
+            .map(RespondentLiPResponse::getRespondent1ResponseLanguage)
+            .orElse(null);
     }
 }
