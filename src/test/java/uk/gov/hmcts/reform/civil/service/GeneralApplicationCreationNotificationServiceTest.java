@@ -184,9 +184,10 @@ public class GeneralApplicationCreationNotificationServiceTest {
         }
 
         @Test
-        void notificationShouldSendIfGa_Lip_WithNoticeAndFeePaid() {
+        void notificationShouldSendIfGa_Lip_WithNoticeAndFeePaid_defendantLipIsGaRespondent() {
             CaseData caseData = getCaseData(true).toBuilder()
                     .isGaRespondentOneLip(YES)
+                .parentClaimantIsApplicant(YES)
                 .ccdCaseReference(CASE_REFERENCE)
                 .generalAppPBADetails(GAPbaDetails.builder()
                             .fee(Fee.builder().code("PAID").build())
@@ -204,6 +205,31 @@ public class GeneralApplicationCreationNotificationServiceTest {
                     any(), eq("general-application-respondent-template-lip-id"), argumentCaptor.capture(), any()
             );
             assertThat(argumentCaptor.getValue().get("respondentName")).isEqualTo("DEF");
+            assertThat(argumentCaptor.getValue().get("ClaimantvDefendant")).isEqualTo("CL v DEF");
+        }
+
+        @Test
+        void notificationShouldSendIfGa_Lip_WithNoticeAndFeePaid_claimantLipIsGaRespondent() {
+            CaseData caseData = getCaseData(true).toBuilder()
+                .isGaRespondentOneLip(YES)
+                .parentClaimantIsApplicant(NO)
+                .ccdCaseReference(CASE_REFERENCE)
+                .generalAppPBADetails(GAPbaDetails.builder()
+                                          .fee(Fee.builder().code("PAID").build())
+                                          .paymentDetails(PaymentDetails.builder().status(
+                                              PaymentStatus.SUCCESS).build()).build())
+                .build();
+            when(configuration.getSpecUnspecContact()).thenReturn("Email for Specified Claims: contactocmc@justice.gov.uk "
+                                                                      + "\n Email for Damages Claims: damagesclaims@justice.gov.uk");
+            when(solicitorEmailValidation
+                     .validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().build());
+            gaNotificationService.sendNotification(caseData);
+            verify(notificationService, times(2)).sendMail(
+                any(), eq("general-application-respondent-template-lip-id"), argumentCaptor.capture(), any()
+            );
+            assertThat(argumentCaptor.getValue().get("respondentName")).isEqualTo("CL");
             assertThat(argumentCaptor.getValue().get("ClaimantvDefendant")).isEqualTo("CL v DEF");
         }
 
