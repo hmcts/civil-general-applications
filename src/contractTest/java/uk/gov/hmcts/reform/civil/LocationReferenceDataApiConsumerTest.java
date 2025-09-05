@@ -55,7 +55,6 @@ public class LocationReferenceDataApiConsumerTest extends BaseContractTest {
             SERVICE_AUTH_TOKEN,
             AUTHORIZATION_TOKEN,
             "isHearingLocation",
-            "isCaseManagementLocation",
             "courtTypeId",
             "locationType"
         );
