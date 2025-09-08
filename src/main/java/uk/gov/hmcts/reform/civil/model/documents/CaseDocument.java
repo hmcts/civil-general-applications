@@ -70,12 +70,8 @@ public class CaseDocument {
 
     public static DocumentType setOnlyCCDDocumentTypes(DocumentType documentType) {
         switch (documentType) {
-            case REQUEST_MORE_INFORMATION_APPLICANT_TRANSLATED:
-            case REQUEST_MORE_INFORMATION_RESPONDENT_TRANSLATED:
             case JUDGES_DIRECTIONS_RESPONDENT_TRANSLATED:
             case JUDGES_DIRECTIONS_APPLICANT_TRANSLATED:
-            case WRITTEN_REPRESENTATION_APPLICANT_TRANSLATED:
-            case WRITTEN_REPRESENTATION_RESPONDENT_TRANSLATED:
             case UPLOADED_DOCUMENT_RESPONDENT:
             case UPLOADED_DOCUMENT_APPLICANT:
                 return null;
