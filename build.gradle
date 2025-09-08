@@ -365,10 +365,10 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.1.0'
   implementation group: 'com.github.hmcts', name: 'document-management-client', version: '7.0.0'
   implementation('com.github.hmcts:fees-java-client:0.0.6') {
-    exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
+    exclude group: 'com.github.hmcts.java-logging', module: 'logging'
   }
   implementation('com.github.hmcts:payments-java-client:1.6.7') {
-    exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
+    exclude group: 'com.github.hmcts.java-logging', module: 'logging'
     exclude group: 'uk.gov.hmcts.reform', module: 'service-auth-provider-client'
   }
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '4.1.0-RELEASE'
@@ -432,7 +432,12 @@ dependencies {
   testImplementation group: 'io.rest-assured', name: 'rest-assured'
 
   testImplementation group: 'org.springframework.statemachine', name: 'spring-statemachine-test', version: versions.springStatemachine
-  testImplementation 'com.github.hmcts:fortify-client:1.4.9'
+  testImplementation group: 'com.github.hmcts', name: 'fortify-client', version: '1.4.10', classifier: 'all', {
+    exclude group: 'commons-io', module: 'commons-io'
+    exclude group: 'org.apache.commons', module: 'commons-lang3'
+    exclude group: 'ch.qos.logback', module: 'logback-classic'
+    exclude group: 'ch.qos.logback', module: 'logback-core'
+  }
   //pact contract testing
   contractTestImplementation 'au.com.dius.pact.consumer:junit5:4.6.5'
   contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
