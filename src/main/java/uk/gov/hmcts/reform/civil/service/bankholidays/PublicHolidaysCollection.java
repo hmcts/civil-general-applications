@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Stores all public holidays retrieved from Gov uk API: https://www.gov.uk/bank-holidays.json
+ * Stores all public holidays retrieved from Gov uk API: https://www.gov.uk/bank-holidays.json.
  */
 @Service
 public class PublicHolidaysCollection {
