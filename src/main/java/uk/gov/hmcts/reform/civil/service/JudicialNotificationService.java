@@ -508,7 +508,7 @@ public class JudicialNotificationService implements NotificationData {
                 caseData,
                 mainCaseData,
                 appSolicitorEmail,
-                useGaForLipApplicantTemplate(caseData) ? notificationProperties.getLipGeneralAppApplicantEmailTemplate()
+                useGaForLipApplicantTemplate(caseData) ? getLiPApplicantTemplate(caseData)
                     : notificationProperties.getJudgeDismissesOrderApplicantEmailTemplate()
             );
         }
