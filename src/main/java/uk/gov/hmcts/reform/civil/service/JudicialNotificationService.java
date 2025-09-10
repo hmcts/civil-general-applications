@@ -417,7 +417,7 @@ public class JudicialNotificationService implements NotificationData {
                     caseData,
                     mainCaseData,
                     appSolicitorEmail,
-                    notificationProperties.getLipGeneralAppApplicantEmailTemplate()
+                    getLiPApplicantTemplate(caseData)
                 );
             } else {
                 sendNotificationForJudicialDecision(
