@@ -70,7 +70,10 @@ public class UploadTranslatedDocumentServiceTest {
         List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
         TranslatedDocument translatedDocument = TranslatedDocument.builder()
             .documentType(TranslatedDocumentType.GENERAL_ORDER)
-            .file(mock(Document.class))
+            .file(Document.builder().documentFileName("test.pdf")
+                      .documentUrl("http://test")
+                      .documentBinaryUrl("http://test/12345")
+                      .uploadTimestamp("01-01-2025").build())
             .build();
         translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
 
@@ -891,50 +894,77 @@ public class UploadTranslatedDocumentServiceTest {
         translatedDocuments.add(Element.<TranslatedDocument>builder().value(
             TranslatedDocument.builder()
                 .documentType(TranslatedDocumentType.GENERAL_ORDER)
-                .file(mock(Document.class))
+                .file(Document.builder().documentFileName("test.pdf")
+                          .documentUrl("http://test")
+                          .documentBinaryUrl("http://test/12345")
+                          .uploadTimestamp("01-01-2025").build())
                 .build()).build());
 
         translatedDocuments.add(Element.<TranslatedDocument>builder().value(
             TranslatedDocument.builder()
                 .documentType(TranslatedDocumentType.HEARING_ORDER)
-                .file(mock(Document.class))
+                .file(Document.builder().documentFileName("test.pdf")
+                          .documentUrl("http://test")
+                          .documentBinaryUrl("http://test/12345")
+                          .uploadTimestamp("01-01-2025").build())
                 .build()).build());
 
         translatedDocuments.add(Element.<TranslatedDocument>builder().value(
             TranslatedDocument.builder()
                 .documentType(TranslatedDocumentType.HEARING_NOTICE)
-                .file(mock(Document.class))
+                .file(Document.builder().documentFileName("test.pdf")
+                          .documentUrl("http://test")
+                          .documentBinaryUrl("http://test/12345")
+                          .uploadTimestamp("01-01-2025").build())
                 .build()).build());
 
         translatedDocuments.add(Element.<TranslatedDocument>builder().value(
             TranslatedDocument.builder()
                 .documentType(TranslatedDocumentType.JUDGES_DIRECTIONS_ORDER)
-                .file(mock(Document.class))
+                .file(Document.builder().documentFileName("test.pdf")
+                          .documentUrl("http://test")
+                          .documentBinaryUrl("http://test/12345")
+                          .uploadTimestamp("01-01-2025").build())
                 .build()).build());
         translatedDocuments.add(Element.<TranslatedDocument>builder().value(
             TranslatedDocument.builder()
                 .documentType(TranslatedDocumentType.REQUEST_FOR_MORE_INFORMATION_ORDER)
-                .file(mock(Document.class))
+                .file(Document.builder().documentFileName("test.pdf")
+                          .documentUrl("http://test")
+                          .documentBinaryUrl("http://test/12345")
+                          .uploadTimestamp("01-01-2025").build())
                 .build()).build());
         translatedDocuments.add(Element.<TranslatedDocument>builder().value(
             TranslatedDocument.builder()
                 .documentType(TranslatedDocumentType.WRITTEN_REPRESENTATIONS_ORDER_CONCURRENT)
-                .file(mock(Document.class))
+                .file(Document.builder().documentFileName("test.pdf")
+                          .documentUrl("http://test")
+                          .documentBinaryUrl("http://test/12345")
+                          .uploadTimestamp("01-01-2025").build())
                 .build()).build());
         translatedDocuments.add(Element.<TranslatedDocument>builder().value(
             TranslatedDocument.builder()
                 .documentType(TranslatedDocumentType.WRITTEN_REPRESENTATIONS_ORDER_SEQUENTIAL)
-                .file(mock(Document.class))
+                .file(Document.builder().documentFileName("test.pdf")
+                          .documentUrl("http://test")
+                          .documentBinaryUrl("http://test/12345")
+                          .uploadTimestamp("01-01-2025").build())
                 .build()).build());
         translatedDocuments.add(Element.<TranslatedDocument>builder().value(
             TranslatedDocument.builder()
                 .documentType(TranslatedDocumentType.DISMISSAL_ORDER)
-                .file(mock(Document.class))
+                .file(Document.builder().documentFileName("test.pdf")
+                          .documentUrl("http://test")
+                          .documentBinaryUrl("http://test/12345")
+                          .uploadTimestamp("01-01-2025").build())
                 .build()).build());
         translatedDocuments.add(Element.<TranslatedDocument>builder().value(
             TranslatedDocument.builder()
                 .documentType(TranslatedDocumentType.APPLICATION_SUMMARY_DOCUMENT)
-                .file(mock(Document.class))
+                .file(Document.builder().documentFileName("test.pdf")
+                          .documentUrl("http://test")
+                          .documentBinaryUrl("http://test/12345")
+                          .uploadTimestamp("01-01-2025").build())
                 .build()).build());
 
         CaseData caseData = CaseData.builder()
