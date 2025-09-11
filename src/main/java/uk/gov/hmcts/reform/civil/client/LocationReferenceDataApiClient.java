@@ -31,7 +31,6 @@ public interface LocationReferenceDataApiClient {
         @RequestHeader("ServiceAuthorization") String serviceAuthorisation,
         @RequestHeader("Authorization") final String authorisation,
         @RequestParam("is_hearing_location") final String isHearingLocation,
-        @RequestParam("is_case_management_location") final String isCaseManagementLocation,
         @RequestParam("court_type_id") final String courtTypeId,
         @RequestParam("location_type") final String locationType
     );
