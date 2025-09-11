@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
 import static uk.gov.hmcts.reform.civil.service.docmosis.DocmosisTemplates.RESPOND_FOR_WRITTEN_REPRESENTATION;
 
 @Slf4j
@@ -65,7 +66,8 @@ public class RespondToWrittenRepresentationGenerator implements TemplateDataGene
         if (role.equals(DocUploadUtils.APPLICANT)) {
             return caseData.getApplicantPartyName();
         }
-        return caseData.getClaimant1PartyName();
+        return YES.equals(caseData.getParentClaimantIsApplicant()) ? caseData.getDefendant1PartyName() :
+            caseData.getClaimant1PartyName();
     }
 
     private String getFileName(DocmosisTemplates docmosisTemplate) {
