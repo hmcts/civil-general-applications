@@ -66,7 +66,7 @@ public class RespondToWrittenRepresentationGenerator implements TemplateDataGene
         if (role.equals(DocUploadUtils.APPLICANT)) {
             return caseData.getApplicantPartyName();
         }
-        return caseData.getParentClaimantIsApplicant().equals(YES) ? caseData.getDefendant1PartyName() :
+        return YES.equals(caseData.getParentClaimantIsApplicant()) ? caseData.getDefendant1PartyName() :
             caseData.getClaimant1PartyName();
     }
 
