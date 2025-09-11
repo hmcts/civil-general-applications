@@ -73,7 +73,7 @@ public class FreeFormOrderGenerator implements TemplateDataGenerator<FreeFormOrd
 
         FreeFormOrder.FreeFormOrderBuilder freeFormOrderBuilder = FreeFormOrder.builder()
             .judgeNameTitle(caseData.getJudgeTitle())
-            .caseNumber(caseData.getCcdCaseReference().toString())
+            .caseNumber(caseData.getGeneralAppParentCaseLink().getCaseReference())
             .caseName(caseData.getCaseNameHmctsInternal())
             .receivedDate(getDateFormatted(LocalDate.now()))
             .freeFormRecitalText(caseData.getFreeFormRecitalText())
