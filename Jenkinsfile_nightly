@@ -97,7 +97,7 @@ withNightlyPipeline(type, product, component) {
   enableFullFunctionalTest(200)
 
   if(!runPrevFailedAndNotExecutedTestFiles && !forceGreenBuild) {
-    // enableFortifyScan()
+    enableFortifyScan()
     enableCrossBrowserTest()
 
     afterAlways('fortify-scan') {
