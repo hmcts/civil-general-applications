@@ -108,12 +108,11 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
         caseData = caseDataBuilder.build();
         caseData = HwFFeeTypeService.updateHwfReferenceNumber(caseData);
 
-        List<String> errors = new ArrayList<>();
-
         assert paymentRequestUpdateCallbackService != null;
         CaseData processedCaseData = paymentRequestUpdateCallbackService.processHwf(caseData);
         assert hwfNotificationService != null;
         hwfNotificationService.sendNotification(processedCaseData, CaseEvent.FEE_PAYMENT_OUTCOME_GA);
+        List<String> errors = new ArrayList<>();
         if (Objects.isNull(processedCaseData)) {
             errors.add(PROCESS_FEE_PAYMENT_FAILED);
         } else {

@@ -289,6 +289,26 @@ class JudicialApplicantNotificationServiceTest {
         }
 
         @Test
+        void notificationInWelshShouldSendForDismissal_ApplicantLIP() {
+            CaseData claimRespondentResponseLan = CaseData.builder().claimantBilingualLanguagePreference("WELSH")
+                .applicantBilingualLanguagePreference(YES).build();
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(claimRespondentResponseLan);
+            CaseData updatedCaseData = caseDataForJudgeDismissal(NO, NO, NO,  YES, NO).toBuilder().applicantBilingualLanguagePreference(YES).build();
+            when(solicitorEmailValidation.validateSolicitorEmail(any(), any()))
+                .thenReturn(updatedCaseData);
+            when(gaForLipService.isLipApp(any())).thenReturn(true);
+
+            judicialNotificationService.sendNotification(updatedCaseData, APPLICANT);
+
+            verify(notificationService, times(1)).sendMail(
+                DUMMY_EMAIL,
+                "ga-judicial-notification-applicant-welsh-template-lip-id",
+                notificationPropertiesSummeryJudgement(),
+                "general-apps-judicial-notification-make-decision-" + CASE_REFERENCE
+            );
+        }
+
+        @Test
         void notificationShouldSend_LipRespondent_When_JudicialDirectionOrderRep_unCloaks() {
 
             CaseData caseData

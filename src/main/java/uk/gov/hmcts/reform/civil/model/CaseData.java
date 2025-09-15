@@ -385,6 +385,12 @@ public class CaseData implements MappableObject {
     private final List<Element<CaseDocument>> preTranslationGaDocuments = new ArrayList<>();
     private final PreTranslationGaDocumentType preTranslationGaDocumentType;
 
+    @Builder.Default
+    private final List<Element<CaseDocument>> preTranslationGaDocsApplicant = new ArrayList<>();
+
+    @Builder.Default
+    private final List<Element<CaseDocument>> preTranslationGaDocsRespondent = new ArrayList<>();
+
     @JsonIgnore
     public boolean isHWFTypeApplication() {
         return getHwfFeeType() == FeeType.APPLICATION;
