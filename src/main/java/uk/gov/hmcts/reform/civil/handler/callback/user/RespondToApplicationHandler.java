@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.helpers.DateFormatHelper;
+import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.BusinessProcess;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.GARespondentRepresentative;
@@ -80,6 +81,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
     private final GeneralAppLocationRefDataService locationRefDataService;
     private final CoreCaseDataService coreCaseDataService;
     private final GaForLipService gaForLipService;
+    private final FeatureToggleService featureToggleService;
     private final DocUploadDashboardNotificationService dashboardNotificationService;
 
     private static final String RESPONSE_MESSAGE = "# You have provided the requested information";
@@ -179,7 +181,7 @@ public class RespondToApplicationHandler extends CallbackHandler {
         CaseData caseData = callbackParams.getCaseData();
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
         // Generate Dashboard Notification for Lip Party
-        if (gaForLipService.isGaForLip(caseData)) {
+        if (gaForLipService.isGaForLip(caseData) && !(featureToggleService.isGaForWelshEnabled() && caseData.isApplicationBilingual())) {
 
             if (caseData.getParentClaimantIsApplicant().equals(YesOrNo.NO) && caseData.getGeneralAppType().getTypes().contains(
                 GeneralApplicationTypes.VARY_PAYMENT_TERMS_OF_JUDGMENT)) {
