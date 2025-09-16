@@ -53,10 +53,11 @@ public class UploadTranslatedDocumentCallbackHandler extends CallbackHandler {
         if (businessProcessEvent != null) {
             caseDataBuilder = caseDataBuilder.businessProcess(BusinessProcess.ready(businessProcessEvent));
         }
-
         caseDataBuilder.preTranslationGaDocumentType(null);
+        CaseData updatedCaseData = caseDataBuilder.build();
+        uploadTranslatedDocumentService.sendUserUploadNotification(caseData, updatedCaseData, callbackParams.getParams().get(BEARER_TOKEN).toString());
         return AboutToStartOrSubmitCallbackResponse.builder()
-            .data(caseDataBuilder.build().toMap(objectMapper))
+            .data(updatedCaseData.toMap(objectMapper))
             .build();
     }
 
