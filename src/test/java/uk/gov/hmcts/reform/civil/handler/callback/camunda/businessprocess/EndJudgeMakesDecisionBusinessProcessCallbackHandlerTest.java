@@ -59,7 +59,7 @@ class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallba
     @Test
     void shouldAddRespondentSolicitorDetail_WhenJudeOrderMakeUncloakApplication() {
 
-        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(NO).build();
+        CaseData caseData = CaseDataBuilder.builder().isGaRespondentOneLip(NO).judicialOrderMadeWithUncloakApplication(NO).build();
 
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
         when(judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).thenReturn(true);
