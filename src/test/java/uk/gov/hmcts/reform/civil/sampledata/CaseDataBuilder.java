@@ -1294,6 +1294,7 @@ public class CaseDataBuilder {
             .defendant1PartyName("Test Defendant1 Name")
             .defendant2PartyName("Test Defendant2 Name")
             .applicantPartyName("Test Applicant Name")
+            .isGaRespondentOneLip(NO)
             .generalAppParentCaseLink(
                 GeneralAppParentCaseLink
                     .builder()
