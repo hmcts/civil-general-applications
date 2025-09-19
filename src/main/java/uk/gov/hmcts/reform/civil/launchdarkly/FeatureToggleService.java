@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.launchdarkly;
 
+import com.launchdarkly.sdk.LDContext;
 import com.launchdarkly.sdk.LDUser;
 import com.launchdarkly.sdk.server.interfaces.LDClientInterface;
 import lombok.extern.slf4j.Slf4j;
@@ -100,4 +101,7 @@ public class FeatureToggleService {
         return internalClient.boolVariation(feature, createLDUser().custom("timestamp", date).build(), defaultValue);
     }
 
+    public boolean isCuiGaNroEnabled() {
+        return internalClient.boolVariation("cui-ga-nro", LDContext.fromUser(createLDUser().build()), false);
+    }
 }
