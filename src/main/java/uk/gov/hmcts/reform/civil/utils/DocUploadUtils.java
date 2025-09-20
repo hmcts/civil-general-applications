@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -45,7 +46,7 @@ public class DocUploadUtils {
                                 .build())
                         .documentName(uploadDocumentByTypeElement.getValue().getDocumentType())
                         .createdBy(role)
-                        .createdDatetime(LocalDateTime.now()).build()))
+                        .createdDatetime(LocalDateTime.now(ZoneId.of("Europe/London"))).build()))
                 .toList();
     }
 
