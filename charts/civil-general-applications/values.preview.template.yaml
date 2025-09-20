@@ -96,6 +96,7 @@ java:
 civil-service:
   enabled: true
   java:
+    image: hmctspublic.azurecr.io/civil/service:pr-5520
     applicationPort: 4000
     releaseNameOverride: ${SERVICE_NAME}-civil-service
     image: 'hmctspublic.azurecr.io/civil/service:latest'
@@ -239,6 +240,7 @@ ccd:
 
   ccd-data-store-api:
     java:
+      image: 'hmctspublic.azurecr.io/ccd/data-store-api:pr-2545'
       imagePullPolicy: Always
       devmemoryRequests: 2048Mi
       devcpuRequests: 2000m
