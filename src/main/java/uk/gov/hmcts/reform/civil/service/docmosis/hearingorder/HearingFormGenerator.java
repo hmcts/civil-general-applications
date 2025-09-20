@@ -132,7 +132,7 @@ public class HearingFormGenerator implements TemplateDataGenerator<HearingForm> 
     }
 
     protected String getCaseNumberFormatted(CaseData caseData) {
-        String[] parts = caseData.getCcdCaseReference().toString().split("(?<=\\G.{4})");
+        String[] parts = caseData.getGeneralAppParentCaseLink().getCaseReference().split("(?<=\\G.{4})");
         return String.join("-", parts);
     }
 
