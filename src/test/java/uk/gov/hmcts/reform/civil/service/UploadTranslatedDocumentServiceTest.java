@@ -687,6 +687,25 @@ public class UploadTranslatedDocumentServiceTest {
     }
 
     @Test
+    void shouldGetCorrectBusinessProcessForFinalOrderDoc() {
+        // Given
+        List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
+        TranslatedDocument translatedDocument = TranslatedDocument.builder()
+            .documentType(TranslatedDocumentType.GENERAL_ORDER)
+            .file(mock(Document.class))
+            .build();
+        translatedDocuments.add(Element.<TranslatedDocument>builder().value(translatedDocument).build());
+        CaseData caseData = CaseData.builder()
+            .translatedDocuments(translatedDocuments)
+            .preTranslationGaDocumentType(PreTranslationGaDocumentType.FINAL_ORDER_DOC)
+            .finalOrderSelection(FinalOrderSelection.ASSISTED_ORDER)
+            .build();
+        // When
+        String caseEvent = String.valueOf(uploadTranslatedDocumentService.getBusinessProcessEvent(caseData));
+        assertThat(caseEvent).isEqualTo("UPLOAD_TRANSLATED_DOCUMENT_FINAL_ORDER");
+    }
+
+    @Test
     void shouldGetCorrectBusinessProcessForApproveEditOrder() {
         // Given
         List<Element<TranslatedDocument>> translatedDocuments = new ArrayList<>();
