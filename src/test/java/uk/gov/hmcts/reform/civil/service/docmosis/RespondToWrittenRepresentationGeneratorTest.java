@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.MappableObject;
 import uk.gov.hmcts.reform.civil.model.docmosis.DocmosisDocument;
@@ -62,6 +63,28 @@ class RespondToWrittenRepresentationGeneratorTest {
         var templateData =
             respondToWrittenRepresentationGenerator.getTemplateData(caseData, "auth");
         assertThatFieldsAreCorrect_RespondToWrittenRepresentation(templateData, caseData);
+    }
+
+    @Test
+    void whenRespond_ShouldGetRespondToWrittenRepresentationDataForRespondent() {
+        CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
+            .build().toBuilder().parentClaimantIsApplicant(YesOrNo.YES).generalAppWrittenRepText("writtenRep Text")
+            .build();
+        respondToWrittenRepresentationGenerator.setRole(DocUploadUtils.RESPONDENT_ONE);
+        var templateData =
+            respondToWrittenRepresentationGenerator.getTemplateData(caseData, "auth");
+        assertEquals(templateData.getJudgeNameTitle(), caseData.getDefendant1PartyName());
+    }
+
+    @Test
+    void whenRespond_ShouldGetRespondToWrittenRepresentationDataForRespondentHasClaimant() {
+        CaseData caseData = CaseDataBuilder.builder().requestForInformationApplication()
+            .build().toBuilder().parentClaimantIsApplicant(YesOrNo.NO).generalAppWrittenRepText("writtenRep Text")
+            .build();
+        respondToWrittenRepresentationGenerator.setRole(DocUploadUtils.RESPONDENT_ONE);
+        var templateData =
+            respondToWrittenRepresentationGenerator.getTemplateData(caseData, "auth");
+        assertEquals(templateData.getJudgeNameTitle(), caseData.getClaimant1PartyName());
     }
 
     private void assertThatFieldsAreCorrect_RespondToWrittenRepresentation(JudgeDecisionPdfDocument templateData, CaseData caseData) {
