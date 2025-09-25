@@ -166,14 +166,14 @@ class FeatureToggleServiceTest {
         "false,YES,NO",
         "false,YES,YES",
     })
-    void shouldReturnCorrectValue_whenCuiQueryManagementEnabledLip(boolean toggleStat, String applicant1Represented,
-                                                            String respondent1Represented) {
+    void shouldReturnCorrectValue_whenCuiQueryManagementEnabledLip(boolean toggleStat, YesOrNo applicant1Lip,
+                                                            YesOrNo respondent1Lip) {
         var multipartyFeatureKey = "cui-query-management";
         givenToggle(multipartyFeatureKey, toggleStat);
         CaseData caseData = CaseDataBuilder.builder().withNoticeDraftAppCaseData()
             .toBuilder()
-            .isGaApplicantLip(Enum.valueOf(YesOrNo.class, applicant1Represented))
-            .isGaRespondentOneLip(Enum.valueOf(YesOrNo.class, respondent1Represented))
+            .isGaApplicantLip(applicant1Lip)
+            .isGaRespondentOneLip(respondent1Lip)
             .mainCaseSubmittedDate(LocalDateTime.of(LocalDate.now(), LocalTime.NOON))
             .build();
 
