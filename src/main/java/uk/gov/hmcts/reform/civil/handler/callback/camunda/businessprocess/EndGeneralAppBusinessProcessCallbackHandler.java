@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.civil.enums.CaseState;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
-import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
 import uk.gov.hmcts.reform.civil.service.ParentCaseUpdateHelper;
@@ -49,7 +48,6 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
     private final CaseDetailsConverter caseDetailsConverter;
     private final GaForLipService gaForLipService;
     private final ParentCaseUpdateHelper parentCaseUpdateHelper;
-    private final FeatureToggleService featureToggleService;
     private static final String FREE_KEYWORD = "FREE";
 
     @Override
@@ -106,7 +104,7 @@ public class EndGeneralAppBusinessProcessCallbackHandler extends CallbackHandler
             } else {
                 newState = ORDER_MADE;
             }
-        } else if (featureToggleService.isCoSCEnabled() && data.getGeneralAppType().getTypes().contains(
+        } else if (data.getGeneralAppType().getTypes().contains(
             GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID)) {
             newState = APPLICATION_DISMISSED;
         } else if (data.getParentClaimantIsApplicant().equals(YesOrNo.NO) && data.getGeneralAppType().getTypes().contains(
