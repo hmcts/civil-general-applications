@@ -752,6 +752,33 @@ class GeneratePDFDocumentCallbackHandlerTest extends BaseCallbackHandlerTest {
             assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
         }
 
+        @ParameterizedTest
+        @EnumSource(value = FinalOrderSelection.class)
+        void shouldNotPrintFinalOrderDocument_ifApplicantHasBilingualPreference(
+            FinalOrderSelection selection) {
+            CaseData caseData = CaseDataBuilder.builder().generalOrderApplication()
+                .build()
+                .toBuilder()
+                .finalOrderSelection(selection)
+                .isGaApplicantLip(YesOrNo.YES)
+                .applicantBilingualLanguagePreference(YesOrNo.YES)
+                .build();
+            when(featureToggleService.isGaForLipsEnabled()).thenReturn(true);
+            when(featureToggleService.isGaForWelshEnabled()).thenReturn(true);
+            when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
+            when(gaForLipService.isLipResp(any(CaseData.class))).thenReturn(true);
+            CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+
+            var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
+
+            CaseData updatedData = mapper.convertValue(response.getData(), CaseData.class);
+
+            assertThat(updatedData.getPreTranslationGaDocuments().get(0).getValue())
+                .isEqualTo(PDFBuilder.GENERAL_ORDER_DOCUMENT);
+            assertThat(updatedData.getSubmittedOn()).isEqualTo(submittedOn);
+            verifyNoInteractions(sendFinalOrderPrintService);
+        }
+
         @Test
         void shouldGenerateConsentOrderDocument_whenAboutToSubmitEventIsCalled() {
             CaseData caseData = CaseDataBuilder.builder().consentOrderApplication()
