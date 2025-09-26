@@ -70,7 +70,7 @@ public class FeatureToggleService {
         if (caseContainsLiP.test(caseData)) {
             return isLipQueryManagementEnabled(caseData);
         }
-        return internalClient.boolVariation("public-query-management", createLDUser().build(), false);
+        return true;
     }
 
     public boolean isLipQueryManagementEnabled(CaseData caseData) {
