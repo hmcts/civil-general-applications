@@ -124,15 +124,6 @@ class FeatureToggleServiceTest {
         assertThat(featureToggleService.isCuiGaNroEnabled()).isEqualTo(toggleStat);
     }
 
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void shouldCallBoolVariation_whenCoscIsInvoked(Boolean toggleStat) {
-        var isCoscEnabed = "isCoSCEnabled";
-        givenToggle(isCoscEnabed, toggleStat);
-
-        assertThat(featureToggleService.isCoSCEnabled()).isEqualTo(toggleStat);
-    }
-
     @Test
     void shouldCallBoolVariation_whenIsRpaContinuousFeedEnabledInvoked() {
         var multipartyFeatureKey = "rpaContinuousFeed";

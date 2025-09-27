@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.civil.enums.PaymentStatus;
 import uk.gov.hmcts.reform.civil.enums.YesOrNo;
 import uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes;
 import uk.gov.hmcts.reform.civil.handler.callback.BaseCallbackHandlerTest;
-import uk.gov.hmcts.reform.civil.launchdarkly.FeatureToggleService;
 import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.Fee;
 import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
@@ -56,8 +55,6 @@ public class GeneralApplicationAfterPaymentCallbackHandlerTest extends BaseCallb
     private ObjectMapper objectMapper;
     @MockBean
     private GaForLipService gaForLipService;
-    @MockBean
-    private FeatureToggleService featureToggleService;
 
     private static final String STRING_CONSTANT = "STRING_CONSTANT";
     private static final Long CHILD_CCD_REF = 1646003133062762L;
@@ -69,7 +66,6 @@ public class GeneralApplicationAfterPaymentCallbackHandlerTest extends BaseCallb
         caseData = addGeneralAppType(caseData, GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID);
         CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(false);
-        when(featureToggleService.isCoSCEnabled()).thenReturn(true);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo(INITIATE_COSC_APPLICATION_AFTER_PAYMENT.name());
@@ -80,7 +76,6 @@ public class GeneralApplicationAfterPaymentCallbackHandlerTest extends BaseCallb
         CaseData caseData = getSampleGeneralApplicationCaseData(NO, YES);
         CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(false);
-        when(featureToggleService.isCoSCEnabled()).thenReturn(true);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT.name());
@@ -93,7 +88,6 @@ public class GeneralApplicationAfterPaymentCallbackHandlerTest extends BaseCallb
 
         CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
-        when(featureToggleService.isCoSCEnabled()).thenReturn(true);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         assertThat(responseCaseData.getBusinessProcess()).isNull();
@@ -106,7 +100,6 @@ public class GeneralApplicationAfterPaymentCallbackHandlerTest extends BaseCallb
 
         CallbackParams params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
         when(gaForLipService.isLipApp(any(CaseData.class))).thenReturn(true);
-        when(featureToggleService.isCoSCEnabled()).thenReturn(true);
         var response = (AboutToStartOrSubmitCallbackResponse) handler.handle(params);
         CaseData responseCaseData = objectMapper.convertValue(response.getData(), CaseData.class);
         assertThat(responseCaseData.getBusinessProcess().getCamundaEvent()).isEqualTo(INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT.name());
