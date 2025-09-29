@@ -677,7 +677,6 @@ public class CaseDataBuilder {
             .generalAppRespondentSolicitors(application.getGeneralAppRespondentSolicitors())
             .isCcmccLocation(application.getIsCcmccLocation())
             .caseManagementLocation(application.getCaseManagementLocation())
-            .parentCaseReference(application.getGeneralAppParentCaseLink().getCaseReference())
             .build();
     }
 

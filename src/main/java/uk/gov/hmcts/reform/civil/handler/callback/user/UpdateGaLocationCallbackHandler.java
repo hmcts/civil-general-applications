@@ -62,12 +62,13 @@ public class UpdateGaLocationCallbackHandler extends CallbackHandler {
     private CallbackResponse updateCaseManagementLocation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
         String authToken = callbackParams.getParams().get(BEARER_TOKEN).toString();
+        String parentCaseReference = caseData.getGeneralAppParentCaseLink() != null
+            ? caseData.getGeneralAppParentCaseLink().getCaseReference() : caseData.getParentCaseReference();
         CaseData civilCaseData = caseDetailsConverter
             .toCaseData(coreCaseDataService
-                            .getCase(Long.parseLong(caseData.getParentCaseReference())));
+                            .getCase(Long.parseLong(parentCaseReference)));
         LocationRefData locationDetails = getWorkAllocationLocationDetails(civilCaseData.getCaseManagementLocation().getBaseLocation(),
                                                                            authToken);
-
         CaseData.CaseDataBuilder caseDataBuilder = caseData.toBuilder();
         caseDataBuilder
             .businessProcess(

@@ -256,7 +256,6 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
                                                                              .build())
                                                                .caseState("Awaiting Respondent Response")
                                                                .build()))
-                .parentCaseReference(PARENT_CCD_REF.toString())
                 .build();
         }
 
