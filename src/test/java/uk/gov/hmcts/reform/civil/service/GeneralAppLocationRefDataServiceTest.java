@@ -216,7 +216,6 @@ class GeneralAppLocationRefDataServiceTest {
             anyString(),
             anyString(),
             anyString(),
-            anyString(),
             anyString()
         ))
             .thenReturn(getAllLocationsRefDataResponse());
@@ -251,7 +250,6 @@ class GeneralAppLocationRefDataServiceTest {
             anyString(),
             anyString(),
             anyString(),
-            anyString(),
             anyString()
         ))
             .thenReturn(new ArrayList<>());
@@ -270,7 +268,6 @@ class GeneralAppLocationRefDataServiceTest {
             anyString(),
             anyString(),
             anyString(),
-            anyString(),
             anyString()
         ))
             .thenReturn(getOnlyScotlandLocationsRefDataResponse());
@@ -284,7 +281,6 @@ class GeneralAppLocationRefDataServiceTest {
     void shouldReturnLocations_whenLRDReturnsNonScotlandLocations() {
         when(authTokenGenerator.generate()).thenReturn("service_token");
         when(locationReferenceDataApiClient.getCourtVenue(
-            anyString(),
             anyString(),
             anyString(),
             anyString(),
@@ -318,7 +314,6 @@ class GeneralAppLocationRefDataServiceTest {
     void shouldReturnEmptyList_whenLRDThrowsException() {
         when(authTokenGenerator.generate()).thenReturn("service_token");
         when(locationReferenceDataApiClient.getCourtVenue(
-            anyString(),
             anyString(),
             anyString(),
             anyString(),
