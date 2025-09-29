@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
 import uk.gov.hmcts.reform.civil.sampledata.CaseDataBuilder;
@@ -187,7 +188,17 @@ public class DocUploadUtilsTest {
         "RESPOND_TO_APPLICATION,Respond evidence",
         "LINK_GENERAL_APPLICATION_CASE_TO_PARENT_CASE,Unsupported event"
     })
-    public void should_getDocumentType(String event, String name) {
+    public void should_getDocumentName(String event, String name) {
+        CaseEvent caseEvent = CaseEvent.valueOf(event);
+        assertThat(DocUploadUtils.getDocumentName(caseEvent)).isEqualTo(name);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "RESPOND_TO_JUDGE_ADDITIONAL_INFO,REQUEST_FOR_INFORMATION",
+        "RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION,WRITTEN_REPRESENTATION_SEQUENTIAL"
+    })
+    public void should_getDocumentType(String event, DocumentType name) {
         CaseEvent caseEvent = CaseEvent.valueOf(event);
         assertThat(DocUploadUtils.getDocumentType(caseEvent)).isEqualTo(name);
     }
