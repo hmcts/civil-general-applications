@@ -81,7 +81,7 @@ public class SendFinalOrderPrintService {
             recipients.add(caseData.getPartyName(parentClaimantIsApplicant, lipUserType, civilCaseData));
         }
 
-        bulkPrintService.printLetter(letterContent, caseData.getCcdCaseReference().toString(),
+        bulkPrintService.printLetter(letterContent, caseData.getGeneralAppParentCaseLink().getCaseReference(),
                                      civilCaseData.getLegacyCaseReference(),
                                      SendFinalOrderPrintService.FINAL_ORDER_PACK_LETTER_TYPE, recipients);
 
@@ -164,7 +164,7 @@ public class SendFinalOrderPrintService {
 
     private void sendBulkPrint(byte[] letterContent, CaseData caseData, CaseData civilCaseData, List<String> recipients) {
 
-        bulkPrintService.printLetter(letterContent, caseData.getCcdCaseReference().toString(),
+        bulkPrintService.printLetter(letterContent, caseData.getGeneralAppParentCaseLink().getCaseReference(),
                                      civilCaseData.getLegacyCaseReference(),
                                      SendFinalOrderPrintService.TRANSLATED_ORDER_PACK_LETTER_TYPE, recipients);
     }
@@ -210,7 +210,7 @@ public class SendFinalOrderPrintService {
         boolean parentClaimantIsApplicant = identifyParentClaimantIsApplicant(caseData);
 
         return PostOrderCoverLetter.builder()
-            .caseNumber(caseData.getCcdCaseReference().toString())
+            .caseNumber(caseData.getGeneralAppParentCaseLink().getCaseReference())
             .partyName(getPartyName(parentClaimantIsApplicant, caseEvent, civilCaseData))
             .partyAddressAddressLine1(partyAddressAddressLine1(parentClaimantIsApplicant, caseEvent, civilCaseData))
             .partyAddressAddressLine2(partyAddressAddressLine2(parentClaimantIsApplicant, caseEvent, civilCaseData))

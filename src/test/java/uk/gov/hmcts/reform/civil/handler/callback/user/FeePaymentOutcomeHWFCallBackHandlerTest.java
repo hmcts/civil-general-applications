@@ -13,7 +13,8 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.FEE_PAYMENT_OUTCOME_G
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_COSC_APPLICATION_AFTER_PAYMENT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.UPDATE_GA_ADD_HWF;
-import org.junit.jupiter.api.BeforeEach;
+import static uk.gov.hmcts.reform.civil.enums.dq.GeneralApplicationTypes.STRIKE_OUT;
+
 import uk.gov.hmcts.reform.ccd.client.model.AboutToStartOrSubmitCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.CallbackParams;
 import uk.gov.hmcts.reform.civil.enums.CaseState;
@@ -33,6 +34,7 @@ import uk.gov.hmcts.reform.civil.service.HwfNotificationService;
 import uk.gov.hmcts.reform.civil.service.PaymentRequestUpdateCallbackService;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
@@ -63,11 +65,6 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
     private HwfNotificationService hwfNotificationService;
     @MockBean
     private FeatureToggleService featureToggleService;
-
-    @BeforeEach
-    void setup() {
-        when(featureToggleService.isCoSCEnabled()).thenReturn(false);
-    }
 
     @Test
     void handleEventsReturnsTheExpectedCallbackEvent() {
@@ -208,6 +205,7 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
     class AboutToSubmitCallback {
         @Test
         void shouldTrigger_after_payment_GaFee() {
+            List<GeneralApplicationTypes> types = Arrays.asList(STRIKE_OUT);
             CaseData caseData = CaseData.builder()
                     .generalAppPBADetails(GAPbaDetails.builder().fee(
                                     Fee.builder()
@@ -215,6 +213,7 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
                             .build())
                     .generalAppHelpWithFees(HelpWithFees.builder().helpWithFeesReferenceNumber("ref").build())
                     .gaHwfDetails(HelpWithFeesDetails.builder().build())
+                .generalAppType(GAApplicationType.builder().types(types).build())
                     .hwfFeeType(FeeType.APPLICATION)
                     .build();
             when(service.processHwf(any(CaseData.class)))
@@ -244,7 +243,6 @@ public class FeePaymentOutcomeHWFCallBackHandlerTest extends BaseCallbackHandler
                     .gaHwfDetails(HelpWithFeesDetails.builder().build())
                     .hwfFeeType(FeeType.APPLICATION)
                     .build();
-            when(featureToggleService.isCoSCEnabled()).thenReturn(true);
             when(service.processHwf(any(CaseData.class)))
                     .thenAnswer((Answer<CaseData>) invocation -> invocation.getArgument(0));
 

@@ -58,10 +58,6 @@ public class FeatureToggleService {
         return internalClient.boolVariation("case-file-view", createLDUser().build(), false);
     }
 
-    public boolean isCoSCEnabled() {
-        return internalClient.boolVariation("isCoSCEnabled", createLDUser().build(), false);
-    }
-
     public boolean isGaForWelshEnabled() {
         return internalClient.boolVariation("generalApplicationsForWelshParty", createLDUser().build(), false);
     }
