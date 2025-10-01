@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.civil.model.CaseData;
 import uk.gov.hmcts.reform.civil.model.common.Element;
 import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.Document;
+import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.genapplication.GASolicitorDetailsGAspec;
 import uk.gov.hmcts.reform.civil.model.genapplication.UploadDocumentByType;
 
@@ -145,18 +146,32 @@ public class DocUploadUtils {
         if (Objects.isNull(source)) {
             return null;
         }
-        String documentType = getDocumentType(event);
+        DocumentType documentType = getDocumentType(event);
+        String documentName = getDocumentName(event);
         return source.stream()
                 .map(doc -> ElementUtils.element(CaseDocument.builder()
                         .documentLink(doc.getValue().toBuilder()
                                 .categoryID(AssignCategoryId.APPLICATIONS).build())
-                        .documentName(documentType)
+                        .documentName(documentName)
+                                                     .documentType(documentType)
                         .createdBy(role)
                         .createdDatetime(LocalDateTime.now()).build()))
                 .toList();
     }
 
-    public static String getDocumentType(CaseEvent event) {
+    public static DocumentType getDocumentType(CaseEvent event) {
+        switch (event) {
+
+            case RESPOND_TO_JUDGE_ADDITIONAL_INFO:
+                return DocumentType.REQUEST_FOR_INFORMATION;
+            case RESPOND_TO_JUDGE_WRITTEN_REPRESENTATION:
+                return DocumentType.WRITTEN_REPRESENTATION_SEQUENTIAL;
+            default:
+                return null;
+        }
+    }
+
+    public static String getDocumentName(CaseEvent event) {
         switch (event) {
             case INITIATE_GENERAL_APPLICATION:
                 return "Supporting evidence";

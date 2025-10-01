@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.civil.enums.GAJudicialHearingType;
 import uk.gov.hmcts.reform.civil.enums.dq.GAHearingDuration;
 import uk.gov.hmcts.reform.civil.helpers.CaseDetailsConverter;
 import uk.gov.hmcts.reform.civil.model.CaseData;
+import uk.gov.hmcts.reform.civil.model.GeneralAppParentCaseLink;
 import uk.gov.hmcts.reform.civil.model.LocationRefData;
 import uk.gov.hmcts.reform.civil.model.common.DynamicList;
 import uk.gov.hmcts.reform.civil.model.common.DynamicListElement;
@@ -211,7 +212,8 @@ class HearingFormGeneratorTest {
 
     @Test
     void test_getCaseNumberFormatted() {
-        CaseData caseData = CaseDataBuilder.builder().ccdCaseReference(1644495739087775L).build();
+        CaseData caseData = CaseDataBuilder.builder().ccdCaseReference(1644495739087775L)
+            .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("1644495739087775").build()).build();
         String formattedCaseNumber = generator.getCaseNumberFormatted(caseData);
         assertThat(formattedCaseNumber).isEqualTo("1644-4957-3908-7775");
     }
