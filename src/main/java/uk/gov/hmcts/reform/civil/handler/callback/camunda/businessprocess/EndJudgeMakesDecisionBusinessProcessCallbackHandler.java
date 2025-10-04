@@ -50,14 +50,16 @@ public class EndJudgeMakesDecisionBusinessProcessCallbackHandler extends Callbac
         log.info("End judge makes decision business process for caseId: {}", callbackParams.getCaseData().getCcdCaseReference());
         CaseData data = caseDetailsConverter.toCaseData(callbackParams.getRequest().getCaseDetails());
         CaseState newState = getNewStateDependingOn(data);
-        if (isApplicationMakeVisibleToDefendant(data)
-            || (data.getIsGaRespondentOneLip() == YesOrNo.YES && newState != APPLICATION_ADD_PAYMENT)) {
-            parentCaseUpdateHelper.updateParentApplicationVisibilityWithNewState(
-                data, newState.getDisplayedValue());
+        if (isApplicationMakeVisibleToDefendant(data)) {
+            if (data.getIsGaRespondentOneLip() == YesOrNo.NO || (data.getIsGaRespondentOneLip() == YesOrNo.YES && newState != APPLICATION_ADD_PAYMENT)) {
+                parentCaseUpdateHelper.updateParentApplicationVisibilityWithNewState(
+                    data, newState.getDisplayedValue());
+            } else {
+                parentCaseUpdateHelper.updateParentWithGAState(data, newState.getDisplayedValue());
+            }
         } else {
             parentCaseUpdateHelper.updateParentWithGAState(data, newState.getDisplayedValue());
         }
-
         return evaluateReady(callbackParams, newState);
     }
 
