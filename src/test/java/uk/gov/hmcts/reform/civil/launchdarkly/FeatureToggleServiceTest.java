@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.launchdarkly;
 
 import com.google.common.collect.ImmutableList;
+import com.launchdarkly.sdk.LDContext;
 import com.launchdarkly.sdk.LDUser;
 import com.launchdarkly.sdk.server.interfaces.LDClientInterface;
 import org.junit.jupiter.api.BeforeEach;
@@ -115,11 +116,12 @@ class FeatureToggleServiceTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    void shouldCallBoolVariation_whenCoscIsInvoked(Boolean toggleStat) {
-        var isCoscEnabed = "isCoSCEnabled";
-        givenToggle(isCoscEnabed, toggleStat);
+    void shouldCallBoolVariation_whenGaForLipNro(Boolean toggleStat) {
+        var gaCuiNroKey = "cui-ga-nro";
+        when(ldClient.boolVariation(eq(gaCuiNroKey), any(LDContext.class), anyBoolean()))
+            .thenReturn(toggleStat);
 
-        assertThat(featureToggleService.isCoSCEnabled()).isEqualTo(toggleStat);
+        assertThat(featureToggleService.isCuiGaNroEnabled()).isEqualTo(toggleStat);
     }
 
     @Test
@@ -140,32 +142,29 @@ class FeatureToggleServiceTest {
         verifyBoolVariationCalled(organisationOnboardedFeatureKey, List.of("timestamp", "environment", "orgId"));
     }
 
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void shouldReturnCorrectValue_whenPublicQueryEnabledLr(Boolean toggleStat) {
-        var lrPublicQuery = "public-query-management";
-        givenToggle(lrPublicQuery, toggleStat);
-
+    @Test
+    void shouldReturnCorrectValue_whenNonLipCase() {
         CaseData caseData = CaseDataBuilder.builder().withNoticeDraftAppCaseData();
-
-        assertThat(featureToggleService.isPublicQueryManagementEnabled(caseData)).isEqualTo(toggleStat);
+        assertThat(featureToggleService.isPublicQueryManagementEnabled(caseData)).isEqualTo(true);
     }
 
     @ParameterizedTest
     @CsvSource({
-        "true,NO,YES,NO",
-        "true,YES,NO,NO",
-        "true,YES,YES,YES",
-        "false,NO,NO,NO",
+        "true,NO,YES",
+        "true,YES,NO",
+        "true,YES,YES",
+        "false,NO,YES",
+        "false,YES,NO",
+        "false,YES,YES",
     })
-    void shouldReturnCorrectValue_whenPublicQueryEnabledLip(boolean toggleStat, String applicant1Represented,
-                                                            String respondent1Represented, String respondent2Represented) {
+    void shouldReturnCorrectValue_whenCuiQueryManagementEnabledLip(boolean toggleStat, YesOrNo applicant1Lip,
+                                                            YesOrNo respondent1Lip) {
         var multipartyFeatureKey = "cui-query-management";
         givenToggle(multipartyFeatureKey, toggleStat);
         CaseData caseData = CaseDataBuilder.builder().withNoticeDraftAppCaseData()
             .toBuilder()
-            .isGaApplicantLip(Enum.valueOf(YesOrNo.class, applicant1Represented))
-            .isGaRespondentOneLip(Enum.valueOf(YesOrNo.class, respondent1Represented))
+            .isGaApplicantLip(applicant1Lip)
+            .isGaRespondentOneLip(respondent1Lip)
             .mainCaseSubmittedDate(LocalDateTime.of(LocalDate.now(), LocalTime.NOON))
             .build();
 

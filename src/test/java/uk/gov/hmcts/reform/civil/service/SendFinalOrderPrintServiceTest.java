@@ -284,7 +284,7 @@ class SendFinalOrderPrintServiceTest {
     private void verifyPrintLetter(CaseData civilCaseData, CaseData caseData, Party party) {
         verify(bulkPrintService).printLetter(
             LETTER_CONTENT,
-            caseData.getCcdCaseReference().toString(),
+            caseData.getGeneralAppParentCaseLink().getCaseReference(),
             civilCaseData.getLegacyCaseReference(),
             FINAL_ORDER_PACK_LETTER_TYPE,
             List.of(party.getPartyName())
@@ -294,7 +294,7 @@ class SendFinalOrderPrintServiceTest {
     private void verifyPrintTranslatedLetter(CaseData civilCaseData, CaseData caseData, Party party) {
         verify(bulkPrintService).printLetter(
             LETTER_CONTENT,
-            caseData.getCcdCaseReference().toString(),
+            caseData.getGeneralAppParentCaseLink().getCaseReference(),
             civilCaseData.getLegacyCaseReference(),
             TRANSLATED_ORDER_PACK_LETTER_TYPE,
             List.of(party.getPartyName())

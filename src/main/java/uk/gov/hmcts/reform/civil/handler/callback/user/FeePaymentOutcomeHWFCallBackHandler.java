@@ -119,8 +119,7 @@ public class FeePaymentOutcomeHWFCallBackHandler extends HWFCallbackHandlerBase 
             if (processedCaseData.isHWFTypeApplication()) {
 
                 CaseEvent caseEvent = INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
-                assert featureToggleService != null;
-                if (featureToggleService.isCoSCEnabled() && caseData.getGeneralAppType().getTypes().contains(
+                if (caseData.getGeneralAppType().getTypes().contains(
                     GeneralApplicationTypes.CONFIRM_CCJ_DEBT_PAID)) {
                     caseEvent = INITIATE_COSC_APPLICATION_AFTER_PAYMENT;
                 }

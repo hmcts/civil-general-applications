@@ -55,7 +55,6 @@ public class LocationReferenceDataApiConsumerTest extends BaseContractTest {
             SERVICE_AUTH_TOKEN,
             AUTHORIZATION_TOKEN,
             "isHearingLocation",
-            "isCaseManagementLocation",
             "courtTypeId",
             "locationType"
         );
@@ -102,7 +101,6 @@ public class LocationReferenceDataApiConsumerTest extends BaseContractTest {
             .headers(SERVICE_AUTHORIZATION_HEADER, SERVICE_AUTH_TOKEN, AUTHORIZATION_HEADER, AUTHORIZATION_TOKEN)
             .method(HttpMethod.GET.toString())
             .matchQuery("is_hearing_location", "isHearingLocation", "isHearingLocation")
-            .matchQuery("is_case_management_location", "isCaseManagementLocation", "isCaseManagementLocation")
             .matchQuery("court_type_id", "courtTypeId", "courtTypeId")
             .matchQuery("location_type", "locationType", "locationType")
             .willRespondWith()

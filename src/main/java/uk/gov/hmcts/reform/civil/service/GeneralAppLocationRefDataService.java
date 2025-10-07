@@ -29,7 +29,6 @@ public class GeneralAppLocationRefDataService {
                     authTokenGenerator.generate(),
                     authToken,
                     "Y",
-                    "Y",
                     "10",
                     "Court"
 

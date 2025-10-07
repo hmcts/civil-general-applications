@@ -299,6 +299,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
 
         @Test
         void shouldAddGaToJudgeCollectionPaymentThroughHelpWithFeesFullRemission() {
+            List<GeneralApplicationTypes> types = Arrays.asList(STRIKE_OUT);
             CaseData updatedCaseDate = CaseData.builder()
                 .parentClaimantIsApplicant(YES)
                 .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YES).build())
@@ -310,6 +311,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                 .ccdState(AWAITING_APPLICATION_PAYMENT)
                 .ccdCaseReference(1234L)
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("0000").build())
+                .generalAppType(GAApplicationType.builder().types(types).build())
                 .generalAppPBADetails(GAPbaDetails.builder()
                                           .fee(Fee.builder().code("PAY").build())
                                           .paymentDetails(PaymentDetails.builder().build())
@@ -349,6 +351,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
 
         @Test
         void shouldAddGaToJudgeCollectionPaymentThroughHelpWithFeesPartRemission() {
+            List<GeneralApplicationTypes> types = Arrays.asList(STRIKE_OUT);
             CaseData updatedCaseDate = CaseData.builder()
                 .parentClaimantIsApplicant(YES)
                 .generalAppHelpWithFees(HelpWithFees.builder().helpWithFee(YES).build())
@@ -361,6 +364,7 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                 .ccdState(AWAITING_APPLICATION_PAYMENT)
                 .ccdCaseReference(1234L)
                 .generalAppParentCaseLink(GeneralAppParentCaseLink.builder().caseReference("0000").build())
+                .generalAppType(GAApplicationType.builder().types(types).build())
                 .generalAppPBADetails(GAPbaDetails.builder()
                                           .fee(Fee.builder().code("PAY").build())
                                           .paymentDetails(PaymentDetails.builder().build())
@@ -567,7 +571,6 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                 .thenReturn(getSampleGeneralApplicationCaseDataForVaryJudgement(YES, YES, respondentsResponses));
             when(caseDetailsConverter.toCaseData(getStartEventResponse(YES, NO).getCaseDetails()))
                 .thenReturn(getParentCaseDataBeforeUpdate(YES, NO));
-            when(featureToggleService.isCoSCEnabled()).thenReturn(true);
 
             handler.handle(getCallbackParamsOfVary(YES, YES));
 
@@ -619,7 +622,6 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                 .thenReturn(getSampleGeneralApplicationCaseDataForVaryJudgement(NO, YES, respondentsResponses).toBuilder().respondentsResponses(respondentsResponses).build());
             when(caseDetailsConverter.toCaseData(getStartEventResponse(NO, YES).getCaseDetails()))
                 .thenReturn(getParentCaseDataBeforeUpdate(NO, YES));
-            when(featureToggleService.isCoSCEnabled()).thenReturn(true);
 
             handler.handle(getCallbackParamsOfVary(NO, YES));
 
@@ -702,7 +704,6 @@ public class EndGeneralAppBusinessProcessCallbackHandlerTest extends BaseCallbac
                 .thenReturn(getSampleGeneralApplicationCaseDataForCCJ(YES, NO));
             when(caseDetailsConverter.toCaseData(getStartEventResponse(YES, NO).getCaseDetails()))
                 .thenReturn(getParentCaseDataBeforeUpdate(YES, NO));
-            when(featureToggleService.isCoSCEnabled()).thenReturn(true);
 
             handler.handle(getCallbackParams(YES, NO));
 
