@@ -155,7 +155,7 @@ public class DocUploadUtils {
                         .documentName(documentName)
                                                      .documentType(documentType)
                         .createdBy(role)
-                        .createdDatetime(LocalDateTime.now()).build()))
+                        .createdDatetime(LocalDateTime.now(ZoneId.of("Europe/London"))).build()))
                 .toList();
     }
 
