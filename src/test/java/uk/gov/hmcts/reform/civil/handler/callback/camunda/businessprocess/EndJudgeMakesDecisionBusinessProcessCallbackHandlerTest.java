@@ -70,6 +70,22 @@ class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallba
 
         verify(parentCaseUpdateHelper, times(1))
             .updateParentApplicationVisibilityWithNewState(any(), any());
+    }
+
+    @Test
+    void shouldAddRespondentSolicitorDetail_WhenJudeOrderMakeUncloakApplication_WhenLR() {
+
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(NO).build();
+
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
+        when(judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).thenReturn(true);
+        when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any())).thenReturn(CaseState.ORDER_MADE);
+
+        params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        handler.handle(params);
+
+        verify(parentCaseUpdateHelper, times(1))
+            .updateParentApplicationVisibilityWithNewState(any(), any());
 
     }
 
@@ -77,6 +93,7 @@ class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallba
     void shouldNotAddRespondentSolicitorDetail_WhenJudeOrderMake_WithNoticeApplication() {
 
         CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(YES).build();
+        caseData = caseData.toBuilder().isGaRespondentOneLip(YES).build();
 
         when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
         when(judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).thenReturn(false);
@@ -87,7 +104,23 @@ class EndJudgeMakesDecisionBusinessProcessCallbackHandlerTest extends BaseCallba
 
         verify(parentCaseUpdateHelper, times(1))
             .updateParentWithGAState(any(), any());
+    }
 
+    @Test
+    void shouldNotAddRespondentSolicitorDetail_WhenJudeOrderMake_WithNoticeApplicationLipNotAdditionalPayment() {
+
+        CaseData caseData = CaseDataBuilder.builder().judicialOrderMadeWithUncloakApplication(NO).build();
+        caseData = caseData.toBuilder().isGaRespondentOneLip(YES).build();
+
+        when(caseDetailsConverter.toCaseData(any())).thenReturn(caseData);
+        when(judicialDecisionHelper.isOrderMakeDecisionMadeVisibleToDefendant(caseData)).thenReturn(true);
+        when(stateGeneratorService.getCaseStateForEndJudgeBusinessProcess(any())).thenReturn(CaseState.ORDER_MADE);
+
+        params = callbackParamsOf(caseData, ABOUT_TO_SUBMIT);
+        handler.handle(params);
+
+        verify(parentCaseUpdateHelper, times(1))
+            .updateParentApplicationVisibilityWithNewState(any(), any());
     }
 
 }
