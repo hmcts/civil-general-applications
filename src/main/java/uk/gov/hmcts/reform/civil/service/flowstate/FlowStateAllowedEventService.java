@@ -168,7 +168,8 @@ public class FlowStateAllowedEventService {
                       FULL_REMISSION_HWF_GA,
                       PARTIAL_REMISSION_HWF_GA,
                       FEE_PAYMENT_OUTCOME_GA,
-                      MAIN_CASE_CLOSED)
+                      MAIN_CASE_CLOSED,
+                      REFER_TO_JUDGE)
         ),
 
         entry(JUDGE_DIRECTIONS.fullName(),
