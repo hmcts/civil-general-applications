@@ -160,10 +160,12 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
         /*
          * Add the GA in respondent two collection if he/she initiate without notice application.
          * */
-        if (generalApplication.getIsMultiParty().equals(YES) && caseData.getAddApplicant2().equals(NO)
-                && caseData.getRespondent2SameLegalRepresentative().equals(NO)
+        if (YES.equals(generalApplication.getIsMultiParty()) && NO.equals(caseData.getAddApplicant2())
+                && NO.equals(caseData.getRespondent2SameLegalRepresentative())
+                && (generalApplication.getGeneralAppApplnSolicitor() != null
+                && generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier() != null
                 && generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
-                .equals(getRespondent2SolicitorOrgId(caseData))) {
+            .equals(getRespondent2SolicitorOrgId(caseData)))) {
 
             GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
                     generalApplication, generalAppCaseData);
@@ -174,13 +176,11 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
             }
         }
 
-        var data = caseData.toBuilder()
+        return caseData.toBuilder()
             .claimantGaAppDetails(applications)
             .respondentSolGaAppDetails(respondentSpecficGADetails)
             .respondentSolTwoGaAppDetails(respondentTwoSpecficGADetails)
             .build();
-
-        return data;
     }
 
     private GeneralApplicationsDetails buildApplication(GeneralApplication generalApplication,
@@ -321,7 +321,7 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
         /* Urgent Application */
 
         if (generalApplication.getGeneralAppUrgencyRequirement() != null
-            && generalApplication.getGeneralAppUrgencyRequirement().getGeneralAppUrgency().equals(YES)) {
+            && YES.equals(generalApplication.getGeneralAppUrgencyRequirement().getGeneralAppUrgency())) {
             return NO;
         }
 
