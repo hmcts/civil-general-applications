@@ -319,7 +319,7 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
         /* Urgent Application */
 
         if (generalApplication.getGeneralAppUrgencyRequirement() != null
-            && YES.equals(generalApplication.getGeneralAppUrgencyRequirement().getGeneralAppUrgency())) {
+            && generalApplication.getGeneralAppUrgencyRequirement().getGeneralAppUrgency().equals(YES)) {
             return NO;
         }
 
