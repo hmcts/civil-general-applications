@@ -162,10 +162,8 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
          * */
         if (YES.equals(generalApplication.getIsMultiParty()) && NO.equals(caseData.getAddApplicant2())
                 && NO.equals(caseData.getRespondent2SameLegalRepresentative())
-                && (generalApplication.getGeneralAppApplnSolicitor() != null
-                && generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier() != null
                 && generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
-            .equals(getRespondent2SolicitorOrgId(caseData)))) {
+                .equals(getRespondent2SolicitorOrgId(caseData))) {
 
             GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
                     generalApplication, generalAppCaseData);

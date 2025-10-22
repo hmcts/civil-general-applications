@@ -78,7 +78,7 @@ import static uk.gov.hmcts.reform.civil.utils.ElementUtils.wrapElements;
     StateFlowEngine.class
 })
 @ExtendWith(SpringExtension.class)
-class CreateApplicationTaskHandlerTest {
+public class CreateApplicationTaskHandlerTest {
 
     private static final String STRING_CONSTANT = "this is a string";
     private static final LocalDate APP_DATE_EPOCH = EPOCH;
@@ -136,17 +136,6 @@ class CreateApplicationTaskHandlerTest {
         void shouldAddWithOutNoticeGaApplnToExistingClaimantCollection() {
             GeneralApplication generalApplication =
                 getGeneralApplication("applicant", YES, NO, NO, NO);
-            CaseData data = buildDataWithExistingCollection(generalApplication, YES, NO);
-            assertThat(data.getClaimantGaAppDetails()).hasSize(2);
-            assertThat(data.getRespondentSolGaAppDetails()).hasSize(1);
-            assertThat(data.getRespondentSolTwoGaAppDetails()).isEmpty();
-            assertThat(data.getGaDetailsMasterCollection()).hasSize(2);
-        }
-
-        @Test
-        void shouldAddWithOutNoticeGaApplnToExistingClaimantCollectionV2() {
-            GeneralApplication generalApplication =
-                getGeneralApplicationWithoutAppApplnSolicitor();
             CaseData data = buildDataWithExistingCollection(generalApplication, YES, NO);
             assertThat(data.getClaimantGaAppDetails()).hasSize(2);
             assertThat(data.getRespondentSolGaAppDetails()).hasSize(1);
@@ -267,37 +256,6 @@ class CreateApplicationTaskHandlerTest {
                                                   .build())
                 .isMultiParty(YES)
                 .isDocumentVisible(isDocumentVisible)
-                .businessProcess(BusinessProcess.builder()
-                                     .status(STARTED)
-                                     .processInstanceId(PROCESS_INSTANCE_ID)
-                                     .camundaEvent(CREATE_GENERAL_APPLICATION_CASE.name())
-                                     .build())
-                .build();
-        }
-
-        private GeneralApplication getGeneralApplicationWithoutAppApplnSolicitor() {
-            GeneralApplication.GeneralApplicationBuilder builder = GeneralApplication.builder();
-
-            builder.generalAppType(GAApplicationType.builder()
-                                       .types(singletonList(SUMMARY_JUDGEMENT))
-                                       .build());
-
-            return builder
-                .parentClaimantIsApplicant(YES)
-                .generalAppRespondentAgreement(GARespondentOrderAgreement.builder()
-                                                   .hasAgreed(NO).build())
-                .generalAppInformOtherParty(GAInformOtherParty.builder()
-                                                .isWithNotice(NO)
-                                                .reasonsForWithoutNotice(STRING_CONSTANT)
-                                                .build())
-                .generalAppDateDeadline(DUMMY_DATE)
-                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder()
-                                                  .generalAppUrgency(YES)
-                                                  .reasonsForUrgency(STRING_CONSTANT)
-                                                  .urgentAppConsiderationDate(APP_DATE_EPOCH)
-                                                  .build())
-                .isMultiParty(YES)
-                .isDocumentVisible(NO)
                 .businessProcess(BusinessProcess.builder()
                                      .status(STARTED)
                                      .processInstanceId(PROCESS_INSTANCE_ID)
