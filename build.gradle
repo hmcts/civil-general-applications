@@ -24,7 +24,7 @@ def versions = [
   springSecurity    : '6.0.8',
   pact              : '3.5.24',
   camunda           : '7.20.0',
-  pdfbox            : '3.0.5',
+  pdfbox            : '3.0.6',
   tika              : '2.9.4'
 ]
 
