@@ -4,6 +4,8 @@ import lombok.Getter;
 
 @Getter
 public enum FeeType {
+    CLAIMISSUED("claim", "hawliad"),
+    HEARING("hearing", "gwrandawiad"),
     APPLICATION("application", "cais"),
     ADDITIONAL("additional", "cais ychwanegol");
 
