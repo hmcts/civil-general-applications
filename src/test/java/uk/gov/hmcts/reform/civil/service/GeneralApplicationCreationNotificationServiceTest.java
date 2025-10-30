@@ -134,6 +134,38 @@ public class GeneralApplicationCreationNotificationServiceTest {
         }
 
         @Test
+        void notificationShouldSendIfGa_Urgent_WithNoticeAndFreeFeeV2() {
+            CaseData caseData = getCaseData(true).toBuilder()
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
+                .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().code("FREE").build()).build())
+                .generalAppRespondentSolicitors(List.of())
+                .build();
+
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
+            when(solicitorEmailValidation
+                     .validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            gaNotificationService.sendNotification(caseData);
+            verifyNoInteractions(notificationService);
+        }
+
+        @Test
+        void notificationShouldSendIfGa_Urgent_WithNoticeAndFreeFeeV2Null() {
+            CaseData caseData = getCaseData(true).toBuilder()
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
+                .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().code("FREE").build()).build())
+                .generalAppRespondentSolicitors(null)
+                .build();
+
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
+            when(solicitorEmailValidation
+                     .validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            gaNotificationService.sendNotification(caseData);
+            verifyNoInteractions(notificationService);
+        }
+
+        @Test
         void notificationShouldSendIfGa_Urgent_WithNoticeAndFeePaid() {
             CaseData caseData = getCaseData(true).toBuilder()
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
