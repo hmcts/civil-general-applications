@@ -79,8 +79,6 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
                         rs.getValue().getEmail(),
                         getTemplate(updatedCaseData, false, civilCaseData)
                     );
-                } else {
-                    log.info("RespondentSolicitor email is null for respondent: for caseId {}", caseReference);
                 }
             });
         }
