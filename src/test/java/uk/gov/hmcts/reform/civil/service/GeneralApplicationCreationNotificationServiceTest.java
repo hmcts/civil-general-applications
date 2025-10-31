@@ -134,6 +134,96 @@ public class GeneralApplicationCreationNotificationServiceTest {
         }
 
         @Test
+        void notificationShouldSendIfGa_Urgent_WithNoticeAndFreeFeeV2() {
+            CaseData caseData = getCaseData(true).toBuilder()
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
+                .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().code("FREE").build()).build())
+                .generalAppRespondentSolicitors(List.of())
+                .build();
+
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
+            when(solicitorEmailValidation
+                     .validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            gaNotificationService.sendNotification(caseData);
+            verifyNoInteractions(notificationService);
+        }
+
+        @Test
+        void notificationShouldSendIfGa_Urgent_WithNoticeAndFreeFeeV2Null() {
+            CaseData caseData = getCaseData(true).toBuilder()
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
+                .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().code("FREE").build()).build())
+                .generalAppRespondentSolicitors(null)
+                .build();
+
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
+            when(solicitorEmailValidation
+                     .validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            gaNotificationService.sendNotification(caseData);
+            verifyNoInteractions(notificationService);
+        }
+
+        @Test
+        void notificationShouldSendIfGa_Urgent_WithNoticeAndFreeFeeV2OneSolAvailable() {
+
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                .email(DUMMY_EMAIL).organisationIdentifier("2").forename("LipF").surname(Optional.of("LipS")).build();
+
+            GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id").build();
+
+            respondentSols.add(element(respondent1));
+            respondentSols.add(element(respondent2));
+
+            CaseData caseData = getCaseData(true).toBuilder()
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())
+                .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().code("FREE").build()).build())
+                .generalAppRespondentSolicitors(respondentSols)
+                .build();
+
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
+            when(solicitorEmailValidation
+                     .validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            gaNotificationService.sendNotification(caseData);
+            verify(notificationService).sendMail(
+                any(), any(), any(), any()
+            );
+        }
+
+        @Test
+        void notificationShouldSendIfGa_NonUrgent_WithNoticeAndFreeFeeV2OneSolAvailable() {
+
+            List<Element<GASolicitorDetailsGAspec>> respondentSols = new ArrayList<>();
+
+            GASolicitorDetailsGAspec respondent1 = GASolicitorDetailsGAspec.builder().id("id")
+                .email(DUMMY_EMAIL).organisationIdentifier("2").forename("LipF").surname(Optional.of("LipS")).build();
+
+            GASolicitorDetailsGAspec respondent2 = GASolicitorDetailsGAspec.builder().id("id").build();
+
+            respondentSols.add(element(respondent1));
+            respondentSols.add(element(respondent2));
+
+            CaseData caseData = getCaseData(true).toBuilder()
+                .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
+                .generalAppPBADetails(GAPbaDetails.builder().fee(Fee.builder().code("FREE").build()).build())
+                .generalAppRespondentSolicitors(respondentSols)
+                .build();
+
+            when(caseDetailsConverter.toCaseData(any())).thenReturn(CaseData.builder().ccdState(CaseState.CASE_PROGRESSION).build());
+            when(solicitorEmailValidation
+                     .validateSolicitorEmail(any(), any()))
+                .thenReturn(caseData);
+            gaNotificationService.sendNotification(caseData);
+            verify(notificationService).sendMail(
+                any(), any(), any(), any()
+            );
+        }
+
+        @Test
         void notificationShouldSendIfGa_Urgent_WithNoticeAndFeePaid() {
             CaseData caseData = getCaseData(true).toBuilder()
                 .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(YES).build())

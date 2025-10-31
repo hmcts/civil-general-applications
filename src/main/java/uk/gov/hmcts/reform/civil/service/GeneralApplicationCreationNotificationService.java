@@ -71,13 +71,16 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
             List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = updatedCaseData
                 .getGeneralAppRespondentSolicitors();
 
-            respondentSolicitor
-                .forEach((RS) ->
-                             sendNotificationToGeneralAppRespondent(updatedCaseData,
-                                                                    civilCaseData,
-                                                                    RS.getValue().getEmail(),
-                                     getTemplate(updatedCaseData, false, civilCaseData)
-                             ));
+            respondentSolicitor.forEach(rs -> {
+                if (rs != null && rs.getValue() != null && rs.getValue().getEmail() != null) {
+                    sendNotificationToGeneralAppRespondent(
+                        updatedCaseData,
+                        civilCaseData,
+                        rs.getValue().getEmail(),
+                        getTemplate(updatedCaseData, false, civilCaseData)
+                    );
+                }
+            });
         }
 
         /*
@@ -93,13 +96,16 @@ public class GeneralApplicationCreationNotificationService  implements Notificat
             List<Element<GASolicitorDetailsGAspec>> respondentSolicitor = updatedCaseData
                 .getGeneralAppRespondentSolicitors();
 
-            respondentSolicitor
-                .forEach((RS) ->
-                             sendNotificationToGeneralAppRespondent(
-                                 updatedCaseData,
-                                 civilCaseData,
-                                 RS.getValue().getEmail(),
-                                 getTemplate(updatedCaseData, true, civilCaseData)));
+            respondentSolicitor.forEach(rs -> {
+                if (rs != null && rs.getValue() != null && rs.getValue().getEmail() != null) {
+                    sendNotificationToGeneralAppRespondent(
+                        updatedCaseData,
+                        civilCaseData,
+                        rs.getValue().getEmail(),
+                        getTemplate(updatedCaseData, true, civilCaseData)
+                    );
+                }
+            });
         }
 
         return caseData;
