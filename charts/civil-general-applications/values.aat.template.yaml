@@ -206,7 +206,6 @@ civil-service:
         CAMUNDA_BPM_DATABASE_SCHEMA_UPDATE: true
         S2S_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
         CAMUNDA_DB_CONN_OPTIONS: ""
-
   ccd:
     enabled: true
     ccd:
@@ -311,29 +310,27 @@ civil-service:
     postgresql:
       persistence:
         enabled: false
-
+  xui-webapp:
+    enabled: true
+    nodejs:
+      imagePullPolicy: Always
+      releaseNameOverride: ${SERVICE_NAME}-xui-webapp
+      image: hmctspublic.azurecr.io/xui/webapp:latest
+      devmemoryRequests: 2048Mi
+      devmemoryLimits: 4096Mi
+      ingressHost: civil-ga-xui-staging.aat.platform.hmcts.net
+      environment:
+        HEALTH_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw/health
+        HEALTH_CCD_DATA_API: http://${SERVICE_NAME}-ccd-data-store-api/health
+        HEALTH_TERMS_AND_CONDITIONS_API: http://xui-terms-and-conditions-${SERVICE_FQDN}.service.core-compute-preview.internal/health
+        SERVICES_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw
+        SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
+        SERVICES_TERMS_AND_CONDITIONS: http://xui-terms-and-conditions-${SERVICE_FQDN}.service.core-compute-preview.internal
+        JURISDICTIONS: CIVIL
+        LAUNCH_DARKLY_CLIENT_ID: ~
 
 idam-pr:
   enabled: true
   redirect_uris:
     XUI:
       - https://civil-ga-xui-staging.aat.platform.hmcts.net/oauth2/callback
-
-xui-webapp:
-  enabled: true
-  nodejs:
-    imagePullPolicy: Always
-    releaseNameOverride: ${SERVICE_NAME}-xui-webapp
-    image: hmctspublic.azurecr.io/xui/webapp:latest
-    devmemoryRequests: 2048Mi
-    devmemoryLimits: 4096Mi
-    ingressHost: civil-ga-xui-staging.aat.platform.hmcts.net
-    environment:
-      HEALTH_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw/health
-      HEALTH_CCD_DATA_API: http://${SERVICE_NAME}-ccd-data-store-api/health
-      HEALTH_TERMS_AND_CONDITIONS_API: http://xui-terms-and-conditions-${SERVICE_FQDN}.service.core-compute-preview.internal/health
-      SERVICES_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw
-      SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
-      SERVICES_TERMS_AND_CONDITIONS: http://xui-terms-and-conditions-${SERVICE_FQDN}.service.core-compute-preview.internal
-      JURISDICTIONS: CIVIL
-      LAUNCH_DARKLY_CLIENT_ID: ~

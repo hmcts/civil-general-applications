@@ -15,10 +15,6 @@ dependencies:
     version: 0.0.91
     repository: 'oci://hmctspublic.azurecr.io/helm'
     condition: civil-service.enabled
-  - name: xui-webapp
-    version: ~1.0.31
-    repository: 'oci://hmctspublic.azurecr.io/helm'
-    condition: xui-webapp.enabled
   - name: idam-pr
     version: ~2.3.0
     repository: 'oci://hmctspublic.azurecr.io/helm'
