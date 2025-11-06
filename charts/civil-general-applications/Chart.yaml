@@ -15,10 +15,6 @@ dependencies:
     version: 0.0.91
     repository: 'oci://hmctspublic.azurecr.io/helm'
     condition: civil-service.enabled
-  - name: ccd
-    version: 9.2.2
-    repository: 'oci://hmctspublic.azurecr.io/helm'
-    condition: ccd.enabled
   - name: xui-webapp
     version: ~1.0.31
     repository: 'oci://hmctspublic.azurecr.io/helm'
@@ -27,7 +23,3 @@ dependencies:
     version: ~2.3.0
     repository: 'oci://hmctspublic.azurecr.io/helm'
     condition: idam-pr.enabled
-  - name: camunda-bpm
-    version: 0.0.48
-    repository: 'oci://hmctspublic.azurecr.io/helm'
-    condition: camunda-bpm.enabled
