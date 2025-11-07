@@ -328,11 +328,9 @@ civil-service:
         SERVICES_TERMS_AND_CONDITIONS: http://xui-terms-and-conditions-${SERVICE_FQDN}.service.core-compute-preview.internal
         JURISDICTIONS: CIVIL
         LAUNCH_DARKLY_CLIENT_ID: ~
-
-idam-pr:
-  releaseNameOverride: ${SERVICE_NAME}-xui-idam-pr
-  enabled: true
-  redirect_uris:
-    XUI:
-      - https://xui-${SERVICE_NAME}.preview.platform.hmcts.net/oauth2/callback
-
+  idam-pr:
+    releaseNameOverride: ${SERVICE_NAME}-xui-idam-pr
+    enabled: true
+    redirect_uris:
+      XUI:
+        - https://xui-${SERVICE_NAME}.preview.platform.hmcts.net/oauth2/callback
