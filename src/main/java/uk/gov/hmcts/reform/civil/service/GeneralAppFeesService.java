@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -114,6 +115,10 @@ public class GeneralAppFeesService {
                 feesConfiguration.getChannel(),
                 event,
                 keyword
+            );
+            log.info(
+                "Received fee service response, amount: {}",
+                Optional.ofNullable(feeLookupResponseDto).map(FeeLookupResponseDto::getFeeAmount).orElse(null)
             );
         } catch (Exception e) {
             log.error("Fee Service Lookup Failed - " + e.getMessage(), e);
