@@ -188,7 +188,7 @@ public class ParentCaseUpdateHelper {
                 .filter(app -> app.getValue().getCaseLink() != null && app.getValue().getCaseLink().getCaseReference().equals(
                     applicationId))
                 .findAny()
-                .orElseThrow(IllegalArgumentException::new)
+                .orElseThrow(() -> new IllegalArgumentException("Civil general application not found for parent case id: " + parentCaseId))
                 .getValue();
 
             civilGeneralApplications =
@@ -197,6 +197,8 @@ public class ParentCaseUpdateHelper {
                     buildGeneralApplication(generalApplication),
                     generalApplicationsList
                 );
+
+            log.info("Civil General Applications for case ID: {}, {}", parentCaseId, civilGeneralApplications);
         }
 
         Map<String, Object> updateMap = getUpdatedCaseData(caseData, civilGeneralApplications, generalApplications,
@@ -525,7 +527,7 @@ public class ParentCaseUpdateHelper {
         if (featureToggleService.isGaForWelshEnabled()) {
             List<Element<GeneralApplicationsDetails>> gaDetailsTranslationCollection = ofNullable(
                 parentCaseData.getGaDetailsTranslationCollection()).orElse(newArrayList());
-            
+
             if (!gaDetailsTranslationCollection.isEmpty()) {
 
                 gaDetailsTranslationCollection.removeIf(

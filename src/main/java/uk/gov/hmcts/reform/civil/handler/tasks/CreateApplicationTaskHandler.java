@@ -60,7 +60,7 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
         log.info("Starting CreateApplicationTaskHandler for case ID: {}", caseId);
 
         StartEventResponse startEventResponse = coreCaseDataService.startUpdate(caseId, variables.getCaseEvent());
-        log.debug("Started event update for case ID: {}, event token: {}", caseId, startEventResponse.getToken());
+        log.info("Started event update for case ID: {}, event token: {}", caseId, startEventResponse.getToken());
         CaseData caseData = caseDetailsConverter.toCaseData(startEventResponse.getCaseDetails());
         var generalApplications = caseData.getGeneralApplications();
         CaseData generalAppCaseData = null;
@@ -82,18 +82,23 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                 boolean defendantBilingual = caseData.getRespondent1LiPResponse() != null
                     && BILINGUAL_TYPES.contains(caseData.getRespondent1LiPResponse().getRespondent1ResponseLanguage());
                 generalAppCaseData = createGeneralApplicationCase(caseId, generalApplication, claimantBilingual, defendantBilingual);
-                log.debug("General application case created with ID: {}", generalAppCaseData.getCcdCaseReference());
+                log.info("General application case created with ID: {}", generalAppCaseData.getCcdCaseReference());
                 updateParentCaseGeneralApplication(variables, generalApplication, generalAppCaseData);
-
+                log.info("Update Parent Case General Application ID: {}", generalAppCaseData.getCcdCaseReference());
                 caseData = withoutNoticeNoConsent(generalApplication, caseData, generalAppCaseData);
-
+                log.info("Without Notice No Consent ID: {}", generalAppCaseData.getCcdCaseReference());
             }
         }
 
+        log.info("About to update parent case data ID {}", caseData.getCcdCaseReference());
+        log.info("About to update parent case data with {}", caseData);
         var parentCaseData = coreCaseDataService.submitUpdate(caseId,
                                                               coreCaseDataService.caseDataContentFromStartEventResponse(
                                                                   startEventResponse,
                                                                   caseData.toMap(mapper)));
+
+        log.info("Parent case data updated for case ID: {}", caseData.getCcdCaseReference());
+
         return ExternalTaskData.builder()
             .caseData(parentCaseData)
             .generalApplicationCaseData(generalAppCaseData)
@@ -111,6 +116,7 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
         var applications = ofNullable(caseData.getClaimantGaAppDetails()).orElse(newArrayList());
 
         if (generalApplication.getParentClaimantIsApplicant().equals(YES)) {
+            log.info("Add the case to applicant solicitor collection for case ID: {}", caseData.getCcdCaseReference());
             applications = addApplication(
                     buildApplication(generalApplication, generalAppCaseData),
                     caseData.getClaimantGaAppDetails()
@@ -128,6 +134,8 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
             && generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier() != null
             && generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
                 .equals(getRespondent1SolicitorOrgId(caseData))) {
+
+            log.info("Add the GA in respondent one collection without notice application for case ID: {}", caseData.getCcdCaseReference());
 
             GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication, generalAppCaseData);
 
@@ -149,6 +157,8 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                 && Objects.nonNull(generalApplication.getIsGaApplicantLip())
                 && generalApplication.getIsGaApplicantLip().equals(YES)) {
 
+            log.info("Add the GA in respondent one collection without notice application Lip for case ID: {}", caseData.getCcdCaseReference());
+
             GADetailsRespondentSol gaDetailsRespondentSol = buildRespApplication(generalApplication, generalAppCaseData);
 
             if (gaDetailsRespondentSol != null) {
@@ -164,6 +174,8 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                 && NO.equals(caseData.getRespondent2SameLegalRepresentative())
                 && generalApplication.getGeneralAppApplnSolicitor().getOrganisationIdentifier()
                 .equals(getRespondent2SolicitorOrgId(caseData))) {
+
+            log.info("Add the GA in respondent two collection without notice application for case ID: {}", caseData.getCcdCaseReference());
 
             GADetailsRespondentSol gaDetailsRespondentSolTwo = buildRespApplication(
                     generalApplication, generalAppCaseData);
