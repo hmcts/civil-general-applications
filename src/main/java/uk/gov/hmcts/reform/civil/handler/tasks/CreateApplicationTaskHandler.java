@@ -33,7 +33,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static feign.form.util.PojoUtil.toMap;
 import static java.util.Optional.ofNullable;
+import static org.jose4j.json.JsonUtil.toJson;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -74,7 +76,7 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                     && application.getValue().getBusinessProcess().getProcessInstanceId() != null).findFirst();
 
             if (genApps.isPresent()) {
-                log.info("Eligible general application found for processing in case data: {}", caseData);
+                log.info("Eligible general application found for processing in case data: {}", toJson(toMap(caseData)));
 
                 GeneralApplication generalApplication = genApps.get().getValue();
 
@@ -82,16 +84,16 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                 boolean defendantBilingual = caseData.getRespondent1LiPResponse() != null
                     && BILINGUAL_TYPES.contains(caseData.getRespondent1LiPResponse().getRespondent1ResponseLanguage());
                 generalAppCaseData = createGeneralApplicationCase(caseId, generalApplication, claimantBilingual, defendantBilingual);
-                log.info("General application case created data: {}", generalAppCaseData);
+                log.info("General application case created data: {}", toJson(toMap(generalAppCaseData)));
                 updateParentCaseGeneralApplication(variables, generalApplication, generalAppCaseData);
-                log.info("Update Parent Case General Application data: {}", generalApplication);
+                log.info("Update Parent Case General Application data: {}", toJson(toMap(generalApplication)));
                 caseData = withoutNoticeNoConsent(generalApplication, caseData, generalAppCaseData);
                 log.info("Without Notice No Consent ID: {}", generalAppCaseData.getCcdCaseReference());
             }
         }
 
         log.info("About to update parent case data ID {}", caseData.getCcdCaseReference());
-        log.info("About to update parent case data with {}", caseData);
+        log.info("About to update parent case data with {}", toJson(toMap(caseData)));
         var parentCaseData = coreCaseDataService.submitUpdate(caseId,
                                                               coreCaseDataService.caseDataContentFromStartEventResponse(
                                                                   startEventResponse,
