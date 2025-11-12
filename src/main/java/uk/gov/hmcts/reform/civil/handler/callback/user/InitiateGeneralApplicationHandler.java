@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.handler.callback.user;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.SubmittedCallbackResponse;
 import uk.gov.hmcts.reform.civil.callback.Callback;
@@ -27,6 +28,7 @@ import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPL
 @SuppressWarnings({"checkstyle:Indentation", "checkstyle:EmptyLineSeparator"})
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InitiateGeneralApplicationHandler extends CallbackHandler {
 
     private static final String CONFIRMATION_BODY_FREE = "<br/> <p> The court will make a decision"
@@ -52,6 +54,7 @@ public class InitiateGeneralApplicationHandler extends CallbackHandler {
 
     private SubmittedCallbackResponse buildConfirmation(CallbackParams callbackParams) {
         CaseData caseData = callbackParams.getCaseData();
+        log.info("InitiateGeneralApplicationHandler.buildConfirmation case data: {}", caseData);
         Long ccdCaseReference = caseData.getCcdCaseReference();
         List<Element<GeneralApplication>> generalApplications = caseData.getGeneralApplications();
         String body = null;
