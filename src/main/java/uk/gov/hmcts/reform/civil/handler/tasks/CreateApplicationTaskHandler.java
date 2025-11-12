@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.civil.handler.tasks;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.camunda.bpm.client.task.ExternalTask;
@@ -34,7 +35,6 @@ import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.ofNullable;
-import static org.jose4j.json.JsonUtil.toJson;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.NO;
 import static uk.gov.hmcts.reform.civil.enums.YesOrNo.YES;
@@ -75,7 +75,14 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                     && application.getValue().getBusinessProcess().getProcessInstanceId() != null).findFirst();
 
             if (genApps.isPresent()) {
-                log.info("Eligible general application found for processing in case data: {}", toJson(caseData.toMap(mapper)));
+                try {
+                    log.info(
+                        "Eligible general application found for processing in case data: {}",
+                        mapper.writeValueAsString(caseData)
+                    );
+                } catch (JsonProcessingException e) {
+                    //Do Nothing
+                }
 
                 GeneralApplication generalApplication = genApps.get().getValue();
 
@@ -83,14 +90,32 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                 boolean defendantBilingual = caseData.getRespondent1LiPResponse() != null
                     && BILINGUAL_TYPES.contains(caseData.getRespondent1LiPResponse().getRespondent1ResponseLanguage());
                 generalAppCaseData = createGeneralApplicationCase(caseId, generalApplication, claimantBilingual, defendantBilingual);
-                log.info("General application case created data: {}", toJson(generalAppCaseData.toMap(mapper)));
+                try {
+                    log.info("General application case created data: {}",
+                             mapper.writeValueAsString(generalAppCaseData));
+                } catch (JsonProcessingException e) {
+                    //Do Nothing
+                }
                 updateParentCaseGeneralApplication(variables, generalApplication, generalAppCaseData);
-                log.info("Update Parent Case General Application data: {}", toJson(generalApplication.toMap(mapper)));
+                try {
+                    log.info(
+                        "Update Parent Case General Application data: {}",
+                        mapper.writeValueAsString(generalApplication)
+                    );
+                } catch (JsonProcessingException e) {
+                    //Do Nothing
+                }
                 caseData = withoutNoticeNoConsent(generalApplication, caseData, generalAppCaseData);
             }
         }
 
-        log.info("About to update parent case data with {}", toJson(caseData.toMap(mapper)));
+        try {
+            log.info("About to update parent case data with {}",
+                     mapper.writeValueAsString(caseData));
+        } catch (JsonProcessingException e) {
+            //Do Nothing
+        }
+
         var parentCaseData = coreCaseDataService.submitUpdate(caseId,
                                                               coreCaseDataService.caseDataContentFromStartEventResponse(
                                                                   startEventResponse,
