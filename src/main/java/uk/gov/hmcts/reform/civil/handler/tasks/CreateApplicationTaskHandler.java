@@ -33,7 +33,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static feign.form.util.PojoUtil.toMap;
 import static java.util.Optional.ofNullable;
 import static org.jose4j.json.JsonUtil.toJson;
 import static uk.gov.hmcts.reform.civil.enums.CaseState.PENDING_APPLICATION_ISSUED;
