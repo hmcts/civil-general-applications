@@ -74,7 +74,7 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                     && application.getValue().getBusinessProcess().getProcessInstanceId() != null).findFirst();
 
             if (genApps.isPresent()) {
-                log.debug("Eligible general application found for processing in case data: {}", caseData);
+                log.info("Eligible general application found for processing in case data: {}", caseData);
 
                 GeneralApplication generalApplication = genApps.get().getValue();
 
