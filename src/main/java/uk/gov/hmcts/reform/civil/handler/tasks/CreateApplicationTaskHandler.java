@@ -74,7 +74,7 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                     && application.getValue().getBusinessProcess().getProcessInstanceId() != null).findFirst();
 
             if (genApps.isPresent()) {
-                log.debug("Eligible general application found for processing in case ID: {}", caseId);
+                log.debug("Eligible general application found for processing in case data: {}", caseData);
 
                 GeneralApplication generalApplication = genApps.get().getValue();
 
@@ -82,9 +82,9 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                 boolean defendantBilingual = caseData.getRespondent1LiPResponse() != null
                     && BILINGUAL_TYPES.contains(caseData.getRespondent1LiPResponse().getRespondent1ResponseLanguage());
                 generalAppCaseData = createGeneralApplicationCase(caseId, generalApplication, claimantBilingual, defendantBilingual);
-                log.info("General application case created with ID: {}", generalAppCaseData.getCcdCaseReference());
+                log.info("General application case created data: {}", generalAppCaseData);
                 updateParentCaseGeneralApplication(variables, generalApplication, generalAppCaseData);
-                log.info("Update Parent Case General Application ID: {}", generalAppCaseData.getCcdCaseReference());
+                log.info("Update Parent Case General Application data: {}", generalApplication);
                 caseData = withoutNoticeNoConsent(generalApplication, caseData, generalAppCaseData);
                 log.info("Without Notice No Consent ID: {}", generalAppCaseData.getCcdCaseReference());
             }
