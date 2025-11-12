@@ -97,7 +97,7 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                                                                   startEventResponse,
                                                                   caseData.toMap(mapper)));
 
-        log.info("Parent case data updated for case ID: {}", caseData.getCcdCaseReference());
+        log.info("Parent case data updated for case data: {}", parentCaseData);
 
         return ExternalTaskData.builder()
             .caseData(parentCaseData)
@@ -347,7 +347,7 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
         var stateFlowFlags = stateFlow.getFlags();
         variables.putValue(FLOW_STATE, stateFlowName);
         variables.putValue(FLOW_FLAGS, stateFlowFlags);
-        log.debug("State flow evaluation completed with {} state and {} flags",
+        log.info("State flow evaluation completed with {} state and {} flags",
                   stateFlowName, stateFlowFlags);
         var generalAppCaseData = externalTaskData.getGeneralApplicationCaseData();
         if (generalAppCaseData != null && generalAppCaseData.getCcdCaseReference() != null) {
