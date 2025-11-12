@@ -76,7 +76,7 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                     && application.getValue().getBusinessProcess().getProcessInstanceId() != null).findFirst();
 
             if (genApps.isPresent()) {
-                log.info("Eligible general application found for processing in case data: {}", toJson(toMap(caseData)));
+                log.info("Eligible general application found for processing in case data: {}", toJson(caseData.toMap(mapper)));
 
                 GeneralApplication generalApplication = genApps.get().getValue();
 
@@ -84,16 +84,14 @@ public class CreateApplicationTaskHandler extends BaseExternalTaskHandler {
                 boolean defendantBilingual = caseData.getRespondent1LiPResponse() != null
                     && BILINGUAL_TYPES.contains(caseData.getRespondent1LiPResponse().getRespondent1ResponseLanguage());
                 generalAppCaseData = createGeneralApplicationCase(caseId, generalApplication, claimantBilingual, defendantBilingual);
-                log.info("General application case created data: {}", toJson(toMap(generalAppCaseData)));
+                log.info("General application case created data: {}", toJson(generalAppCaseData.toMap(mapper)));
                 updateParentCaseGeneralApplication(variables, generalApplication, generalAppCaseData);
-                log.info("Update Parent Case General Application data: {}", toJson(toMap(generalApplication)));
+                log.info("Update Parent Case General Application data: {}", toJson(generalApplication.toMap(mapper)));
                 caseData = withoutNoticeNoConsent(generalApplication, caseData, generalAppCaseData);
-                log.info("Without Notice No Consent ID: {}", generalAppCaseData.getCcdCaseReference());
             }
         }
 
-        log.info("About to update parent case data ID {}", caseData.getCcdCaseReference());
-        log.info("About to update parent case data with {}", toJson(toMap(caseData)));
+        log.info("About to update parent case data with {}", toJson(caseData.toMap(mapper)));
         var parentCaseData = coreCaseDataService.submitUpdate(caseId,
                                                               coreCaseDataService.caseDataContentFromStartEventResponse(
                                                                   startEventResponse,
