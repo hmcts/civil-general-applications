@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.civil.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.civil.config.PaymentsConfiguration;
@@ -23,6 +24,7 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentsService {
 
     private final PaymentsClient paymentsClient;
@@ -59,7 +61,9 @@ public class PaymentsService {
     }
 
     public PaymentServiceResponse createServiceRequest(CaseData caseData, String authToken) {
-        return paymentsClient.createServiceRequest(authToken, buildServiceRequest(caseData));
+        CreateServiceRequestDTO paymentRequest = buildServiceRequest(caseData);
+        log.info("Calling payment service request for general application case {} and callbackUrl {} ", caseData.getCcdCaseReference(), paymentRequest.getCallBackUrl());
+        return paymentsClient.createServiceRequest(authToken, paymentRequest);
     }
 
     private CreateServiceRequestDTO buildServiceRequest(CaseData caseData) {
