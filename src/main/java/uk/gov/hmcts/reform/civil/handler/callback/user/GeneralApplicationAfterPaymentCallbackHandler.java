@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static java.util.Collections.singletonList;
+import static org.jose4j.json.JsonUtil.toJson;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.ABOUT_TO_SUBMIT;
 import static uk.gov.hmcts.reform.civil.callback.CallbackType.SUBMITTED;
 import static uk.gov.hmcts.reform.civil.callback.CaseEvent.INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT;
@@ -73,7 +74,12 @@ public class GeneralApplicationAfterPaymentCallbackHandler extends CallbackHandl
             log.info("Business process INITIATE_GENERAL_APPLICATION_AFTER_PAYMENT has initiated for caseId: {}", caseData.getCcdCaseReference());
         }
 
-        return getCallbackResponse(caseDataBuilder);
+        Map<String, Object> caseDataMap = caseDataBuilder.build().toMap(objectMapper);
+        log.info("About to respond generalAppAfterPayment caseId: {} data: {}", caseData.getCcdCaseReference(), toJson(caseDataMap));
+
+        return AboutToStartOrSubmitCallbackResponse.builder()
+            .data(caseDataMap)
+            .build();
     }
 
     private CallbackResponse getCallbackResponse(CaseData.CaseDataBuilder caseDataBuilder) {
