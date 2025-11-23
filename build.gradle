@@ -411,7 +411,7 @@ dependencies {
 
   implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '6.3.0'
 
-  implementation group: 'com.github.hmcts', name: 'auth-checker-lib', version: '3.1.1'
+  implementation group: 'com.github.hmcts', name: 'auth-checker-lib', version: '3.1.2'
 
   implementation group: 'org.apache.tika', name: 'tika-core', version: versions.tika
 
