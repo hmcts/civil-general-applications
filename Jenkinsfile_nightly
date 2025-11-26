@@ -102,15 +102,31 @@ withNightlyPipeline(type, product, component) {
   env.NIGHTLY_BUILD = true
   env.YARN_ENABLE_IMMUTABLE_INSTALLS = false
   env.TEST_URL = params.CIVIL_SERVICE_URL
-  env.URL = params.FRONTEND_URL
+  def prNumber = params.PR_NUMBER?.trim()
+  def resolvePreviewUrl = { String value, String paramName ->
+    if (value?.contains('{PR_NUMBER}')) {
+      if (!prNumber) {
+        error "Parameter ${paramName} contains '{PR_NUMBER}' but PR_NUMBER was not provided."
+      }
+      return value.replace('{PR_NUMBER}', prNumber)
+    }
+    return value
+  }
+
+  def frontendUrl = resolvePreviewUrl(params.FRONTEND_URL, 'FRONTEND_URL')
+  def ccdDataStoreUrl = resolvePreviewUrl(params.CCD_DATA_STORE_URL, 'CCD_DATA_STORE_URL')
+  def civilServiceUrl = resolvePreviewUrl(params.CIVIL_SERVICE_URL, 'CIVIL_SERVICE_URL')
+  def civilGeneralApplicationsUrl = resolvePreviewUrl(params.CIVIL_GENERAL_APPLICATIONS_URL, 'CIVIL_GENERAL_APPLICATIONS_URL')
+
+  env.URL=frontendUrl
   env.DM_STORE_URL=params.DM_STORE_URL
   env.IDAM_API_URL=params.IDAM_API_URL
   env.SERVICE_AUTH_PROVIDER_API_BASE_URL = params.SERVICE_AUTH_PROVIDER_API_BASE_URL
-  env.CCD_DATA_STORE_URL = params.CCD_DATA_STORE_URL
-  env.CIVIL_SERVICE_URL = params.CIVIL_SERVICE_URL
-  env.CIVIL_GENERAL_APPLICATIONS_URL = params.CIVIL_GENERAL_APPLICATIONS_URL
+  env.CCD_DATA_STORE_URL = ccdDataStoreUrl
+  env.CIVIL_SERVICE_URL = civilServiceUrl
+  env.CIVIL_GENERAL_APPLICATIONS_URL = civilGeneralApplicationsUrl
   env.WAIT_FOR_TIMEOUT_MS = params.WAIT_FOR_TIMEOUT_MS
-  env.URL_FOR_SECURITY_SCAN = params.CIVIL_SERVICE_URL
+  env.URL_FOR_SECURITY_SCAN = civilServiceUrl
   env.TESTS_FOR_ACCESSIBILITY = false
   overrideVaultEnvironments([
     'aat': params.ENVIRONMENT
