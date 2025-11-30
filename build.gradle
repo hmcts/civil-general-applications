@@ -123,7 +123,7 @@ allprojects {
       // To prevent other libraries using conflicting versions
       dependency group: 'org.slf4j', name: 'slf4j-nop', version: '2.0.5'
 
-      dependency group: 'commons-fileupload', name: 'commons-fileupload', version: '1.5'
+      dependency group: 'commons-fileupload', name: 'commons-fileupload', version: '1.6.0'
 
       // Solves CVE-2022-31159, happens only on local builds when running dependencyCheck gradle task
       dependencySet(
