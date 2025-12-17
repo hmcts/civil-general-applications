@@ -1,7 +1,7 @@
 java:
   image: ${IMAGE_NAME}
   ingressHost: ${SERVICE_FQDN}
-  devcpuRequests: 500m
+  devcpuRequests: 1000m
   devmemoryRequests: 2048Mi
   devmemoryLimits: 4096Mi
   environment:
@@ -99,7 +99,7 @@ civil-service:
     image: 'hmctspublic.azurecr.io/civil/service:latest'
     imagePullPolicy: Always
     ingressHost: civil-ga-civil-service-staging.aat.platform.hmcts.net
-    devcpuRequests: 500m
+    devcpuRequests: 1000m
     devmemoryRequests: 2048Mi
     devmemoryLimits: 4096Mi
     keyVaults:
@@ -192,8 +192,8 @@ civil-service:
     java:
       disableKeyVaults: true
       releaseNameOverride: ${SERVICE_NAME}-camunda
-      devcpuRequests: 500m
-      devmemoryRequests: 512Mi
+      devcpuRequests: 1000m
+      devmemoryRequests: 1024Mi
       devcpuLimits: 1
       devmemoryLimits: 1Gi
       ingressHost: civil-ga-camunda-staging.aat.platform.hmcts.net
