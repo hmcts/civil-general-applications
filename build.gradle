@@ -441,7 +441,7 @@ dependencies {
     exclude group: 'ch.qos.logback', module: 'logback-core'
   }
   //pact contract testing
-  contractTestImplementation 'au.com.dius.pact.consumer:junit5:4.6.5'
+  contractTestImplementation 'au.com.dius.pact.consumer:junit5:4.6.19'
   contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
   contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.10.2')
   contractTestImplementation('org.junit.jupiter:junit-jupiter-engine:5.10.2')
