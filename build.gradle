@@ -98,9 +98,9 @@ allprojects {
       }
 
       // Solves CVE-2023-35116
-      dependency group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.17.0'
-      dependency group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.17.0'
-      dependency group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.17.0'
+      dependency group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.20.1'
+      dependency group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.20.1'
+      dependency group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.20'
 
       // Solves CVE-2023-3635
       dependency group: 'com.squareup.okio', name: 'okio', version: '3.4.0'
@@ -401,8 +401,8 @@ dependencies {
   implementation group: 'org.camunda.community.rest', name: 'camunda-platform-7-rest-client-spring-boot-starter', version: versions.camunda
   implementation group: 'org.camunda.bpm', name: 'camunda-engine-rest-core', version: versions.camunda
 
-  implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.14.2'
-  implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.20.0'
+  implementation group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: '2.20.1'
+  implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.20.1'
 
   // JAX-B dependencies for JDK 9+
   implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
