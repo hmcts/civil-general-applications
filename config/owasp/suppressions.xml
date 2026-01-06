@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-    <suppress until = "2025-12-18">
+    <suppress>
         <notes>
           Lucene 8.9.0 used transitively via Elasticsearch 7.15.2 Upgrade to ES 8.x under review.
           Spring upgrade required for CVE-2024-38820.
