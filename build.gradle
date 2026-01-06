@@ -25,7 +25,7 @@ def versions = [
   pact              : '3.5.24',
   camunda           : '7.20.0',
   pdfbox            : '3.0.5',
-  tika              : '2.9.4'
+  tika              : '3.2.2'
 ]
 
 group = 'uk.gov.hmcts.reform'
@@ -373,7 +373,7 @@ dependencies {
     exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
     exclude group: 'uk.gov.hmcts.reform', module: 'service-auth-provider-client'
   }
-  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '4.1.0-RELEASE'
+  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.2.1-RELEASE'
   implementation group: 'com.github.hmcts', name: 'ccd-case-document-am-client', version: '1.7.1'
 
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
