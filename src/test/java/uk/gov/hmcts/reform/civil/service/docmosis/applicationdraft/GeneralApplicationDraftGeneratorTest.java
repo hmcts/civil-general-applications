@@ -59,6 +59,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -161,6 +162,7 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
         verify(documentGeneratorService).generateDocmosisDocument(any(GADraftForm.class), eq(GENERAL_APPLICATION_DRAFT));
         var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
         assertThat(templateData.getIsCasePastDueDate()).isEqualTo(true);
+        assertNotNull(templateData.getSubmittedDate());
     }
 
     @Test
@@ -498,6 +500,7 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
                                                              .email("abc@gmail.com").build()))
             .isMultiParty(NO)
             .parentClaimantIsApplicant(YES)
+            .generalAppSubmittedDateGAspec(LocalDateTime.now())
             .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                           .caseReference(PARENT_CCD_REF.toString()).build())
             .build();

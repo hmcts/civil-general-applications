@@ -120,6 +120,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                 .role(caseData.getGeneralAppStatementOfTruth() != null && caseData
                     .getGeneralAppStatementOfTruth().getRole() != null ? caseData
                     .getGeneralAppStatementOfTruth().getRole() : null)
+                .submittedDate(caseData.getGeneralAppSubmittedDateGAspec().toLocalDate())
                 .date(LocalDate.now());
 
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() >= ONE_V_ONE) {
@@ -339,6 +340,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
     public CaseDocument generate(CaseData caseData, String authorisation) {
         try {
             GADraftForm templateData = getTemplateData(caseData);
+            log.info("Generate general application draft for caseId: {} and Submitted Date {}", caseData.getCcdCaseReference(), templateData.getSubmittedDate());
             DocmosisTemplates docmosisTemplate = getDocmosisTemplate();
 
             DocmosisDocument docmosisDocument = documentGeneratorService.generateDocmosisDocument(

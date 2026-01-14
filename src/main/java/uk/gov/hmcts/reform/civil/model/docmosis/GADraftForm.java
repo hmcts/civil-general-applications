@@ -128,4 +128,8 @@ public class GADraftForm implements MappableObject {
     private final Boolean isResp2OtherSupportExists;
     private final Boolean isCasePastDueDate;
     private final YesOrNo isLipCase;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "d MMMM yyyy")
+    @JsonSerialize(using = LocalDateSerializer.class)
+    private final LocalDate submittedDate;
 }
