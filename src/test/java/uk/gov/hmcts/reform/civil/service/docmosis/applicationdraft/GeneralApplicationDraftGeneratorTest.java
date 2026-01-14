@@ -386,6 +386,7 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
             .parentClaimantIsApplicant(YES)
             .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                           .caseReference(PARENT_CCD_REF.toString()).build())
+            .generalAppSubmittedDateGAspec(LocalDateTime.now())
             .build();
     }
 
@@ -454,6 +455,7 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
             .parentClaimantIsApplicant(YES)
             .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                           .caseReference(PARENT_CCD_REF.toString()).build())
+            .generalAppSubmittedDateGAspec(LocalDateTime.now())
             .build();
     }
 
