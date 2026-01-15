@@ -59,6 +59,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -160,7 +161,10 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
         );
         verify(documentGeneratorService).generateDocmosisDocument(any(GADraftForm.class), eq(GENERAL_APPLICATION_DRAFT));
         var templateData = generalApplicationDraftGenerator.getTemplateData(caseData);
-        assertThat(templateData.getIsCasePastDueDate()).isEqualTo(true);
+        assertThat(templateData.getIsCasePastDueDate()).isTrue();
+        assertNotNull(templateData.getSubmittedDate());
+        assertNotNull(templateData.getIssueDate());
+        assertEquals(String.valueOf(CHILD_CCD_REF), templateData.getApplicationId());
     }
 
     @Test
@@ -384,6 +388,7 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
             .parentClaimantIsApplicant(YES)
             .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                           .caseReference(PARENT_CCD_REF.toString()).build())
+            .generalAppSubmittedDateGAspec(LocalDateTime.now())
             .build();
     }
 
@@ -430,7 +435,9 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
                             .calculatedAmountInPence(BigDecimal.valueOf(27500))
                             .version("1")
                             .build())
-                    .serviceReqReference(CUSTOMER_REFERENCE).build())
+                    .serviceReqReference(CUSTOMER_REFERENCE)
+                    .paymentSuccessfulDate(LocalDateTime.now())
+                    .build())
             .generalAppDetailsOfOrder(STRING_CONSTANT)
             .generalAppReasonsOfOrder(STRING_CONSTANT)
             .generalAppUrgencyRequirement(GAUrgencyRequirement.builder().generalAppUrgency(NO).build())
@@ -452,6 +459,7 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
             .parentClaimantIsApplicant(YES)
             .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                           .caseReference(PARENT_CCD_REF.toString()).build())
+            .generalAppSubmittedDateGAspec(LocalDateTime.now())
             .build();
     }
 
@@ -477,7 +485,9 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
                             .calculatedAmountInPence(BigDecimal.valueOf(27500))
                             .version("1")
                             .build())
-                    .serviceReqReference(CUSTOMER_REFERENCE).build())
+                    .serviceReqReference(CUSTOMER_REFERENCE)
+                    .paymentSuccessfulDate(LocalDateTime.now())
+                    .build())
             .generalAppDetailsOfOrder(STRING_CONSTANT)
             .generalAppReasonsOfOrder(STRING_CONSTANT)
             .generalAppDateDeadline(LocalDateTime.now().minusDays(2))
@@ -498,6 +508,7 @@ class GeneralApplicationDraftGeneratorTest extends BaseCallbackHandlerTest {
                                                              .email("abc@gmail.com").build()))
             .isMultiParty(NO)
             .parentClaimantIsApplicant(YES)
+            .generalAppSubmittedDateGAspec(LocalDateTime.now())
             .generalAppParentCaseLink(GeneralAppParentCaseLink.builder()
                                           .caseReference(PARENT_CCD_REF.toString()).build())
             .build();
