@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.civil.model.documents.CaseDocument;
 import uk.gov.hmcts.reform.civil.model.documents.DocumentType;
 import uk.gov.hmcts.reform.civil.model.documents.PDF;
 import uk.gov.hmcts.reform.civil.model.genapplication.GAHearingDetails;
+import uk.gov.hmcts.reform.civil.model.genapplication.GAPbaDetails;
 import uk.gov.hmcts.reform.civil.model.genapplication.GARespondentResponse;
 import uk.gov.hmcts.reform.civil.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.civil.service.GaForLipService;
@@ -64,6 +65,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
 
         GADraftForm.GADraftFormBuilder gaDraftFormBuilder =
             GADraftForm.builder()
+                .applicationId(caseData.getCcdCaseReference().toString())
                 .claimNumber(caseData.getGeneralAppParentCaseLink().getCaseReference())
                 .claimantName(claimantName)
                 .defendantName(defendantName)
@@ -121,6 +123,7 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
                     .getGeneralAppStatementOfTruth().getRole() != null ? caseData
                     .getGeneralAppStatementOfTruth().getRole() : null)
                 .submittedDate(caseData.getGeneralAppSubmittedDateGAspec().toLocalDate())
+                .issueDate(getPaymentDate(caseData))
                 .date(LocalDate.now());
 
         if (caseData.getRespondentsResponses() != null && caseData.getRespondentsResponses().size() >= ONE_V_ONE) {
@@ -198,6 +201,14 @@ public class GeneralApplicationDraftGenerator implements TemplateDataGenerator<G
         }
 
         return gaDraftFormBuilder.build();
+    }
+
+    private LocalDate getPaymentDate(CaseData caseData) {
+        GAPbaDetails generalAppPBADetails = caseData.getGeneralAppPBADetails();
+        if (generalAppPBADetails != null && generalAppPBADetails.getPaymentSuccessfulDate() != null) {
+            return generalAppPBADetails.getPaymentSuccessfulDate().toLocalDate();
+        }
+        return caseData.getGeneralAppSubmittedDateGAspec().toLocalDate();
     }
 
     private YesOrNo isWithNoticeApplication(CaseData caseData) {
