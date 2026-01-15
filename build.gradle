@@ -234,7 +234,7 @@ tasks.register('awaitApplicationReadiness', Exec) {
 }
 
 tasks.register('runSmokeTests', Exec) {
-  commandLine '/usr/bin/yarn', '--silent', 'run', 'test:ga-smoke'
+  commandLine '/usr/bin/yarn', '--silent', 'run', 'test:smoke'
 }
 
 tasks.register('runCrossBrowserTests', Exec) {
