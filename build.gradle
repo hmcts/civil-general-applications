@@ -393,7 +393,7 @@ dependencies {
   implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.4'
 
-  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.15.2'
+  implementation group: 'org.elasticsearch', name: 'elasticsearch', version: '7.17.29'
 
   implementation group: 'com.networknt', name: 'json-schema-validator', version: '1.0.75'
 
