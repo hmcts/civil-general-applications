@@ -54,6 +54,7 @@ properties([
                                                 ],
       description: 'The URL of civil service'),
     choice(name: 'CIVIL_GENERAL_APPLICATIONS_URL', choices: [
+                                                              'http://civil-service-aat.service.core-compute-aat.internal',
                                                               'http://civil-general-applications-aat.service.core-compute-aat.internal',
                                                               'http://civil-general-applications-demo.service.core-compute-demo.internal',
                                                               'https://ga-civil-ccd-pr-{PR_NUMBER}.preview.platform.hmcts.net',
