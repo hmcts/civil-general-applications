@@ -154,15 +154,11 @@ withNightlyPipeline(type, product, component) {
 
   if(!runPrevFailedAndNotExecutedTestFiles && !forceGreenBuild) {
     enableFortifyScan()
-    enableCrossBrowserTest()
 
     afterAlways('fortify-scan') {
       steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
     }
 
-    afterAlways('crossBrowserTest') {
-      steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/functional/**/*'
-    }
   }
 
   if(!forceGreenBuild) {
