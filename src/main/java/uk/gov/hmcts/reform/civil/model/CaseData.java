@@ -373,6 +373,7 @@ public class CaseData implements MappableObject {
     //WA claim track description
     private final String gaWaTrackLabel;
     private final String emailPartyReference;
+    private LocalDateTime generalAppSubmittedDateGAspec;
 
     @Builder.Default
     private final List<Value<Document>> caseDocuments = new ArrayList<>();
